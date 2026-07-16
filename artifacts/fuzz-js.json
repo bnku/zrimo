@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "seed": "0x5eed1234",
+  "iterations": 2000,
+  "failures": 0,
+  "elapsedMs": 120.41,
+  "slowestCaseMs": 2.41,
+  "targets": [
+    "detection/ZIP/CFB",
+    "SVG sanitizer",
+    "CSV/TSV parser"
+  ]
+}

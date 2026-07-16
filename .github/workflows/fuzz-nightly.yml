@@ -1,0 +1,30 @@
+name: Nightly fuzz
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: npm ci
+      - run: cargo install cargo-fuzz --locked
+      - run: FUZZ_SECONDS=120 npm run fuzz:rust
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-reports
+          path: |
+            artifacts/fuzz-*.json
+            fuzz/artifacts/

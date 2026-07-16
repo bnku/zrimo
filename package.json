@@ -1,0 +1,50 @@
+{
+  "name": "docs-viewer-wasm-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "npm@11.16.0",
+  "overrides": {
+    "postcss": "8.5.10"
+  },
+  "scripts": {
+    "build": "npm run build:wasm-bindings && npm run build --workspaces --if-present",
+    "build:rust": "cargo build --workspace --target wasm32-unknown-unknown --release",
+    "build:wasm-bindings": "node scripts/build-wasm.mjs",
+    "check": "npm run format:check && npm run typecheck && npm test && npm run check:rust && npm run licenses",
+    "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
+    "format": "prettier --write package.json tsconfig.base.json packages examples scripts tests .github playwright.config.ts playwright.matrix.config.ts && cargo fmt --all",
+    "format:check": "prettier --check package.json tsconfig.base.json packages examples scripts tests .github playwright.config.ts playwright.matrix.config.ts && cargo fmt --all --check",
+    "licenses": "node scripts/check-licenses.mjs",
+    "audit:vulnerabilities": "node scripts/vulnerability-audit.mjs",
+    "report:size": "node scripts/size-report.mjs",
+    "report:sbom": "node scripts/generate-sbom.mjs",
+    "test:pack": "npm run build && node scripts/pack-test.mjs",
+    "corpus:fetch": "node scripts/fetch-corpus.mjs",
+    "test": "npm run test --workspaces --if-present && cargo test --workspace",
+    "test:e2e": "node scripts/e2e.mjs",
+    "test:e2e:matrix": "node scripts/e2e.mjs --config=playwright.matrix.config.ts",
+    "test:qualification": "node scripts/qualification.mjs",
+    "fuzz:js": "npm run build --workspace @docs-viewer-wasm/viewer && node scripts/fuzz-js.mjs",
+    "fuzz:rust": "node scripts/fuzz-rust.mjs",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1",
+    "@types/node": "26.1.1",
+    "binaryen": "131.0.0",
+    "esbuild": "0.28.1",
+    "next": "16.2.10",
+    "prettier": "3.9.5",
+    "typescript": "7.0.2",
+    "webpack": "5.108.4",
+    "webpack-cli": "7.2.1"
+  }
+}

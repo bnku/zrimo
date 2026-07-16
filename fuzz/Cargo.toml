@@ -1,0 +1,47 @@
+[package]
+name = "docs-viewer-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "=0.4.13"
+viewer-core = { path = "../crates/viewer-core" }
+legacy-office-wasm = { path = "../crates/legacy-office-wasm" }
+image-wasm = { path = "../crates/image-wasm" }
+pdf_oxide = { version = "=0.3.74", default-features = false }
+
+[[bin]]
+name = "format_detection"
+path = "fuzz_targets/format_detection.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "legacy_office"
+path = "fuzz_targets/legacy_office.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pdf_parser"
+path = "fuzz_targets/pdf_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "tiff_parser"
+path = "fuzz_targets/tiff_parser.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
+

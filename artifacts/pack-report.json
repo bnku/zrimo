@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "name": "@docs-viewer-wasm/viewer",
+  "version": "0.1.0-alpha.0",
+  "filename": "docs-viewer-wasm-viewer-0.1.0-alpha.0.tgz",
+  "size": 14350541,
+  "unpackedSize": 18923567,
+  "shasum": "88f423a4bebbe90e0d753c0f88eeb21b371aac35",
+  "integrity": "sha512-CKFQOqHg/v0RxvVBsM+tuDh72uu0z4EPlXgVgsoaDgwflIo5TNB5Al97JsFTw9Of+79+vuQSj8IpYwKIBUdWLA==",
+  "sha256": "eb6656d5c7a85fe0597178a0a77b4e315f1310aa94f8d5e5008fe743f824fddf",
+  "fileCount": 111,
+  "requiredExportsPresent": true,
+  "forbiddenFiles": [],
+  "consumers": [
+    "plain-esm-ssr",
+    "typescript-strict",
+    "angular-esbuild",
+    "vite",
+    "webpack",
+    "nextjs-webpack"
+  ]
+}

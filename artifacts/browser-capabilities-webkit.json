@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "project": "webkit",
+  "scenario": "load-navigate-zoom-search-select-destroy",
+  "passed": true,
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+  "offscreenCanvas": true,
+  "resizeObserver": true,
+  "createImageBitmap": true,
+  "bitmapRenderer": true,
+  "fullscreen": true,
+  "wasm": true
+}

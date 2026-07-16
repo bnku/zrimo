@@ -1,0 +1,43 @@
+[
+  { "language": "en", "script": "Latin", "text": "The quick brown fox — café" },
+  {
+    "language": "ru",
+    "script": "Cyrillic",
+    "text": "Съешь ещё этих мягких французских булок"
+  },
+  { "language": "zh-Hans", "script": "Han", "text": "简体中文文档" },
+  { "language": "zh-Hant", "script": "Han", "text": "繁體中文文件" },
+  {
+    "language": "ja",
+    "script": "Han, Hiragana, Katakana",
+    "text": "日本語の文書 カタカナ"
+  },
+  { "language": "ko", "script": "Hangul", "text": "한국어 문서 보기" },
+  {
+    "language": "ar",
+    "script": "Arabic",
+    "direction": "rtl",
+    "text": "العَرَبِيَّة وثيقة"
+  },
+  {
+    "language": "fa",
+    "script": "Arabic",
+    "direction": "rtl",
+    "text": "سند فارسی"
+  },
+  {
+    "language": "ur",
+    "script": "Arabic",
+    "direction": "rtl",
+    "text": "اردو دستاویز"
+  },
+  { "language": "hi", "script": "Devanagari", "text": "हिन्दी दस्तावेज़" },
+  { "language": "bn", "script": "Bengali", "text": "বাংলা নথি" },
+  { "language": "gu", "script": "Gujarati", "text": "ગુજરાતી દસ્તાવેજ" },
+  { "language": "pa", "script": "Gurmukhi", "text": "ਪੰਜਾਬੀ ਦਸਤਾਵੇਜ਼" },
+  { "language": "or", "script": "Odia", "text": "ଓଡ଼ିଆ ଦଲିଲ" },
+  { "language": "ta", "script": "Tamil", "text": "தமிழ் ஆவணம்" },
+  { "language": "te", "script": "Telugu", "text": "తెలుగు పత్రం" },
+  { "language": "kn", "script": "Kannada", "text": "ಕನ್ನಡ ದಾಖಲೆ" },
+  { "language": "ml", "script": "Malayalam", "text": "മലയാളം പ്രമാണം" }
+]

@@ -1,0 +1,20 @@
+[package]
+name = "image-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+image.workspace = true
+tiff.workspace = true
+wasm-bindgen.workspace = true
+
+[dev-dependencies]
+tiff.workspace = true
+
+[lints]
+workspace = true

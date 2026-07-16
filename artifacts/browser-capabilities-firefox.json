@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "project": "firefox",
+  "scenario": "load-navigate-zoom-search-select-destroy",
+  "passed": true,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:151.0) Gecko/20100101 Firefox/151.0",
+  "offscreenCanvas": true,
+  "resizeObserver": true,
+  "createImageBitmap": true,
+  "bitmapRenderer": true,
+  "fullscreen": true,
+  "wasm": true
+}

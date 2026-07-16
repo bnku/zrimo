@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "name": "word6.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/Word6.doc",
+      "license": "Apache-2.0",
+      "sha256": "58ea3347378e85e7c8d19ad64e74ad533b2f51b30f047594b434f380712f8b50"
+    },
+    {
+      "name": "simple.xls",
+      "format": "xls",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/spreadsheet/Simple.xls",
+      "license": "Apache-2.0",
+      "sha256": "2b5ec8298bacffdca61c50f6f7607da0a4e63cf76fa011c62f203e6a66bc072a"
+    },
+    {
+      "name": "basic.ppt",
+      "format": "ppt",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/slideshow/basic_test_ppt_file.ppt",
+      "license": "Apache-2.0",
+      "sha256": "e8fd4c38ad72ce3735acbca0b60dd5870fb60f819c169e3947d166f4f1bcc79d"
+    },
+    {
+      "name": "sample.docx",
+      "format": "docx",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/sample.docx",
+      "license": "Apache-2.0",
+      "sha256": "be4fc1bf778ad8183f714e09b9df40669de34e9ecbc3adecfc8953f00749036f"
+    },
+    {
+      "name": "sample.xlsx",
+      "format": "xlsx",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/spreadsheet/SampleSS.xlsx",
+      "license": "Apache-2.0",
+      "sha256": "44f1b6ef310c370d4902ee3452e6174da25a67bdb09f47850d51b3287cb3db71"
+    },
+    {
+      "name": "sample.pptx",
+      "format": "pptx",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/slideshow/SampleShow.pptx",
+      "license": "Apache-2.0",
+      "sha256": "bfb4b2f07c9233afd2f32aa5781d849d0c7d225bf03721a10becf487b481d828"
+    },
+    {
+      "name": "hello.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/apache/pdfbox",
+      "sourceCommit": "ddef86fcb1a5407035fdd1c8587832c3d1c761b9",
+      "sourcePath": "pdfbox-layout-awt/src/test/resources/pdf/HelloWorld.pdf",
+      "license": "Apache-2.0",
+      "sha256": "7fdc2c96c17d94cd12ee8372d1693c194cfb7f8e9aead0eed761c2e646234624"
+    }
+  ]
+}

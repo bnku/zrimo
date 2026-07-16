@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T16:57:27.858Z",
+  "thresholds": {
+    "targetBrotliBytes": 20971520,
+    "releaseBlockBrotliBytes": 26214400,
+    "optionalFontsExcluded": true
+  },
+  "status": "pass",
+  "totals": {
+    "base": {
+      "raw": 10454456,
+      "gzip": 4507061,
+      "brotli": 3419358
+    },
+    "optionalFonts": {
+      "raw": 10965526,
+      "gzip": 10964077,
+      "brotli": 10960700
+    },
+    "deliveredWithAllFonts": {
+      "raw": 21419982,
+      "gzip": 15471138,
+      "brotli": 14380058
+    }
+  },
+  "assets": [
+    {
+      "name": "code/abort.js",
+      "group": "code",
+      "raw": 511,
+      "gzip": 248,
+      "brotli": 201
+    },
+    {
+      "name": "code/adapters/bitmap.js",
+      "group": "code",
+      "raw": 2327,
+      "gzip": 802,
+      "brotli": 680
+    },
+    {
+      "name": "code/adapters/csv-parser.js",
+      "group": "code",
+      "raw": 3953,
+      "gzip": 1054,
+      "brotli": 937
+    },
+    {
+      "name": "code/adapters/csv.js",
+      "group": "code",
+      "raw": 8596,
+      "gzip": 2436,
+      "brotli": 2147
+    },
+    {
+      "name": "code/adapters/image.js",
+      "group": "code",
+      "raw": 7631,
+      "gzip": 2150,
+      "brotli": 1888
+    },
+    {
+      "name": "code/adapters/office.js",
+      "group": "code",
+      "raw": 19472,
+      "gzip": 4470,
+      "brotli": 3916
+    },
+    {
+      "name": "code/adapters/pdf.js",
+      "group": "code",
+      "raw": 11395,
+      "gzip": 2889,
+      "brotli": 2556
+    },
+    {
+      "name": "code/adapters/svg.js",
+      "group": "code",
+      "raw": 4393,
+      "gzip": 1510,
+      "brotli": 1289
+    },
+    {
+      "name": "code/assets/image/index.js",
+      "group": "code",
+      "raw": 9474,
+      "gzip": 2554,
+      "brotli": 2261
+    },
+    {
+      "name": "code/assets/legacy/index.js",
+      "group": "code",
+      "raw": 9856,
+      "gzip": 2640,
+      "brotli": 2326
+    },
+    {
+      "name": "code/assets/pdf/index.js",
+      "group": "code",
+      "raw": 11297,
+      "gzip": 2858,
+      "brotli": 2534
+    },
+    {
+      "name": "code/client.js",
+      "group": "code",
+      "raw": 3196,
+      "gzip": 934,
+      "brotli": 826
+    },
+    {
+      "name": "code/contracts.js",
+      "group": "code",
+      "raw": 267,
+      "gzip": 129,
+      "brotli": 120
+    },
+    {
+      "name": "code/csv-worker.js",
+      "group": "code",
+      "raw": 642,
+      "gzip": 331,
+      "brotli": 282
+    },
+    {
+      "name": "code/detect.js",
+      "group": "code",
+      "raw": 6556,
+      "gzip": 2029,
+      "brotli": 1797
+    },
+    {
+      "name": "code/errors.js",
+      "group": "code",
+      "raw": 1322,
+      "gzip": 489,
+      "brotli": 419
+    },
+    {
+      "name": "code/font-manifest.js",
+      "group": "code",
+      "raw": 1897,
+      "gzip": 760,
+      "brotli": 655
+    },
+    {
+      "name": "code/fonts.js",
+      "group": "code",
+      "raw": 9665,
+      "gzip": 2654,
+      "brotli": 2341
+    },
+    {
+      "name": "code/format.js",
+      "group": "code",
+      "raw": 94,
+      "gzip": 88,
+      "brotli": 85
+    },
+    {
+      "name": "code/headless.js",
+      "group": "code",
+      "raw": 596,
+      "gzip": 172,
+      "brotli": 134
+    },
+    {
+      "name": "code/i18n.js",
+      "group": "code",
+      "raw": 1704,
+      "gzip": 763,
+      "brotli": 577
+    },
+    {
+      "name": "code/image-worker.js",
+      "group": "code",
+      "raw": 1575,
+      "gzip": 561,
+      "brotli": 480
+    },
+    {
+      "name": "code/index.js",
+      "group": "code",
+      "raw": 1009,
+      "gzip": 286,
+      "brotli": 233
+    },
+    {
+      "name": "code/interaction.js",
+      "group": "code",
+      "raw": 4666,
+      "gzip": 1422,
+      "brotli": 1283
+    },
+    {
+      "name": "code/legacy-converter-worker.js",
+      "group": "code",
+      "raw": 611,
+      "gzip": 321,
+      "brotli": 269
+    },
+    {
+      "name": "code/limits.js",
+      "group": "code",
+      "raw": 6716,
+      "gzip": 1824,
+      "brotli": 1604
+    },
+    {
+      "name": "code/pdf-worker.js",
+      "group": "code",
+      "raw": 1756,
+      "gzip": 531,
+      "brotli": 458
+    },
+    {
+      "name": "code/registry.js",
+      "group": "code",
+      "raw": 1286,
+      "gzip": 471,
+      "brotli": 398
+    },
+    {
+      "name": "code/render-scheduler.js",
+      "group": "code",
+      "raw": 1896,
+      "gzip": 634,
+      "brotli": 542
+    },
+    {
+      "name": "code/source.js",
+      "group": "code",
+      "raw": 4160,
+      "gzip": 1323,
+      "brotli": 1147
+    },
+    {
+      "name": "code/styles.css",
+      "group": "code",
+      "raw": 4329,
+      "gzip": 1130,
+      "brotli": 930
+    },
+    {
+      "name": "code/ui-styles.js",
+      "group": "code",
+      "raw": 4359,
+      "gzip": 1148,
+      "brotli": 955
+    },
+    {
+      "name": "code/ui.js",
+      "group": "code",
+      "raw": 17586,
+      "gzip": 3681,
+      "brotli": 3191
+    },
+    {
+      "name": "code/viewer.js",
+      "group": "code",
+      "raw": 32666,
+      "gzip": 6474,
+      "brotli": 5734
+    },
+    {
+      "name": "code/viewport.js",
+      "group": "code",
+      "raw": 21358,
+      "gzip": 4679,
+      "brotli": 4056
+    },
+    {
+      "name": "code/worker-adapter.js",
+      "group": "code",
+      "raw": 3277,
+      "gzip": 919,
+      "brotli": 798
+    },
+    {
+      "name": "code/worker-client.js",
+      "group": "code",
+      "raw": 4215,
+      "gzip": 1108,
+      "brotli": 955
+    },
+    {
+      "name": "code/worker-endpoint.js",
+      "group": "code",
+      "raw": 1809,
+      "gzip": 612,
+      "brotli": 498
+    },
+    {
+      "name": "code/worker-protocol.js",
+      "group": "code",
+      "raw": 440,
+      "gzip": 223,
+      "brotli": 173
+    },
+    {
+      "name": "code/worker.js",
+      "group": "code",
+      "raw": 149,
+      "gzip": 87,
+      "brotli": 65
+    },
+    {
+      "name": "code/workers/csv-worker.js",
+      "group": "code",
+      "raw": 4378,
+      "gzip": 1394,
+      "brotli": 1243
+    },
+    {
+      "name": "code/workers/image-worker.js",
+      "group": "code",
+      "raw": 1575,
+      "gzip": 561,
+      "brotli": 480
+    },
+    {
+      "name": "code/workers/legacy-converter-worker.js",
+      "group": "code",
+      "raw": 611,
+      "gzip": 321,
+      "brotli": 269
+    },
+    {
+      "name": "code/workers/pdf-worker.js",
+      "group": "code",
+      "raw": 1756,
+      "gzip": 531,
+      "brotli": 458
+    },
+    {
+      "name": "wasm/ooxml-docx",
+      "group": "wasm",
+      "raw": 892883,
+      "gzip": 392757,
+      "brotli": 297932
+    },
+    {
+      "name": "wasm/ooxml-xlsx",
+      "group": "wasm",
+      "raw": 815854,
+      "gzip": 363092,
+      "brotli": 277267
+    },
+    {
+      "name": "wasm/ooxml-pptx",
+      "group": "wasm",
+      "raw": 860696,
+      "gzip": 370457,
+      "brotli": 280913
+    },
+    {
+      "name": "wasm/legacy-office",
+      "group": "wasm",
+      "raw": 1131348,
+      "gzip": 545690,
+      "brotli": 428904
+    },
+    {
+      "name": "wasm/pdf",
+      "group": "wasm",
+      "raw": 5970604,
+      "gzip": 2562377,
+      "brotli": 1908091
+    },
+    {
+      "name": "wasm/tiff-image",
+      "group": "wasm",
+      "raw": 546044,
+      "gzip": 210487,
+      "brotli": 172061
+    },
+    {
+      "name": "font/OFL-1.1.txt",
+      "group": "font",
+      "raw": 4283,
+      "gzip": 1917,
+      "brotli": 1366
+    },
+    {
+      "name": "font/THIRD_PARTY_NOTICES.md",
+      "group": "font",
+      "raw": 567,
+      "gzip": 381,
+      "brotli": 304
+    },
+    {
+      "name": "font/manifest.json",
+      "group": "font",
+      "raw": 2672,
+      "gzip": 1061,
+      "brotli": 943
+    },
+    {
+      "name": "font/noto-sans-arabic.woff2",
+      "group": "font",
+      "raw": 66380,
+      "gzip": 66423,
+      "brotli": 66385
+    },
+    {
+      "name": "font/noto-sans-bengali.woff2",
+      "group": "font",
+      "raw": 60344,
+      "gzip": 60382,
+      "brotli": 60348
+    },
+    {
+      "name": "font/noto-sans-cjk.woff2",
+      "group": "font",
+      "raw": 9254856,
+      "gzip": 9257568,
+      "brotli": 9254888
+    },
+    {
+      "name": "font/noto-sans-devanagari.woff2",
+      "group": "font",
+      "raw": 57128,
+      "gzip": 57166,
+      "brotli": 57132
+    },
+    {
+      "name": "font/noto-sans-gujarati.woff2",
+      "group": "font",
+      "raw": 50560,
+      "gzip": 50595,
+      "brotli": 50564
+    },
+    {
+      "name": "font/noto-sans-gurmukhi.woff2",
+      "group": "font",
+      "raw": 15612,
+      "gzip": 15635,
+      "brotli": 15616
+    },
+    {
+      "name": "font/noto-sans-japanese.woff2",
+      "group": "font",
+      "raw": 89640,
+      "gzip": 89688,
+      "brotli": 89645
+    },
+    {
+      "name": "font/noto-sans-kannada.woff2",
+      "group": "font",
+      "raw": 37304,
+      "gzip": 37337,
+      "brotli": 37308
+    },
+    {
+      "name": "font/noto-sans-korean.woff2",
+      "group": "font",
+      "raw": 1110144,
+      "gzip": 1109718,
+      "brotli": 1110149
+    },
+    {
+      "name": "font/noto-sans-latin-cyrillic.woff2",
+      "group": "font",
+      "raw": 79056,
+      "gzip": 79099,
+      "brotli": 79061
+    },
+    {
+      "name": "font/noto-sans-malayalam.woff2",
+      "group": "font",
+      "raw": 34400,
+      "gzip": 34433,
+      "brotli": 34404
+    },
+    {
+      "name": "font/noto-sans-odia.woff2",
+      "group": "font",
+      "raw": 28572,
+      "gzip": 28600,
+      "brotli": 28576
+    },
+    {
+      "name": "font/noto-sans-tamil.woff2",
+      "group": "font",
+      "raw": 23100,
+      "gzip": 23128,
+      "brotli": 23099
+    },
+    {
+      "name": "font/noto-sans-telugu.woff2",
+      "group": "font",
+      "raw": 50908,
+      "gzip": 50946,
+      "brotli": 50912
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@docs-viewer-wasm/example-vanilla",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ../../scripts/example.mjs build",
+    "dev": "node ../../scripts/example.mjs serve",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@docs-viewer-wasm/viewer": "*"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1",
+    "typescript": "7.0.2"
+  }
+}

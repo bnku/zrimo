@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "budgetSecondsPerTarget": 10,
+  "crashes": 0,
+  "results": [
+    {
+      "target": "format_detection",
+      "elapsedMs": 11580.937968999999,
+      "status": 0
+    },
+    {
+      "target": "legacy_office",
+      "elapsedMs": 11577.471649,
+      "status": 0
+    },
+    {
+      "target": "pdf_parser",
+      "elapsedMs": 11397.835951000001,
+      "status": 0
+    },
+    {
+      "target": "tiff_parser",
+      "elapsedMs": 11729.482630000006,
+      "status": 0
+    }
+  ]
+}

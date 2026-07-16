@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "host": "local Playwright Chromium; see docs/performance.md",
+  "fixtureBytes": 10485760,
+  "thresholds": {
+    "firstVisibleMs": 2500,
+    "maxLongTaskMs": 50
+  },
+  "firstVisibleMs": 5.5999999940395355,
+  "maxLongTaskMs": 0,
+  "longTaskApi": true,
+  "domUnits": 2
+}

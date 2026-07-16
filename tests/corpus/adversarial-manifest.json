@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "generatedCases": [
+    {
+      "id": "ooxml-zip-entry-overflow",
+      "family": "office",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/detect-limits.test.ts"
+    },
+    {
+      "id": "ooxml-expanded-size-overflow",
+      "family": "office",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/detect-limits.test.ts"
+    },
+    {
+      "id": "encrypted-office-ole",
+      "family": "office",
+      "expected": "encrypted-document",
+      "test": "packages/viewer/test/detect-limits.test.ts"
+    },
+    {
+      "id": "encrypted-pdf",
+      "family": "pdf",
+      "expected": "encrypted-document",
+      "test": "packages/viewer/test/formats.test.ts"
+    },
+    {
+      "id": "oversized-raster-header",
+      "family": "image",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/detect-limits.test.ts"
+    },
+    {
+      "id": "oversized-svg",
+      "family": "svg",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/detect-limits.test.ts"
+    },
+    {
+      "id": "active-svg-content",
+      "family": "svg",
+      "expected": "sanitized-warning",
+      "test": "packages/viewer/test/formats.test.ts"
+    },
+    {
+      "id": "csv-cell-exhaustion",
+      "family": "delimited-data",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/formats.test.ts"
+    },
+    {
+      "id": "text-map-exhaustion",
+      "family": "runtime",
+      "expected": "resource-limit",
+      "test": "packages/viewer/test/render-hardening.test.ts"
+    },
+    {
+      "id": "worker-operation-timeout",
+      "family": "runtime",
+      "expected": "resource-limit-and-termination",
+      "test": "packages/viewer/test/worker.test.ts"
+    }
+  ],
+  "mutationTargets": {
+    "javascript": ["format-detection", "zip-cfb", "svg", "csv"],
+    "rust": ["format_detection", "legacy_office", "pdf_parser", "tiff_parser"]
+  }
+}

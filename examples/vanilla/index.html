@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docs Viewer WASM</title>
+    <link rel="stylesheet" href="/viewer.css" />
+    <style>
+      html,
+      body,
+      main {
+        height: 100%;
+        margin: 0;
+      }
+      main {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        font:
+          14px system-ui,
+          sans-serif;
+      }
+      #viewer {
+        min-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Docs Viewer WASM</h1>
+      <p id="status">Initializing…</p>
+      <label>Open a document <input id="file" type="file" /></label>
+      <div id="viewer"></div>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

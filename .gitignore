@@ -1,0 +1,11 @@
+node_modules/
+dist/
+target/
+coverage/
+playwright-report/
+test-results/
+.test-dist/
+.cache/
+.tools/
+*.log
+.DS_Store

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "project": "chromium",
+  "scenario": "load-navigate-zoom-search-select-destroy",
+  "passed": true,
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Safari/537.36",
+  "offscreenCanvas": true,
+  "resizeObserver": true,
+  "createImageBitmap": true,
+  "bitmapRenderer": true,
+  "fullscreen": true,
+  "wasm": true
+}

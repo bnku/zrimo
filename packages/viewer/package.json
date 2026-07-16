@@ -1,0 +1,47 @@
+{
+  "name": "@docs-viewer-wasm/viewer",
+  "version": "0.1.0-alpha.0",
+  "description": "Embeddable browser-only document viewer with Rust/WASM adapters",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./fonts/*": "./dist/fonts/*",
+    "./workers/*": "./dist/workers/*",
+    "./assets/*": "./dist/assets/*"
+  },
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "browser": "./dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-viewer.mjs",
+    "test": "node ../../scripts/test-viewer.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@silurus/ooxml": "0.72.2"
+  }
+}

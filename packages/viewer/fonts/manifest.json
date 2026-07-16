@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "family": "Docs Viewer Noto",
+  "generated": "2026-07-16",
+  "tooling": "fonttools pyftsubset with all layout features, then woff2_compress",
+  "license": "OFL-1.1",
+  "sources": {
+    "noto-fonts": "https://github.com/notofonts/noto-fonts/tree/ffebf8c1ee449e544955a7e813c54f9b73848eac",
+    "noto-cjk": "https://github.com/notofonts/noto-cjk/tree/f8d157532fbfaeda587e826d4cd5b21a49186f7c"
+  },
+  "files": [
+    {
+      "file": "noto-sans-latin-cyrillic.woff2",
+      "bytes": 79056,
+      "sha256": "505a16667b5224cb4e16d7d04e44bb55b5778d0b5a30039e780586a224cbea82"
+    },
+    {
+      "file": "noto-sans-arabic.woff2",
+      "bytes": 66380,
+      "sha256": "e7057aed431b120b3de7e1ebe2b8ed2131364a6e35756b5fee9a623923be1c08"
+    },
+    {
+      "file": "noto-sans-devanagari.woff2",
+      "bytes": 57128,
+      "sha256": "2fc2bc07b76e91770064afabe03b05247c6d69d392e9785417b0f94190f76975"
+    },
+    {
+      "file": "noto-sans-bengali.woff2",
+      "bytes": 60344,
+      "sha256": "d6b868dbeb063970ec0ffbb6d0158e92bdd1c9635c772d80c4bb0ab90ee9838b"
+    },
+    {
+      "file": "noto-sans-gurmukhi.woff2",
+      "bytes": 15612,
+      "sha256": "9fed08d6a9d79a1fdc78d52be6049ba8a0088275fc167d40fc9953b7d295b97a"
+    },
+    {
+      "file": "noto-sans-gujarati.woff2",
+      "bytes": 50560,
+      "sha256": "89a072974c4f04086385722eda3a29080bea10d5b5babd16c66ca36e51fa026c"
+    },
+    {
+      "file": "noto-sans-odia.woff2",
+      "bytes": 28572,
+      "sha256": "111f9eb26ac20096d2d733fdabe71eb7eadafe66315affec96e023211ab1c7d9"
+    },
+    {
+      "file": "noto-sans-tamil.woff2",
+      "bytes": 23100,
+      "sha256": "9b008f6fadf2279887f1721f03d98f9dfd0dfb4f235e1c7a815e05658384fffe"
+    },
+    {
+      "file": "noto-sans-telugu.woff2",
+      "bytes": 50908,
+      "sha256": "a55ff1e8040b4316d6d465abd0a0e56791ed2453adebec1db2b1d9e99f77b6c0"
+    },
+    {
+      "file": "noto-sans-kannada.woff2",
+      "bytes": 37304,
+      "sha256": "c0a028f65c258afcbd5d009741cb198860f0f0fbe7683f4d89f834cca565db3c"
+    },
+    {
+      "file": "noto-sans-malayalam.woff2",
+      "bytes": 34400,
+      "sha256": "565381e589a72ec76453edddc1f55458cfb93f7e6653f94b3651f3e2f2b5f9cc"
+    },
+    {
+      "file": "noto-sans-cjk.woff2",
+      "bytes": 9254856,
+      "sha256": "55cccb6ba3f0a2c06550b962edf45505dc818a09fe91af8267532bc1e9fb7097"
+    },
+    {
+      "file": "noto-sans-japanese.woff2",
+      "bytes": 89640,
+      "sha256": "96ff063a309fe8b598aee516ac304a1ae6cf4f4e40315b489c6a193b4fbbaed8"
+    },
+    {
+      "file": "noto-sans-korean.woff2",
+      "bytes": 1110144,
+      "sha256": "077e4178230f7cc0e7bd9a5ccdb5ad24f89692bb64f5d421b2095a69b4b9243a"
+    }
+  ]
+}
