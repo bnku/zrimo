@@ -75,6 +75,8 @@ await viewer.renderSheetViewport(
     // Unscaled pixels clipped inside row 100 / column 20:
     scrollOffsetX: 18,
     scrollOffsetY: 6,
+    // Optional view-only widths in unscaled CSS pixels, keyed from 1:
+    columnWidths: { 20: 180, 21: 240 },
   },
 );
 ```
@@ -82,7 +84,8 @@ await viewer.renderSheetViewport(
 Rows and columns in both `SpreadsheetViewportRange` and `CellRange` are one-based spreadsheet coordinates; `sheetIndex` remains zero-based.
 The attached `SpreadsheetViewport` calculates this range and the partial-cell
 offsets from sparse row/column geometry. A custom headless scroller should use
-the same convention; offsets do not include frozen panes or headers.
+the same convention; offsets do not include frozen panes or headers. Width
+overrides affect only rendering and never modify the source workbook.
 
 ## Search without UI
 
@@ -115,6 +118,11 @@ viewer.selectCells({
   endRow: 8,
   endColumn: 4,
 });
+
+viewer.selectCellRanges([
+  { sheetIndex: 0, startRow: 2, startColumn: 1, endRow: 2, endColumn: 1 },
+  { sheetIndex: 0, startRow: 2, startColumn: 3, endRow: 2, endColumn: 3 },
+]);
 const tsv = await viewer.copySelection();
 ```
 
@@ -123,7 +131,7 @@ The returned string does not depend on Clipboard permission. Text follows backen
 ## Cleanup
 
 ```ts
-await viewer.close();   // reusable viewer, status becomes idle
+await viewer.close(); // reusable viewer, status becomes idle
 await viewer.destroy(); // terminal and idempotent
 await client.destroy(); // destroys any viewers still owned by the client
 ```

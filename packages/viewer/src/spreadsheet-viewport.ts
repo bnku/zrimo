@@ -1,8 +1,11 @@
 import type {
+  CellRange,
+  CellSelection,
   DocumentInfo,
   SpreadsheetSheetInfo,
   SpreadsheetViewportRange,
 } from "./contracts.js";
+import { normalizeCellRange } from "./interaction.js";
 import type { ViewportHost } from "./viewport.js";
 
 const DEFAULT_COLUMN_WIDTH = 64;
@@ -12,6 +15,9 @@ const DEFAULT_COLUMN_HEADER_HEIGHT = 22;
 const OVERSCAN = 2;
 const TRAILING_COLUMNS = 2;
 const TRAILING_ROWS = 2;
+const COLUMN_RESIZE_GRAB_PX = 5;
+const MIN_COLUMN_WIDTH = 24;
+const MAX_COLUMN_WIDTH = 2_000;
 
 interface PointerPosition {
   readonly x: number;
@@ -21,6 +27,16 @@ interface PointerPosition {
 interface CellAddress {
   readonly row: number;
   readonly column: number;
+}
+
+interface ColumnResizeTarget {
+  readonly column: number;
+  readonly width: number;
+}
+
+interface ColumnResizeDrag extends ColumnResizeTarget {
+  readonly pointerId: number;
+  readonly startClientX: number;
 }
 
 export class AxisGeometry {
@@ -110,7 +126,7 @@ export class SpreadsheetViewport {
   readonly #spacer: HTMLDivElement;
   readonly #canvas: HTMLCanvasElement;
   readonly #selectionLayer: HTMLDivElement;
-  readonly #selectionBox: HTMLDivElement;
+  readonly #selectionBoxes: HTMLDivElement[] = [];
   readonly #onScroll = (): void => this.#handleScroll();
   readonly #onWheel = (event: WheelEvent): void => this.#handleWheel(event);
   readonly #onPointerDown = (event: PointerEvent): void =>
@@ -121,7 +137,9 @@ export class SpreadsheetViewport {
     this.#handlePointerUp(event);
   readonly #onKeyDown = (event: KeyboardEvent): void =>
     this.#handleKeyDown(event);
+  readonly #onCopy = (event: ClipboardEvent): void => this.#handleCopy(event);
   readonly #sheetScroll = new Map<number, { left: number; top: number }>();
+  readonly #columnWidthOverrides = new Map<number, Record<number, number>>();
   #info: DocumentInfo | undefined;
   #columns = new AxisGeometry(0, DEFAULT_COLUMN_WIDTH);
   #rows = new AxisGeometry(0, DEFAULT_ROW_HEIGHT);
@@ -139,6 +157,8 @@ export class SpreadsheetViewport {
   #cellPointerId: number | undefined;
   #cellAnchor: { readonly row: number; readonly column: number } | undefined;
   #cellFocus: { readonly row: number; readonly column: number } | undefined;
+  #cellBaseRanges: CellRange[] = [];
+  #columnResizeDrag: ColumnResizeDrag | undefined;
 
   constructor(container: HTMLElement, host: ViewportHost) {
     this.#container = container;
@@ -187,16 +207,8 @@ export class SpreadsheetViewport {
       userSelect: "none",
       overflow: "hidden",
     });
-    this.#selectionBox = document.createElement("div");
-    Object.assign(this.#selectionBox.style, {
-      position: "absolute",
-      display: "none",
-      boxSizing: "border-box",
-      border: "2px solid var(--zrimo-selection, #2563eb)",
-      background: "rgb(37 99 235 / 10%)",
-      pointerEvents: "none",
-    });
-    this.#selectionLayer.append(this.#canvas, this.#selectionBox);
+    this.#selectionLayer.append(this.#canvas);
+    this.#selectionBoxes.push(this.#createSelectionBox());
     this.#spacer.append(this.#selectionLayer);
     this.#root.append(this.#spacer);
     this.#container.append(this.#root);
@@ -207,6 +219,7 @@ export class SpreadsheetViewport {
     this.#selectionLayer.addEventListener("pointerup", this.#onPointerUp);
     this.#selectionLayer.addEventListener("pointercancel", this.#onPointerUp);
     this.#root.addEventListener("keydown", this.#onKeyDown);
+    document.addEventListener("copy", this.#onCopy);
     if (typeof ResizeObserver !== "undefined") {
       this.#resizeObserver = new ResizeObserver(() => this.schedule());
       this.#resizeObserver.observe(this.#root);
@@ -218,6 +231,9 @@ export class SpreadsheetViewport {
     this.#generation += 1;
     this.#info = info?.unit === "sheet" ? info : undefined;
     this.#sheetScroll.clear();
+    this.#columnWidthOverrides.clear();
+    this.#columnResizeDrag = undefined;
+    this.#resetCellSelection();
     this.#sheetIndex = this.#host.state.pageIndex;
     this.#appliedZoom = this.#host.state.zoom;
     this.#renderKey = undefined;
@@ -236,6 +252,8 @@ export class SpreadsheetViewport {
       });
       this.#sheetIndex = nextSheet;
       this.#renderKey = undefined;
+      this.#resetCellSelection();
+      this.#host.onCellSelection(null);
       this.#setSheetGeometry();
       const saved = this.#sheetScroll.get(nextSheet);
       this.#root.scrollTo({ left: saved?.left ?? 0, top: saved?.top ?? 0 });
@@ -323,6 +341,7 @@ export class SpreadsheetViewport {
       this.#onPointerUp,
     );
     this.#root.removeEventListener("keydown", this.#onKeyDown);
+    document.removeEventListener("copy", this.#onCopy);
     this.#root.remove();
   }
 
@@ -378,6 +397,7 @@ export class SpreadsheetViewport {
           devicePixelRatio: dpr,
           scrollOffsetX: render.offsetX,
           scrollOffsetY: render.offsetY,
+          columnWidths: this.#currentColumnWidthOverrides(),
           priority: "visible",
           signal: controller.signal,
         },
@@ -473,6 +493,8 @@ export class SpreadsheetViewport {
 
   #setSheetGeometry(): void {
     this.#sheet = this.#info?.sheets?.[this.#sheetIndex];
+    this.#columns = new AxisGeometry(0, DEFAULT_COLUMN_WIDTH);
+    this.#rows = new AxisGeometry(0, DEFAULT_ROW_HEIGHT);
     this.#ensureViewportGeometry();
     this.#updateExtent();
   }
@@ -505,7 +527,7 @@ export class SpreadsheetViewport {
       this.#columns = new AxisGeometry(
         columnCount,
         defaultColumnWidth,
-        sheet?.columnWidths,
+        this.#effectiveColumnWidths(),
       );
     if (this.#rows.count !== rowCount)
       this.#rows = new AxisGeometry(
@@ -519,7 +541,7 @@ export class SpreadsheetViewport {
     return new AxisGeometry(
       Math.max(1, this.#sheet?.maxColumn ?? 1),
       this.#sheet?.defaultColumnWidth ?? DEFAULT_COLUMN_WIDTH,
-      this.#sheet?.columnWidths,
+      this.#effectiveColumnWidths(),
     );
   }
 
@@ -570,12 +592,49 @@ export class SpreadsheetViewport {
   #handlePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     this.#root.focus({ preventScroll: true });
+    const resizeTarget = this.#columnResizeTargetAt(
+      event.clientX,
+      event.clientY,
+    );
+    if (resizeTarget) {
+      event.preventDefault();
+      this.#columnResizeDrag = {
+        ...resizeTarget,
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+      };
+      this.#selectionLayer.style.cursor = "col-resize";
+      this.#capturePointer(event.pointerId);
+      return;
+    }
     const cell = this.#cellAt(event.clientX, event.clientY);
     if (cell) {
       event.preventDefault();
-      this.#cellAnchor = cell;
-      this.#cellFocus = cell;
-      this.#cellPointerId = event.pointerId;
+      const additive = event.ctrlKey || event.metaKey;
+      if (event.shiftKey && this.#cellAnchor) {
+        this.#cellFocus = cell;
+        this.#cellPointerId = event.pointerId;
+      } else if (additive) {
+        const current = this.#selectionRanges();
+        if (current.some((range) => cellInRange(cell, range))) {
+          this.#cellBaseRanges = current.flatMap((range) =>
+            subtractCell(range, cell),
+          );
+          this.#cellAnchor = undefined;
+          this.#cellFocus = undefined;
+          this.#cellPointerId = undefined;
+        } else {
+          this.#cellBaseRanges = current;
+          this.#cellAnchor = cell;
+          this.#cellFocus = cell;
+          this.#cellPointerId = event.pointerId;
+        }
+      } else {
+        this.#cellBaseRanges = [];
+        this.#cellAnchor = cell;
+        this.#cellFocus = cell;
+        this.#cellPointerId = event.pointerId;
+      }
       this.#emitSelection();
     } else {
       this.#panPointer = {
@@ -584,14 +643,24 @@ export class SpreadsheetViewport {
         y: event.clientY,
       };
     }
-    try {
-      this.#selectionLayer.setPointerCapture(event.pointerId);
-    } catch {
-      // Synthetic events may not expose an active pointer.
-    }
+    this.#capturePointer(event.pointerId);
   }
 
   #handlePointerMove(event: PointerEvent): void {
+    const resize = this.#columnResizeDrag;
+    if (resize?.pointerId === event.pointerId) {
+      event.preventDefault();
+      const width = Math.max(
+        MIN_COLUMN_WIDTH,
+        Math.min(
+          MAX_COLUMN_WIDTH,
+          resize.width +
+            (event.clientX - resize.startClientX) / this.#host.state.zoom,
+        ),
+      );
+      this.#resizeColumn(resize.column, width);
+      return;
+    }
     if (this.#cellPointerId === event.pointerId && this.#cellAnchor) {
       const cell = this.#cellAt(event.clientX, event.clientY);
       if (cell) {
@@ -600,6 +669,14 @@ export class SpreadsheetViewport {
       }
       return;
     }
+    if (!this.#panPointer) {
+      this.#selectionLayer.style.cursor = this.#columnResizeTargetAt(
+        event.clientX,
+        event.clientY,
+      )
+        ? "col-resize"
+        : "cell";
+    }
     const pointer = this.#panPointer;
     if (!pointer || pointer.id !== event.pointerId) return;
     this.panBy(pointer.x - event.clientX, pointer.y - event.clientY);
@@ -607,23 +684,17 @@ export class SpreadsheetViewport {
   }
 
   #handlePointerUp(event: PointerEvent): void {
+    if (this.#columnResizeDrag?.pointerId === event.pointerId) {
+      this.#columnResizeDrag = undefined;
+      this.#selectionLayer.style.cursor = "cell";
+    }
     if (this.#cellPointerId === event.pointerId)
       this.#cellPointerId = undefined;
     if (this.#panPointer?.id === event.pointerId) this.#panPointer = undefined;
-    try {
-      if (this.#selectionLayer.hasPointerCapture(event.pointerId))
-        this.#selectionLayer.releasePointerCapture(event.pointerId);
-    } catch {
-      // Pointer may already have been released.
-    }
+    this.#releasePointer(event.pointerId);
   }
 
   #handleKeyDown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
-      event.preventDefault();
-      this.#host.onCopySelection();
-      return;
-    }
     const delta = cellKeyDelta(event.key);
     if (delta && this.#cellFocus) {
       event.preventDefault();
@@ -637,7 +708,10 @@ export class SpreadsheetViewport {
           Math.min(this.#columns.count, this.#cellFocus.column + delta.column),
         ),
       };
-      if (!event.shiftKey) this.#cellAnchor = focus;
+      if (!event.shiftKey) {
+        this.#cellBaseRanges = [];
+        this.#cellAnchor = focus;
+      }
       this.#cellFocus = focus;
       this.#scrollCellIntoView(focus);
       this.#emitSelection();
@@ -672,6 +746,22 @@ export class SpreadsheetViewport {
     }
   }
 
+  #handleCopy(event: ClipboardEvent): void {
+    if (
+      document.activeElement !== this.#root &&
+      !this.#root.contains(document.activeElement)
+    )
+      return;
+    const text = this.#host.getSelectionText();
+    if (text === undefined) return;
+    if (event.clipboardData) {
+      event.preventDefault();
+      event.clipboardData.setData("text/plain", text);
+      return;
+    }
+    void globalThis.navigator?.clipboard?.writeText(text).catch(() => {});
+  }
+
   #cellAt(clientX: number, clientY: number): CellAddress | undefined {
     const bounds = this.#root.getBoundingClientRect();
     const zoom = this.#host.state.zoom;
@@ -696,40 +786,159 @@ export class SpreadsheetViewport {
     };
   }
 
+  #columnResizeTargetAt(
+    clientX: number,
+    clientY: number,
+  ): ColumnResizeTarget | undefined {
+    if (!this.#sheet || this.#columns.count === 0) return undefined;
+    const bounds = this.#root.getBoundingClientRect();
+    const zoom = this.#host.state.zoom;
+    const localY = clientY - bounds.top;
+    if (localY < 0 || localY > this.#columnHeaderHeight() * zoom)
+      return undefined;
+    const gridX = clientX - bounds.left - this.#rowHeaderWidth() * zoom;
+    if (gridX <= 0) return undefined;
+    const freezeColumns = Math.max(0, this.#sheet.frozenColumns);
+    const frozenWidth = this.#columns.offsetOf(freezeColumns + 1);
+    const logicalX =
+      gridX / zoom < frozenWidth
+        ? gridX / zoom
+        : this.#root.scrollLeft / zoom + gridX / zoom;
+    const hitColumn = this.#columns.indexAt(logicalX);
+    for (const column of [hitColumn - 1, hitColumn]) {
+      if (column < 1 || column > this.#columns.count) continue;
+      const naturalEdge = this.#columns.offsetOf(column + 1);
+      const scrollOffset =
+        column <= freezeColumns ? 0 : this.#root.scrollLeft / zoom;
+      const edge =
+        this.#rowHeaderWidth() * zoom + (naturalEdge - scrollOffset) * zoom;
+      if (Math.abs(clientX - bounds.left - edge) <= COLUMN_RESIZE_GRAB_PX)
+        return { column, width: this.#columns.sizeOf(column) };
+    }
+    return undefined;
+  }
+
+  #resizeColumn(column: number, width: number): void {
+    const overrides = this.#currentColumnWidthOverrides(true);
+    overrides[column] = Math.round(width * 10) / 10;
+    this.#columns = new AxisGeometry(
+      this.#columns.count,
+      this.#sheet?.defaultColumnWidth ?? DEFAULT_COLUMN_WIDTH,
+      this.#effectiveColumnWidths(),
+    );
+    this.#controller?.abort();
+    this.#renderKey = undefined;
+    this.#updateExtent();
+    this.#paintSelection();
+    this.schedule();
+  }
+
+  #effectiveColumnWidths(): Readonly<Record<number, number>> {
+    return {
+      ...(this.#sheet?.columnWidths ?? {}),
+      ...this.#currentColumnWidthOverrides(),
+    };
+  }
+
+  #currentColumnWidthOverrides(create = false): Record<number, number> {
+    const current = this.#columnWidthOverrides.get(this.#sheetIndex);
+    if (current || !create) return current ?? {};
+    const overrides: Record<number, number> = {};
+    this.#columnWidthOverrides.set(this.#sheetIndex, overrides);
+    return overrides;
+  }
+
+  #capturePointer(pointerId: number): void {
+    try {
+      this.#selectionLayer.setPointerCapture(pointerId);
+    } catch {
+      // Synthetic events may not expose an active pointer.
+    }
+  }
+
+  #releasePointer(pointerId: number): void {
+    try {
+      if (this.#selectionLayer.hasPointerCapture(pointerId))
+        this.#selectionLayer.releasePointerCapture(pointerId);
+    } catch {
+      // Pointer may already have been released.
+    }
+  }
+
   #emitSelection(): void {
+    const ranges = this.#selectionRanges();
+    const selection: CellRange | CellSelection | null =
+      ranges.length === 0
+        ? null
+        : ranges.length === 1
+          ? ranges[0]!
+          : { sheetIndex: this.#sheetIndex, ranges };
+    this.#host.onCellSelection(selection);
+    this.#paintSelection();
+  }
+
+  #paintSelection(): void {
+    const ranges = this.#selectionRanges();
+    while (this.#selectionBoxes.length < ranges.length)
+      this.#selectionBoxes.push(this.#createSelectionBox());
+    this.#selectionBoxes.forEach((box, index) => {
+      const range = ranges[index];
+      if (!range) {
+        box.style.display = "none";
+        return;
+      }
+      const topLeft = this.#cellPosition(range.startRow, range.startColumn);
+      const bottomRight = this.#cellPosition(
+        range.endRow + 1,
+        range.endColumn + 1,
+      );
+      Object.assign(box.style, {
+        display: "block",
+        left: `${topLeft.x}px`,
+        top: `${topLeft.y}px`,
+        width: `${Math.max(1, bottomRight.x - topLeft.x)}px`,
+        height: `${Math.max(1, bottomRight.y - topLeft.y)}px`,
+      });
+    });
+  }
+
+  #selectionRanges(): CellRange[] {
     const anchor = this.#cellAnchor;
     const focus = this.#cellFocus;
-    if (!anchor || !focus) return;
-    this.#host.onCellSelection({
+    if (!anchor || !focus) return [...this.#cellBaseRanges];
+    const active = normalizeCellRange({
       sheetIndex: this.#sheetIndex,
       startRow: anchor.row,
       startColumn: anchor.column,
       endRow: focus.row,
       endColumn: focus.column,
     });
-    this.#paintSelection();
+    return [
+      ...this.#cellBaseRanges.flatMap((range) => subtractRange(range, active)),
+      active,
+    ];
   }
 
-  #paintSelection(): void {
-    const anchor = this.#cellAnchor;
-    const focus = this.#cellFocus;
-    if (!anchor || !focus) {
-      this.#selectionBox.style.display = "none";
-      return;
-    }
-    const startRow = Math.min(anchor.row, focus.row);
-    const endRow = Math.max(anchor.row, focus.row);
-    const startColumn = Math.min(anchor.column, focus.column);
-    const endColumn = Math.max(anchor.column, focus.column);
-    const topLeft = this.#cellPosition(startRow, startColumn);
-    const bottomRight = this.#cellPosition(endRow + 1, endColumn + 1);
-    Object.assign(this.#selectionBox.style, {
-      display: "block",
-      left: `${topLeft.x}px`,
-      top: `${topLeft.y}px`,
-      width: `${Math.max(1, bottomRight.x - topLeft.x)}px`,
-      height: `${Math.max(1, bottomRight.y - topLeft.y)}px`,
+  #createSelectionBox(): HTMLDivElement {
+    const box = document.createElement("div");
+    Object.assign(box.style, {
+      position: "absolute",
+      display: "none",
+      boxSizing: "border-box",
+      border: "2px solid var(--zrimo-selection, #2563eb)",
+      background: "rgb(37 99 235 / 10%)",
+      pointerEvents: "none",
     });
+    this.#selectionLayer.append(box);
+    return box;
+  }
+
+  #resetCellSelection(): void {
+    this.#cellPointerId = undefined;
+    this.#cellAnchor = undefined;
+    this.#cellFocus = undefined;
+    this.#cellBaseRanges = [];
+    for (const box of this.#selectionBoxes) box.style.display = "none";
   }
 
   #cellPosition(row: number, column: number): PointerPosition {
@@ -802,6 +1011,60 @@ function nonNegative(value: number, fallback: number): number {
 
 function clampZoom(value: number): number {
   return Math.max(0.1, Math.min(8, Number.isFinite(value) ? value : 1));
+}
+
+function cellInRange(cell: CellAddress, rawRange: CellRange): boolean {
+  const range = normalizeCellRange(rawRange);
+  return (
+    cell.row >= range.startRow &&
+    cell.row <= range.endRow &&
+    cell.column >= range.startColumn &&
+    cell.column <= range.endColumn
+  );
+}
+
+function subtractCell(range: CellRange, cell: CellAddress): CellRange[] {
+  return subtractRange(range, {
+    sheetIndex: range.sheetIndex,
+    startRow: cell.row,
+    startColumn: cell.column,
+    endRow: cell.row,
+    endColumn: cell.column,
+  });
+}
+
+function subtractRange(
+  rawSource: CellRange,
+  rawRemoved: CellRange,
+): CellRange[] {
+  const source = normalizeCellRange(rawSource);
+  const removed = normalizeCellRange(rawRemoved);
+  const top = Math.max(source.startRow, removed.startRow);
+  const bottom = Math.min(source.endRow, removed.endRow);
+  const left = Math.max(source.startColumn, removed.startColumn);
+  const right = Math.min(source.endColumn, removed.endColumn);
+  if (top > bottom || left > right) return [source];
+  const result: CellRange[] = [];
+  const add = (
+    startRow: number,
+    startColumn: number,
+    endRow: number,
+    endColumn: number,
+  ): void => {
+    if (startRow <= endRow && startColumn <= endColumn)
+      result.push({
+        sheetIndex: source.sheetIndex,
+        startRow,
+        startColumn,
+        endRow,
+        endColumn,
+      });
+  };
+  add(source.startRow, source.startColumn, top - 1, source.endColumn);
+  add(bottom + 1, source.startColumn, source.endRow, source.endColumn);
+  add(top, source.startColumn, bottom, left - 1);
+  add(top, right + 1, bottom, source.endColumn);
+  return result;
 }
 
 function cellKeyDelta(

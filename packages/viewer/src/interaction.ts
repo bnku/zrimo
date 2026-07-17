@@ -104,6 +104,42 @@ export function cellRangeToTsv(
   return rows.join("\n");
 }
 
+export function cellRangesToTsv(
+  ranges: readonly CellRange[],
+  cells: ReadonlyMap<string, string>,
+): string {
+  if (ranges.length === 0) return "";
+  if (ranges.length === 1) return cellRangeToTsv(ranges[0]!, cells);
+  const rows = new Map<number, { start: number; end: number }[]>();
+  for (const rawRange of ranges) {
+    const range = normalizeCellRange(rawRange);
+    for (let row = range.startRow; row <= range.endRow; row += 1) {
+      const intervals = rows.get(row) ?? [];
+      intervals.push({ start: range.startColumn, end: range.endColumn });
+      rows.set(row, intervals);
+    }
+  }
+  const output: string[] = [];
+  for (const [row, intervals] of [...rows].sort(
+    ([left], [right]) => left - right,
+  )) {
+    const selected = mergeIntervals(intervals);
+    const start = selected[0]!.start;
+    const end = selected[selected.length - 1]!.end;
+    const values: string[] = [];
+    for (let column = start; column <= end; column += 1) {
+      const included = selected.some(
+        (interval) => column >= interval.start && column <= interval.end,
+      );
+      values.push(
+        included ? escapeTsv(cells.get(`${row}:${column}`) ?? "") : "",
+      );
+    }
+    output.push(values.join("\t"));
+  }
+  return output.join("\n");
+}
+
 export class LruMap<K, V> {
   readonly #values = new Map<K, V>();
   readonly #capacity: number;
@@ -188,4 +224,18 @@ function unicodeCaseFold(text: string): string {
 
 function escapeTsv(value: string): string {
   return /[\t\n\r"]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+}
+
+function mergeIntervals(
+  intervals: readonly { readonly start: number; readonly end: number }[],
+): readonly { readonly start: number; readonly end: number }[] {
+  const sorted = [...intervals].sort((left, right) => left.start - right.start);
+  const merged: { start: number; end: number }[] = [];
+  for (const interval of sorted) {
+    const previous = merged.at(-1);
+    if (previous && interval.start <= previous.end + 1)
+      previous.end = Math.max(previous.end, interval.end);
+    else merged.push({ ...interval });
+  }
+  return merged;
 }

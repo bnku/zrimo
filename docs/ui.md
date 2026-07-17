@@ -45,6 +45,9 @@ Fullscreen uses the browser Fullscreen API and falls back to a fixed in-page ove
 | F11                                   | Toggle fullscreen/fallback                               |
 | Escape                                | Close panels and fallback fullscreen                     |
 | Spreadsheet drag                      | Select cell range                                        |
+| Shift+click in a spreadsheet          | Extend the active range from its anchor                  |
+| Ctrl/Cmd+click or drag                | Toggle a cell or add a non-contiguous range              |
+| Drag a spreadsheet column border      | Resize that column for the current viewing session       |
 | Shift + arrows after a cell click     | Extend cell range                                        |
 
 Viewer shortcuts are not intercepted while typing in an input, textarea, or editable host.

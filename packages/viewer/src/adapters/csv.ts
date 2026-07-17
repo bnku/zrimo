@@ -157,6 +157,7 @@ export class CsvDocumentAdapter implements DocumentAdapter<CsvHandle> {
       height,
       viewport.scrollOffsetX ?? 0,
       viewport.scrollOffsetY ?? 0,
+      viewport.columnWidths,
     );
     if (signal?.aborted) throw abortError();
   }
@@ -212,9 +213,9 @@ function drawGrid(
   height: number,
   scrollOffsetX: number,
   scrollOffsetY: number,
+  columnWidths?: Readonly<Record<number, number>>,
 ): void {
   const rowHeight = ROW_HEIGHT * zoom;
-  const columnWidth = COLUMN_WIDTH * zoom;
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, width, height);
   context.fillStyle = "#f2f4f7";
@@ -225,23 +226,22 @@ function drawGrid(
   context.font = `${Math.max(10, 12 * zoom)}px system-ui, sans-serif`;
   context.textBaseline = "middle";
 
+  let columnX = ROW_HEADER_WIDTH - scrollOffsetX * zoom;
   for (
     let visibleColumn = 0;
     visibleColumn < range.columnCount;
     visibleColumn += 1
   ) {
-    const x =
-      ROW_HEADER_WIDTH + visibleColumn * columnWidth - scrollOffsetX * zoom;
+    const column = range.column + visibleColumn;
+    const columnWidth = (columnWidths?.[column] ?? COLUMN_WIDTH) * zoom;
+    const x = columnX;
     context.beginPath();
     context.moveTo(x, 0);
     context.lineTo(x, height);
     context.stroke();
     context.fillStyle = "#475467";
-    context.fillText(
-      columnLabel(range.column + visibleColumn),
-      x + 6,
-      COLUMN_HEADER_HEIGHT / 2,
-    );
+    context.fillText(columnLabel(column), x + 6, COLUMN_HEADER_HEIGHT / 2);
+    columnX += columnWidth;
   }
   for (let visibleRow = 0; visibleRow < range.rowCount; visibleRow += 1) {
     const rowNumber = range.row + visibleRow;
@@ -255,14 +255,18 @@ function drawGrid(
     context.fillText(String(rowNumber), 6, y + rowHeight / 2);
     const row = rows[rowNumber - 1];
     if (!row) continue;
+    let cellX = ROW_HEADER_WIDTH - scrollOffsetX * zoom;
     for (
       let visibleColumn = 0;
       visibleColumn < range.columnCount;
       visibleColumn += 1
     ) {
-      const value = row[range.column + visibleColumn - 1];
+      const column = range.column + visibleColumn;
+      const columnWidth = (columnWidths?.[column] ?? COLUMN_WIDTH) * zoom;
+      const value = row[column - 1];
+      const x = cellX;
+      cellX += columnWidth;
       if (!value) continue;
-      const x = ROW_HEADER_WIDTH + visibleColumn * columnWidth;
       context.save();
       context.beginPath();
       context.rect(x + 3, y + 1, columnWidth - 6, rowHeight - 2);

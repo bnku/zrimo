@@ -172,6 +172,31 @@ describe("spreadsheet interaction contract", () => {
     });
     assert.equal(selected.endColumn, 2);
     assert.equal(await viewer.copySelection(), "A\t");
+    const multi = viewer.selectCellRanges([
+      {
+        sheetIndex: 0,
+        startRow: 1,
+        startColumn: 1,
+        endRow: 1,
+        endColumn: 1,
+      },
+      {
+        sheetIndex: 0,
+        startRow: 2,
+        startColumn: 2,
+        endRow: 2,
+        endColumn: 2,
+      },
+    ]);
+    assert.equal(multi.ranges.length, 2);
+    assert.deepEqual(multi.ranges[0], {
+      sheetIndex: 0,
+      startRow: 1,
+      startColumn: 1,
+      endRow: 1,
+      endColumn: 2,
+    });
+    assert.equal(await viewer.copySelection(), "A\t\nD");
     viewer.setSheet(0);
     viewer.setSheet(1);
     assert.equal(viewer.state.pageIndex, 0);

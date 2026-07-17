@@ -186,6 +186,7 @@ describe("OfficeDocumentAdapter", () => {
 
   it("uses cached spreadsheet values, exposes sheet geometry, and never calculates formulas", async () => {
     let volatileFormulaAfterOpen: string | undefined = "not-rendered";
+    let renderedColumnWidth: number | undefined;
     let renderedOffsets: {
       x: number | undefined;
       y: number | undefined;
@@ -212,7 +213,7 @@ describe("OfficeDocumentAdapter", () => {
         },
       ],
       mergeCells: [{ top: 1, left: 1, bottom: 1, right: 2 }],
-      colWidths: { 2: 12 },
+      colWidths: { 2: 12 } as Record<number, number>,
       rowHeights: { 1: 18 },
       colHidden: { 3: true },
       defaultColWidth: 9,
@@ -232,6 +233,7 @@ describe("OfficeDocumentAdapter", () => {
           getWorksheet: async () => worksheet,
           renderViewport: async (_target, _index, _range, options) => {
             volatileFormulaAfterOpen = worksheet.rows[0]?.cells[0]?.formula;
+            renderedColumnWidth = worksheet.colWidths[1];
             renderedOffsets = {
               x: options.scrollOffsetX,
               y: options.scrollOffsetY,
@@ -289,10 +291,12 @@ describe("OfficeDocumentAdapter", () => {
         sheetRange: { row: 8, column: 5, rowCount: 20, columnCount: 10 },
         scrollOffsetX: 6.5,
         scrollOffsetY: 4.25,
+        columnWidths: { 1: 160 },
       },
     );
     assert.equal(volatileFormulaAfterOpen, undefined);
     assert.deepEqual(renderedOffsets, { x: 6.5, y: 4.25 });
+    assert.equal(renderedColumnWidth, 20);
   });
 
   it("converts structured legacy DOC before loading the DOCX backend", async () => {

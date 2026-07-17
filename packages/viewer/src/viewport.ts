@@ -1,5 +1,6 @@
 import type {
   CellRange,
+  CellSelection,
   DocumentInfo,
   HeadlessRenderOptions,
   SearchMatch,
@@ -39,8 +40,8 @@ export interface ViewportHost {
   onPan(panX: number, panY: number): void;
   onZoom(zoom: number): void;
   onTextSelection(range: TextSelectionRange): void;
-  onCellSelection(range: CellRange): void;
-  onCopySelection(): void;
+  onCellSelection(selection: CellRange | CellSelection | null): void;
+  getSelectionText(): string | undefined;
 }
 
 interface ViewportStrategy {
@@ -156,6 +157,7 @@ export class ViewerViewport {
     this.#handlePointerUp(event);
   readonly #onKeyDown = (event: KeyboardEvent): void =>
     this.#handleKeyDown(event);
+  readonly #onCopy = (event: ClipboardEvent): void => this.#handleCopy(event);
   readonly #onSelectionChange = (): void => this.#handleSelectionChange();
   readonly #pointers = new Map<number, PointerPosition>();
   #info: DocumentInfo | undefined;
@@ -229,6 +231,7 @@ export class ViewerViewport {
     this.#root.addEventListener("pointerup", this.#onPointerUp);
     this.#root.addEventListener("pointercancel", this.#onPointerUp);
     this.#root.addEventListener("keydown", this.#onKeyDown);
+    document.addEventListener("copy", this.#onCopy);
     document.addEventListener("selectionchange", this.#onSelectionChange);
     if (typeof ResizeObserver !== "undefined") {
       this.#resizeObserver = new ResizeObserver(() => this.schedule());
@@ -319,6 +322,7 @@ export class ViewerViewport {
     this.#root.removeEventListener("pointerup", this.#onPointerUp);
     this.#root.removeEventListener("pointercancel", this.#onPointerUp);
     this.#root.removeEventListener("keydown", this.#onKeyDown);
+    document.removeEventListener("copy", this.#onCopy);
     document.removeEventListener("selectionchange", this.#onSelectionChange);
     this.#clearSlots();
     this.#root.remove();
@@ -696,11 +700,6 @@ export class ViewerViewport {
   }
 
   #handleKeyDown(event: KeyboardEvent): void {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
-      event.preventDefault();
-      this.#host.onCopySelection();
-      return;
-    }
     if (event.shiftKey && this.#cellAnchor && this.#cellFocus) {
       const delta = keyCellDelta(event.key);
       if (delta) {
@@ -763,6 +762,22 @@ export class ViewerViewport {
         }
         break;
     }
+  }
+
+  #handleCopy(event: ClipboardEvent): void {
+    if (
+      document.activeElement !== this.#root &&
+      !this.#root.contains(document.activeElement)
+    )
+      return;
+    const text = this.#host.getSelectionText();
+    if (text === undefined) return;
+    if (event.clipboardData) {
+      event.preventDefault();
+      event.clipboardData.setData("text/plain", text);
+      return;
+    }
+    void globalThis.navigator?.clipboard?.writeText(text).catch(() => {});
   }
 
   #selectCellRange(focus: {

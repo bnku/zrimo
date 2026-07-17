@@ -1,5 +1,6 @@
 import type {
   CellRange,
+  CellSelection,
   DocumentInfo,
   SearchResult,
   TextSelection,
@@ -32,7 +33,7 @@ export class BasicViewerUi {
   readonly #onFullscreenChange = (): void => this.#syncFullscreen();
   #info: DocumentInfo | undefined;
   #search: SearchResult | null = null;
-  #selection: TextSelection | CellRange | null = null;
+  #selection: TextSelection | CellRange | CellSelection | null = null;
   #thumbnailAbort: AbortController | undefined;
   #searchTimer: ReturnType<typeof setTimeout> | undefined;
   #fallbackFullscreen = false;
@@ -410,7 +411,12 @@ export class BasicViewerUi {
     if (this.#selection && "sheetIndex" in this.#selection) {
       const range = document.createElement("span");
       range.className = "zrimo-ui__label";
-      range.textContent = `${this.#translations.selectedRange}: R${this.#selection.startRow}C${this.#selection.startColumn}:R${this.#selection.endRow}C${this.#selection.endColumn}`;
+      const ranges =
+        "ranges" in this.#selection
+          ? this.#selection.ranges
+          : [this.#selection];
+      const labels = ranges.slice(0, 3).map(formatCellRange);
+      range.textContent = `${this.#translations.selectedRange}: ${labels.join("; ")}${ranges.length > labels.length ? "; …" : ""}`;
       this.#sheetTabs.append(range);
     }
   }
@@ -467,12 +473,6 @@ export class BasicViewerUi {
       event.preventDefault();
       if (this.#searchPanel.hidden) this.#toggleSearch();
       else this.#searchInput.focus();
-    } else if (
-      (event.ctrlKey || event.metaKey) &&
-      event.key.toLowerCase() === "c"
-    ) {
-      event.preventDefault();
-      void this.#viewer.copySelection();
     } else if (event.key === "F11") {
       event.preventDefault();
       void this.#toggleFullscreen();
@@ -492,6 +492,10 @@ export class BasicViewerUi {
     this.#status.hidden = true;
     this.#status.textContent = "";
   }
+}
+
+function formatCellRange(range: CellRange): string {
+  return `R${range.startRow}C${range.startColumn}:R${range.endRow}C${range.endColumn}`;
 }
 
 function group(...children: HTMLElement[]): HTMLSpanElement {

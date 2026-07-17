@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   LruMap,
   cellRangeToTsv,
+  cellRangesToTsv,
   findNormalizedMatches,
   normalizeCellRange,
   snapGraphemeOffset,
@@ -97,6 +98,42 @@ describe("cell range copy", () => {
         ]),
       ),
       'a\t"b\tquoted"\n"line\nbreak"\td',
+    );
+  });
+
+  it("serializes non-contiguous cells in row-major TSV order", () => {
+    assert.equal(
+      cellRangesToTsv(
+        [
+          {
+            sheetIndex: 0,
+            startRow: 1,
+            startColumn: 1,
+            endRow: 1,
+            endColumn: 1,
+          },
+          {
+            sheetIndex: 0,
+            startRow: 1,
+            startColumn: 3,
+            endRow: 1,
+            endColumn: 3,
+          },
+          {
+            sheetIndex: 0,
+            startRow: 3,
+            startColumn: 2,
+            endRow: 3,
+            endColumn: 2,
+          },
+        ],
+        new Map([
+          ["1:1", "a"],
+          ["1:3", "c"],
+          ["3:2", "b"],
+        ]),
+      ),
+      "a\t\tc\nb",
     );
   });
 });

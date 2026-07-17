@@ -98,10 +98,12 @@ The managed viewport also supports pointer drag, Ctrl/Cmd+wheel, two-pointer
 pinch, Page Up/Down, and arrow-key pan. Spreadsheet documents automatically use
 a virtual surface with variable/hidden row and column geometry, fixed
 headers/frozen panes, one bounded canvas, and enough trailing blank bands to
-fill the viewport. Sheet `fitWidth` fits the
-used columns, `fitPage` fits both axes, and zoom preserves the pointer or center
-anchor. Spreadsheet cells support pointer drag, Shift+arrow range extension,
-and Ctrl/Cmd+C copying of the current range.
+fill the viewport. Column borders in the header can be dragged to apply
+view-only per-sheet width overrides without modifying the source file. Sheet
+`fitWidth` fits the used columns, `fitPage` fits both axes, and zoom preserves
+the pointer or center anchor. Spreadsheet cells support pointer drag,
+Shift+click/Shift+arrow range extension, Ctrl/Cmd+click or drag for
+non-contiguous ranges, and Ctrl/Cmd+C copying of the current selection.
 
 The optional controls, shortcuts, localization, and CSS variables are documented in [Basic UI](../ui.md). Font policies and resolver types are documented in [Fonts](../fonts.md).
 
@@ -118,7 +120,7 @@ viewer.clearSearch();
 
 `SearchResult` contains the original query, immutable `{ pageIndex, start, end, text }` matches, and `activeIndex` (`-1` when empty). Starting a new search cancels an earlier one.
 
-Use `selectText({ startPageIndex, startOffset, endPageIndex, endOffset })` for logical cross-page ranges. Use `selectCells({ sheetIndex, startRow, startColumn, endRow, endColumn })` for spreadsheets; merged cells expand the returned range. `copySelection()` writes to the Clipboard API when permission is available and always resolves to the deterministic text/TSV value. `getSelection()` and `clearSelection()` expose the current model.
+Use `selectText({ startPageIndex, startOffset, endPageIndex, endOffset })` for logical cross-page ranges. Use `selectCells({ sheetIndex, startRow, startColumn, endRow, endColumn })` for one spreadsheet range or `selectCellRanges(ranges)` for a non-contiguous selection; merged cells expand the returned ranges. `copySelection()` writes to the Clipboard API when permission is available and always resolves to the deterministic text/TSV value. Multi-range TSV is emitted in row-major order, with tabs preserving gaps between selected cells on the same row. `getSelection()` and `clearSelection()` expose the current model.
 
 Text/search offsets are UTF-16 code-unit offsets. Programmatic ranges preserve
 that contract exactly; native drag/double-click endpoints are grapheme-aware so

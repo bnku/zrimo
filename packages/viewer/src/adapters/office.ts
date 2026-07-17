@@ -128,7 +128,7 @@ interface SpreadsheetWorksheet {
     readonly hidden?: boolean;
     readonly cells: readonly SpreadsheetCell[];
   }[];
-  readonly colWidths?: Readonly<Record<number, number>>;
+  colWidths?: Record<number, number>;
   readonly rowHeights?: Readonly<Record<number, number>>;
   readonly colHidden?: Readonly<Record<number, boolean>>;
   readonly defaultColWidth?: number;
@@ -439,6 +439,7 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
       } else {
         const range = normalizeSheetRange(viewport.sheetRange);
         const worksheet = handle.worksheets[viewport.pageIndex]!;
+        applyColumnWidthOverrides(worksheet, viewport.columnWidths);
         await handle.backend.renderViewport(
           target,
           viewport.pageIndex,
@@ -835,6 +836,26 @@ function columnWidthToPixels(width: number): number {
         maximumDigitWidth,
     ),
   );
+}
+
+function applyColumnWidthOverrides(
+  worksheet: SpreadsheetWorksheet,
+  overrides?: Readonly<Record<number, number>>,
+): void {
+  if (!overrides) return;
+  const widths = (worksheet.colWidths ??= {});
+  for (const [rawIndex, rawWidth] of Object.entries(overrides)) {
+    const index = Number(rawIndex);
+    const width = Number(rawWidth);
+    if (!Number.isInteger(index) || index < 1 || !Number.isFinite(width))
+      continue;
+    widths[index] = pixelsToColumnWidth(width);
+  }
+}
+
+function pixelsToColumnWidth(pixels: number): number {
+  const maximumDigitWidth = 8;
+  return Math.max(0, pixels) / maximumDigitWidth;
 }
 
 function axisSize(

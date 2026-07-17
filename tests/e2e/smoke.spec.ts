@@ -270,16 +270,22 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     const { ViewerClient } = (await import("/main.js")) as {
       ViewerClient: {
         create(options: { adapters: readonly unknown[] }): {
-          createViewer(options: { container: HTMLElement }): {
+          createViewer(options: { container: HTMLElement; ui?: boolean }): {
             load(
               source: Uint8Array,
               options: { fileName: string },
             ): Promise<void>;
             getSelection(): {
-              startRow: number;
-              startColumn: number;
-              endRow: number;
-              endColumn: number;
+              startRow?: number;
+              startColumn?: number;
+              endRow?: number;
+              endColumn?: number;
+              ranges?: Array<{
+                startRow: number;
+                startColumn: number;
+                endRow: number;
+                endColumn: number;
+              }>;
             } | null;
             copySelection(): Promise<string>;
             destroy(): Promise<void>;
@@ -331,9 +337,11 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
             rowCount: number;
             columnCount: number;
           };
+          columnWidths?: Readonly<Record<number, number>>;
         },
       ) => {
         renderedRanges.push(viewport.sheetRange);
+        renderedColumnWidths.push(viewport.columnWidths ?? {});
         target.width = viewport.width * viewport.devicePixelRatio;
         target.height = viewport.height * viewport.devicePixelRatio;
       },
@@ -346,11 +354,12 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       rowCount: number;
       columnCount: number;
     }> = [];
+    const renderedColumnWidths: Readonly<Record<number, number>>[] = [];
     const container = document.createElement("div");
     Object.assign(container.style, { width: "800px", height: "600px" });
     document.body.append(container);
     const client = ViewerClient.create({ adapters: [adapter] });
-    const viewer = client.createViewer({ container });
+    const viewer = client.createViewer({ container, ui: true });
     let shortcutCopies = 0;
     const originalCopySelection = viewer.copySelection.bind(viewer);
     viewer.copySelection = async () => {
@@ -378,6 +387,11 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       x: number,
       y: number,
       buttons: number,
+      modifiers: {
+        shiftKey?: boolean;
+        ctrlKey?: boolean;
+        metaKey?: boolean;
+      } = {},
     ) =>
       target.dispatchEvent(
         new PointerEvent(type, {
@@ -388,6 +402,7 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
           button: 0,
           buttons,
           bubbles: true,
+          ...modifiers,
         }),
       );
     pointer(surface, "pointerdown", start.x, start.y, 1);
@@ -405,14 +420,50 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     );
     const keyboard = viewer.getSelection();
     const copied = await viewer.copySelection();
-    root.dispatchEvent(
+    const copyShortcutDefaultAllowed = root.dispatchEvent(
       new KeyboardEvent("keydown", {
         key: "c",
         ctrlKey: true,
         bubbles: true,
+        cancelable: true,
       }),
     );
-    await new Promise<void>((resolve) => queueMicrotask(resolve));
+    let nativeCopied = "";
+    document.addEventListener("copy", (event) => {
+      nativeCopied = event.clipboardData?.getData("text/plain") ?? "";
+    });
+    document.execCommand("copy");
+
+    pointer(surface, "pointerdown", start.x, start.y, 1);
+    pointer(surface, "pointerup", start.x, start.y, 0);
+    pointer(surface, "pointerdown", end.x, end.y, 1, { shiftKey: true });
+    pointer(surface, "pointerup", end.x, end.y, 0, { shiftKey: true });
+    const shiftClicked = viewer.getSelection();
+
+    pointer(surface, "pointerdown", start.x, start.y, 1);
+    pointer(surface, "pointerup", start.x, start.y, 0);
+    pointer(surface, "pointerdown", end.x, end.y, 1, { ctrlKey: true });
+    pointer(surface, "pointerup", end.x, end.y, 0, { ctrlKey: true });
+    const ctrlClicked = viewer.getSelection();
+    const ctrlCopied = await viewer.copySelection();
+    pointer(surface, "pointerdown", end.x, end.y, 1, { ctrlKey: true });
+    pointer(surface, "pointerup", end.x, end.y, 0, { ctrlKey: true });
+    const ctrlToggled = viewer.getSelection();
+    const secondColumnTop = { x: end.x, y: start.y };
+    pointer(surface, "pointerdown", secondColumnTop.x, secondColumnTop.y, 1, {
+      ctrlKey: true,
+    });
+    pointer(surface, "pointermove", end.x, end.y, 1, { ctrlKey: true });
+    pointer(surface, "pointerup", end.x, end.y, 0, { ctrlKey: true });
+    const ctrlDragged = viewer.getSelection();
+
+    const resizeStart = { x: bounds.x + 170, y: bounds.y + 10 };
+    pointer(surface, "pointerdown", resizeStart.x, resizeStart.y, 1);
+    pointer(surface, "pointermove", resizeStart.x + 80, resizeStart.y, 1);
+    pointer(surface, "pointerup", resizeStart.x + 80, resizeStart.y, 0);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
     await viewer.destroy();
     await client.destroy();
     container.remove();
@@ -420,7 +471,15 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       dragged,
       keyboard,
       copied,
+      copyShortcutDefaultAllowed,
+      nativeCopied,
+      shiftClicked,
+      ctrlClicked,
+      ctrlCopied,
+      ctrlToggled,
+      ctrlDragged,
       shortcutCopies,
+      resizedColumnWidth: renderedColumnWidths.at(-1)?.[1],
       renderedRange: renderedRanges.at(-1),
     };
   });
@@ -438,7 +497,25 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     endColumn: 2,
   });
   expect(result.copied).toBe("A\tB\nC\tD");
+  expect(result.copyShortcutDefaultAllowed).toBe(true);
+  expect(result.nativeCopied).toBe("A\tB\nC\tD");
+  expect(result.shiftClicked).toMatchObject({
+    startRow: 1,
+    startColumn: 1,
+    endRow: 2,
+    endColumn: 2,
+  });
+  expect(result.ctrlClicked?.ranges).toHaveLength(2);
+  expect(result.ctrlCopied).toBe("A\nD");
+  expect(result.ctrlToggled).toMatchObject({
+    startRow: 1,
+    startColumn: 1,
+    endRow: 1,
+    endColumn: 1,
+  });
+  expect(result.ctrlDragged?.ranges).toHaveLength(2);
   expect(result.shortcutCopies).toBe(2);
+  expect(result.resizedColumnWidth).toBe(200);
   expect(
     (result.renderedRange?.column ?? 0) +
       (result.renderedRange?.columnCount ?? 0) -

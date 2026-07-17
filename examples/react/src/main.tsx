@@ -12,6 +12,7 @@ import {
   ViewerClient,
   ViewerError,
   type CellRange,
+  type CellSelection,
   type DocumentInfo,
   type SearchResult,
   type TextSelection,
@@ -59,7 +60,7 @@ interface ViewerSession {
   readonly error: string;
   readonly warnings: readonly string[];
   readonly events: readonly string[];
-  readonly selection: TextSelection | CellRange | null;
+  readonly selection: TextSelection | CellRange | CellSelection | null;
   readonly searchResult: SearchResult | null;
 }
 
@@ -76,9 +77,9 @@ function useViewerSession({
   const [error, setError] = useState("");
   const [warnings, setWarnings] = useState<readonly string[]>([]);
   const [events, setEvents] = useState<readonly string[]>([]);
-  const [selection, setSelection] = useState<TextSelection | CellRange | null>(
-    null,
-  );
+  const [selection, setSelection] = useState<
+    TextSelection | CellRange | CellSelection | null
+  >(null);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
 
   useEffect(() => {

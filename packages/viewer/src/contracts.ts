@@ -282,13 +282,19 @@ export interface CellRange {
   readonly endColumn: number;
 }
 
+/** A non-contiguous spreadsheet selection, ordered by interaction order. */
+export interface CellSelection {
+  readonly sheetIndex: number;
+  readonly ranges: readonly CellRange[];
+}
+
 export interface ViewerEventMap {
   readonly statechange: ViewerState;
   readonly ready: ViewerState;
   readonly error: ViewerErrorData;
   readonly warning: ViewerWarning;
   readonly progress: ViewerProgress;
-  readonly selectionchange: TextSelection | CellRange | null;
+  readonly selectionchange: TextSelection | CellRange | CellSelection | null;
   readonly pagechange: {
     readonly pageIndex: number;
     readonly pageCount: number;
@@ -324,6 +330,8 @@ export interface HeadlessRenderOptions {
   readonly scrollOffsetX?: number;
   /** Unscaled pixels hidden before the first rendered spreadsheet row. */
   readonly scrollOffsetY?: number;
+  /** View-only spreadsheet column widths in unscaled CSS pixels, keyed from 1. */
+  readonly columnWidths?: Readonly<Record<number, number>>;
   readonly signal?: AbortSignal;
   readonly priority?: "visible" | "adjacent" | "background";
 }
@@ -343,6 +351,7 @@ export interface RenderViewport {
   readonly height?: number;
   readonly scrollOffsetX?: number;
   readonly scrollOffsetY?: number;
+  readonly columnWidths?: Readonly<Record<number, number>>;
   readonly sheetRange?: SpreadsheetViewportRange;
 }
 
@@ -478,9 +487,10 @@ export interface ViewerApi {
   searchNext(): SearchResult | null;
   searchPrevious(): SearchResult | null;
   clearSearch(): void;
-  getSelection(): TextSelection | CellRange | null;
+  getSelection(): TextSelection | CellRange | CellSelection | null;
   selectText(range: TextSelectionRange): Promise<TextSelection>;
   selectCells(range: CellRange): CellRange;
+  selectCellRanges(ranges: readonly CellRange[]): CellSelection;
   clearSelection(): void;
   copySelection(): Promise<string>;
   getOriginalBytes(): Uint8Array | undefined;

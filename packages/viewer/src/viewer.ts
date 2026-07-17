@@ -1,5 +1,6 @@
 import type {
   CellRange,
+  CellSelection,
   DocumentAdapter,
   DocumentInfo,
   DocumentSource,
@@ -28,6 +29,7 @@ import { detectFormat } from "./detect.js";
 import { abortError, normalizeError, ViewerError } from "./errors.js";
 import {
   cellRangeToTsv,
+  cellRangesToTsv,
   findNormalizedMatches,
   normalizeCellRange,
 } from "./interaction.js";
@@ -75,7 +77,7 @@ export class DocumentViewer implements ViewerApi {
   #originalFileName: string | undefined;
   #activeLoad: AbortController | undefined;
   #activeSearch: AbortController | undefined;
-  #selection: TextSelection | CellRange | null = null;
+  #selection: TextSelection | CellRange | CellSelection | null = null;
   #searchResult: SearchResult | null = null;
   #generation = 0;
   #searchGeneration = 0;
@@ -123,8 +125,9 @@ export class DocumentViewer implements ViewerApi {
           onPan: (panX, panY) => this.#setPan(panX, panY),
           onZoom: (zoom) => this.setZoom(zoom),
           onTextSelection: (range) => void this.selectText(range),
-          onCellSelection: (range) => this.selectCells(range),
-          onCopySelection: () => void this.copySelection(),
+          onCellSelection: (selection) =>
+            this.#applyInteractiveCellSelection(selection),
+          getSelectionText: () => this.#getCachedSelectionText(),
         },
         options,
       );
@@ -492,6 +495,9 @@ export class DocumentViewer implements ViewerApi {
               ...(options.scrollOffsetY === undefined
                 ? {}
                 : { scrollOffsetY: options.scrollOffsetY }),
+              ...(options.columnWidths === undefined
+                ? {}
+                : { columnWidths: options.columnWidths }),
             },
             operation.signal,
           );
@@ -578,7 +584,7 @@ export class DocumentViewer implements ViewerApi {
     this.#viewport?.update();
   }
 
-  getSelection(): TextSelection | CellRange | null {
+  getSelection(): TextSelection | CellRange | CellSelection | null {
     return this.#selection;
   }
 
@@ -637,6 +643,34 @@ export class DocumentViewer implements ViewerApi {
     return selection;
   }
 
+  selectCellRanges(ranges: readonly CellRange[]): CellSelection {
+    const { info } = this.#assertReady();
+    if (info.unit !== "sheet")
+      throw new ViewerError("lifecycle-error", "Cell selection is unavailable");
+    if (ranges.length === 0)
+      throw new ViewerError(
+        "lifecycle-error",
+        "At least one cell range is required",
+      );
+    const sheetIndex = ranges[0]!.sheetIndex;
+    assertPageIndex(sheetIndex, info.pageCount);
+    const normalized = ranges.map((range) => {
+      if (range.sheetIndex !== sheetIndex)
+        throw new ViewerError(
+          "lifecycle-error",
+          "Cell ranges must belong to one sheet",
+        );
+      return Object.freeze(expandMergedRange(normalizeCellRange(range), info));
+    });
+    const selection = Object.freeze({
+      sheetIndex,
+      ranges: Object.freeze(normalized),
+    });
+    this.#selection = selection;
+    this.#emit("selectionchange", selection);
+    return selection;
+  }
+
   clearSelection(): void {
     this.#selection = null;
     this.#emit("selectionchange", null);
@@ -645,15 +679,13 @@ export class DocumentViewer implements ViewerApi {
   async copySelection(): Promise<string> {
     const selection = this.#selection;
     if (!selection) return "";
-    let text: string;
-    if ("text" in selection) text = selection.text;
-    else {
-      const runs = await this.#getTextRuns(selection.sheetIndex);
-      const cells = new Map<string, string>();
-      for (const run of runs)
-        if (run.row !== undefined && run.column !== undefined)
-          cells.set(`${run.row}:${run.column}`, run.text);
-      text = cellRangeToTsv(selection, cells);
+    let text = this.#getCachedSelectionText();
+    if (text === undefined) {
+      if ("text" in selection) text = selection.text;
+      else {
+        const runs = await this.#getTextRuns(selection.sheetIndex);
+        text = cellSelectionToTsv(selection, runs);
+      }
     }
     try {
       await globalThis.navigator?.clipboard?.writeText(text);
@@ -661,6 +693,22 @@ export class DocumentViewer implements ViewerApi {
       // Clipboard permission is host/browser controlled; returning text is deterministic.
     }
     return text;
+  }
+
+  #getCachedSelectionText(): string | undefined {
+    const selection = this.#selection;
+    if (!selection) return undefined;
+    if ("text" in selection) return selection.text;
+    const runs = this.#textMaps.get(selection.sheetIndex);
+    return runs ? cellSelectionToTsv(selection, runs) : undefined;
+  }
+
+  #applyInteractiveCellSelection(
+    selection: CellRange | CellSelection | null,
+  ): void {
+    if (!selection) this.clearSelection();
+    else if ("ranges" in selection) this.selectCellRanges(selection.ranges);
+    else this.selectCells(selection);
   }
 
   getOriginalBytes(): Uint8Array | undefined {
@@ -1036,6 +1084,19 @@ function expandMergedRange(range: CellRange, info: DocumentInfo): CellRange {
     }
   }
   return result;
+}
+
+function cellSelectionToTsv(
+  selection: CellRange | CellSelection,
+  runs: readonly TextRun[],
+): string {
+  const cells = new Map<string, string>();
+  for (const run of runs)
+    if (run.row !== undefined && run.column !== undefined)
+      cells.set(`${run.row}:${run.column}`, run.text);
+  return "ranges" in selection
+    ? cellRangesToTsv(selection.ranges, cells)
+    : cellRangeToTsv(selection, cells);
 }
 
 function freezeState(state: ViewerState): ViewerState {

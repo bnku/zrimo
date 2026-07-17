@@ -32,9 +32,12 @@ Sheets use a dedicated virtual spreadsheet surface: the scrollbar covers the
 complete used range and the visible trailing blank rows/columns, while only one
 viewport-sized canvas is rendered. Custom and hidden band sizes, frozen panes,
 sparse far-away cells, zoom `0.1…8`, cell selection, and TSV copy through
-`copySelection()` or Ctrl/Cmd+C do not depend on an A4 page box. The vanilla example's
-`?large-sheet=1` mode creates a synthetic 250×100 CSV to demonstrate deep
-horizontal and vertical scrolling without shipping a fixture.
+`copySelection()` or Ctrl/Cmd+C do not depend on an A4 page box. Column-header
+borders can be dragged to apply view-only, per-sheet width overrides. The
+vanilla example's `?large-sheet=1` mode creates a synthetic 250×100 CSV to
+demonstrate deep horizontal and vertical scrolling without shipping a fixture.
+Shift+click extends the active cell range; Ctrl/Cmd+click or drag builds a
+non-contiguous selection that is copied in row-major TSV order.
 
 Subpath exports:
 
