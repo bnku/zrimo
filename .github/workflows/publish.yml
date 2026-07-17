@@ -23,6 +23,7 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
+      - run: npm install --global npm@11.16.0
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.94.1
@@ -46,7 +47,10 @@ jobs:
           VERSION="$(node -p "require('./packages/viewer/package.json').version")"
           EXPECTED_INTEGRITY="$(node -p "require('./artifacts/pack-report.json').integrity")"
           if REGISTRY_INTEGRITY="$(npm view "${PACKAGE}@${VERSION}" dist.integrity 2>/dev/null)"; then
-            test "$REGISTRY_INTEGRITY" = "$EXPECTED_INTEGRITY"
+            if [ "$REGISTRY_INTEGRITY" != "$EXPECTED_INTEGRITY" ]; then
+              echo "::error::Registry integrity $REGISTRY_INTEGRITY does not match the verified tarball $EXPECTED_INTEGRITY"
+              exit 1
+            fi
             echo "published=true" >> "$GITHUB_OUTPUT"
           else
             echo "published=false" >> "$GITHUB_OUTPUT"

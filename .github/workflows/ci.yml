@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - run: npm install --global npm@11.16.0
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.94.1
@@ -46,6 +47,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - run: npm install --global npm@11.16.0
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.94.1
@@ -70,6 +72,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
+      - run: npm install --global npm@11.16.0
       - uses: dtolnay/rust-toolchain@nightly
       - run: cargo install cargo-fuzz --locked
       - run: FUZZ_SECONDS=2 npm run fuzz:rust
