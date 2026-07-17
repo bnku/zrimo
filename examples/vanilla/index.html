@@ -14,12 +14,17 @@
       }
       main {
         display: grid;
-        grid-template-rows: auto auto 1fr;
+        grid-template-rows: auto auto auto minmax(0, 1fr);
         font:
           14px system-ui,
           sans-serif;
       }
       #viewer {
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+      }
+      #viewer .docs-viewer-ui {
         min-height: 0;
       }
     </style>

@@ -153,7 +153,7 @@ describe("spreadsheet interaction contract", () => {
       0,
       {} as OffscreenCanvas,
       { row: 5, column: 3, rowCount: 10, columnCount: 4 },
-      { width: 640, height: 480 },
+      { width: 640, height: 480, scrollOffsetX: 7.5, scrollOffsetY: 3.25 },
     );
     assert.deepEqual(rendered?.sheetRange, {
       row: 5,
@@ -161,6 +161,8 @@ describe("spreadsheet interaction contract", () => {
       rowCount: 10,
       columnCount: 4,
     });
+    assert.equal(rendered?.scrollOffsetX, 7.5);
+    assert.equal(rendered?.scrollOffsetY, 3.25);
     const selected = viewer.selectCells({
       sheetIndex: 0,
       startRow: 1,

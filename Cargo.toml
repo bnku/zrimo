@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "crates/viewer-core",
     "crates/legacy-office-wasm",
-    "crates/pdf-wasm",
     "crates/image-wasm",
 ]
 
@@ -15,7 +14,6 @@ rust-version = "1.88"
 
 [workspace.dependencies]
 office_oxide = { version = "=0.1.6", default-features = false }
-pdf_oxide = { version = "=0.3.74", default-features = false, features = ["rendering"] }
 image = { version = "=0.25.10", default-features = false, features = ["png"] }
 tiff = { version = "=0.11.3", default-features = false }
 serde = { version = "=1.0.228", features = ["derive"] }

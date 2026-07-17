@@ -1,25 +1,62 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 
+import {
+  assertPackedFileListSafe,
+  assertPackedTarballSafe,
+} from "./release-content-policy.mjs";
+
 const root = resolve(import.meta.dirname, "..");
 const artifacts = resolve(root, "artifacts");
+const packOutput = resolve(root, ".cache/pack-test");
+const sentinelRoot = resolve(root, ".tmp/release-pack-sentinel");
+const sentinel = `release-private-sentinel-${randomUUID()}`;
 await mkdir(artifacts, { recursive: true });
-const packed = JSON.parse(
-  execFileSync(
-    "npm",
-    [
-      "pack",
-      "--workspace",
-      "@docs-viewer-wasm/viewer",
-      "--json",
-      "--pack-destination",
-      artifacts,
-    ],
-    { cwd: root, encoding: "utf8" },
-  ),
-)[0];
+await rm(packOutput, { recursive: true, force: true });
+await mkdir(packOutput, { recursive: true });
+await mkdir(sentinelRoot, { recursive: true });
+await writeFile(resolve(sentinelRoot, "sentinel.private.pdf"), sentinel);
+let packed;
+try {
+  const dryRun = JSON.parse(
+    execFileSync(
+      "npm",
+      [
+        "pack",
+        "--workspace",
+        "@docs-viewer-wasm/viewer",
+        "--dry-run",
+        "--json",
+      ],
+      { cwd: root, encoding: "utf8" },
+    ),
+  )[0];
+  assertPackedFileListSafe(dryRun.files);
+  packed = JSON.parse(
+    execFileSync(
+      "npm",
+      [
+        "pack",
+        "--workspace",
+        "@docs-viewer-wasm/viewer",
+        "--json",
+        "--pack-destination",
+        packOutput,
+      ],
+      { cwd: root, encoding: "utf8" },
+    ),
+  )[0];
+  assertPackedFileListSafe(packed.files);
+  const dryRunNames = dryRun.files.map((file) => file.path).sort();
+  const packedNames = packed.files.map((file) => file.path).sort();
+  if (JSON.stringify(dryRunNames) !== JSON.stringify(packedNames)) {
+    throw new Error("npm pack dry-run and packed file lists differ.");
+  }
+} finally {
+  await rm(sentinelRoot, { recursive: true, force: true });
+}
 const names = new Set(packed.files.map((file) => file.path));
 const required = [
   "dist/index.js",
@@ -29,10 +66,13 @@ const required = [
   "dist/worker.js",
   "dist/worker.d.ts",
   "dist/styles.css",
-  "dist/workers/pdf-worker.js",
+  "dist/workers/pdf.worker.min.mjs",
   "dist/workers/image-worker.js",
   "dist/workers/legacy-converter-worker.js",
-  "dist/assets/pdf/index_bg.wasm",
+  "dist/assets/pdfjs/cmaps/Adobe-CNS1-UCS2.bcmap",
+  "dist/assets/pdfjs/standard_fonts/LiberationSans-Regular.ttf",
+  "dist/assets/pdfjs/wasm/openjpeg.wasm",
+  "dist/assets/pdfjs/iccs/CGATS001Compat-v2-micro.icc",
   "dist/assets/image/index_bg.wasm",
   "dist/assets/legacy/index_bg.wasm",
   "dist/fonts/manifest.json",
@@ -53,15 +93,18 @@ if (missing.length || forbidden.length)
   throw new Error(
     `Packed content invalid; missing=${missing.join(",")}; forbidden=${forbidden.join(",")}`,
   );
-const tarball = resolve(artifacts, packed.filename);
+const tarball = resolve(packOutput, packed.filename);
 const bytes = await readFile(tarball);
+const contentScan = assertPackedTarballSafe(bytes, { sentinel });
 const sha256 = createHash("sha256").update(bytes).digest("hex");
 await writeFile(
-  resolve(artifacts, "SHA256SUMS"),
+  resolve(packOutput, "SHA256SUMS"),
   `${sha256}  ${basename(tarball)}\n`,
 );
 const report = {
   schemaVersion: 1,
+  releaseCandidate: false,
+  quarantineState: "blocked",
   name: packed.name,
   version: packed.version,
   filename: packed.filename,
@@ -73,6 +116,8 @@ const report = {
   fileCount: packed.entryCount,
   requiredExportsPresent: true,
   forbiddenFiles: [],
+  recursiveContentScan: contentScan,
+  privateSentinelExcluded: true,
   consumers: [],
 };
 
@@ -224,6 +269,9 @@ await writeFile(
   resolve(artifacts, "pack-report.json"),
   `${JSON.stringify(report, null, 2)}\n`,
 );
+if (JSON.stringify(report).includes(sentinel)) {
+  throw new Error("Private sentinel leaked into a release report.");
+}
 console.log(
   `Packed ${packed.name}@${packed.version}: ${packed.entryCount} files, ${packed.size} bytes; ${report.consumers.length} consumer gates passed.`,
 );

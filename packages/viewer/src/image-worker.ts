@@ -29,7 +29,9 @@ workerScope.onmessage = async (event: MessageEvent<Request>) => {
     if (request.type === "open") {
       if (!request.moduleUrl || !request.data || !request.maxPixels)
         throw new Error("Invalid TIFF open request");
-      const module = (await import(request.moduleUrl)) as ImageModule;
+      const module = (await import(
+        /* @vite-ignore */ request.moduleUrl
+      )) as ImageModule;
       await module.default();
       document?.free();
       document = new module.TiffViewerDocument(

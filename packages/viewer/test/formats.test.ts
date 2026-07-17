@@ -131,24 +131,20 @@ describe("SVG security", () => {
 });
 
 describe("PDF adapter", () => {
-  it("renders through a bounded cache and exposes Unicode glyph coordinates", async () => {
+  it("renders directly to canvas and exposes PDF.js text geometry", async () => {
     let renders = 0;
     let closes = 0;
     const backend: PdfBackend = {
       pageCount: 1,
-      renderPagePng: async () => {
+      renderPage: async (target) => {
         renders += 1;
-        return png(2, 3);
+        target.width = 2;
+        target.height = 3;
       },
-      pageTextJson: async () =>
-        JSON.stringify({
-          page_width: 612,
-          page_height: 792,
-          chars: [
-            { char: "A", bbox: { x: 1, y: 2, width: 3, height: 4 } },
-            { char: "ش", bbox: { x: 4, y: 2, width: 3, height: 4 } },
-          ],
-        }),
+      pageText: async () => [
+        { text: "A", x: 1, y: 2, width: 3, height: 4, direction: "ltr" },
+        { text: "ش", x: 4, y: 2, width: 3, height: 4, direction: "rtl" },
+      ],
       close: () => {
         closes += 1;
       },
@@ -169,8 +165,7 @@ describe("PDF adapter", () => {
       zoom: 1,
       devicePixelRatio: 1,
     });
-    assert.equal(renders, 1);
-    assert.equal(closedBitmaps >= 2, true);
+    assert.equal(renders, 2);
     const runs = await adapter.getTextMap(handle, 0);
     assert.deepEqual(runs[0], {
       text: "A",
@@ -185,12 +180,14 @@ describe("PDF adapter", () => {
     assert.equal(closes, 1);
   });
 
-  it("rejects encrypted PDFs before starting a backend", async () => {
+  it("normalizes PDF.js password failures", async () => {
     let opened = false;
     const adapter = new PdfDocumentAdapter({
       open: async () => {
         opened = true;
-        throw new Error("unexpected");
+        const error = new Error("No password given");
+        error.name = "PasswordException";
+        throw error;
       },
     });
     await assert.rejects(
@@ -200,7 +197,7 @@ describe("PDF adapter", () => {
       ),
       isCode("encrypted-document"),
     );
-    assert.equal(opened, false);
+    assert.equal(opened, true);
   });
 });
 

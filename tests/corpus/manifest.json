@@ -63,6 +63,60 @@
       "sourcePath": "pdfbox-layout-awt/src/test/resources/pdf/HelloWorld.pdf",
       "license": "Apache-2.0",
       "sha256": "7fdc2c96c17d94cd12ee8372d1693c194cfb7f8e9aead0eed761c2e646234624"
+    },
+    {
+      "name": "pdfjs-mmtype1.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/mmtype1.pdf",
+      "license": "Apache-2.0",
+      "sha256": "6e08f0e3f64ed302f00572e2c4e391614df98cc9fa9d5e40538d495aa1a2063c"
+    },
+    {
+      "name": "pdfjs-arabic-cid-truetype.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/ArabicCIDTrueType.pdf",
+      "license": "Apache-2.0",
+      "sha256": "1cad1de912ba29f89a6d8b08bc5b0f84382874ffedab2c8f9e05ef608c265bb1"
+    },
+    {
+      "name": "pdfjs-cff-cid.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/issue3061.pdf",
+      "license": "Apache-2.0",
+      "sha256": "db6993f15214cb761a3e74df53a344bb59be2ee8418c128e75772170402f68c4"
+    },
+    {
+      "name": "pdfjs-standard-fonts.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/standard_fonts.pdf",
+      "license": "Apache-2.0",
+      "sha256": "4d48fc12e619a823bf70b3a4d8e9d916a85683ecb176d138af66a57351bd21f9"
+    },
+    {
+      "name": "pdfjs-noembed-jis7.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/noembed-jis7.pdf",
+      "license": "Apache-2.0",
+      "sha256": "812493361351a703b3a1c34830115df762024229aac8e41d9a16b8a075761691"
+    },
+    {
+      "name": "pdfjs-complex-truetype.pdf",
+      "format": "pdf",
+      "sourceRepository": "https://github.com/mozilla/pdf.js",
+      "sourceCommit": "6353acefe5007cd4899247a8c4e83cb7c9435a54",
+      "sourcePath": "test/pdfs/complex_ttf_font.pdf",
+      "license": "Apache-2.0",
+      "sha256": "4b205d3fd11e7ad2b9b86cc446561909d48dd9e0b38327cfd69d0fdeb6c28e14"
     }
   ]
 }

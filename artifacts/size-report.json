@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-16T16:57:27.858Z",
+  "generatedAt": "2026-07-17T02:03:01.702Z",
   "thresholds": {
     "targetBrotliBytes": 20971520,
     "releaseBlockBrotliBytes": 26214400,
@@ -9,9 +9,9 @@
   "status": "pass",
   "totals": {
     "base": {
-      "raw": 10454456,
-      "gzip": 4507061,
-      "brotli": 3419358
+      "raw": 9904737,
+      "gzip": 4509900,
+      "brotli": 3694635
     },
     "optionalFonts": {
       "raw": 10965526,
@@ -19,9 +19,9 @@
       "brotli": 10960700
     },
     "deliveredWithAllFonts": {
-      "raw": 21419982,
-      "gzip": 15471138,
-      "brotli": 14380058
+      "raw": 20870263,
+      "gzip": 15473977,
+      "brotli": 14655335
     }
   },
   "assets": [
@@ -49,9 +49,9 @@
     {
       "name": "code/adapters/csv.js",
       "group": "code",
-      "raw": 8596,
-      "gzip": 2436,
-      "brotli": 2147
+      "raw": 9000,
+      "gzip": 2522,
+      "brotli": 2229
     },
     {
       "name": "code/adapters/image.js",
@@ -63,16 +63,16 @@
     {
       "name": "code/adapters/office.js",
       "group": "code",
-      "raw": 19472,
-      "gzip": 4470,
-      "brotli": 3916
+      "raw": 26054,
+      "gzip": 6005,
+      "brotli": 5249
     },
     {
       "name": "code/adapters/pdf.js",
       "group": "code",
-      "raw": 11395,
-      "gzip": 2889,
-      "brotli": 2556
+      "raw": 16580,
+      "gzip": 4503,
+      "brotli": 3866
     },
     {
       "name": "code/adapters/svg.js",
@@ -94,13 +94,6 @@
       "raw": 9856,
       "gzip": 2640,
       "brotli": 2326
-    },
-    {
-      "name": "code/assets/pdf/index.js",
-      "group": "code",
-      "raw": 11297,
-      "gzip": 2858,
-      "brotli": 2534
     },
     {
       "name": "code/client.js",
@@ -147,9 +140,9 @@
     {
       "name": "code/fonts.js",
       "group": "code",
-      "raw": 9665,
-      "gzip": 2654,
-      "brotli": 2341
+      "raw": 9954,
+      "gzip": 2811,
+      "brotli": 2463
     },
     {
       "name": "code/format.js",
@@ -175,9 +168,9 @@
     {
       "name": "code/image-worker.js",
       "group": "code",
-      "raw": 1575,
-      "gzip": 561,
-      "brotli": 480
+      "raw": 1607,
+      "gzip": 578,
+      "brotli": 500
     },
     {
       "name": "code/index.js",
@@ -189,16 +182,16 @@
     {
       "name": "code/interaction.js",
       "group": "code",
-      "raw": 4666,
-      "gzip": 1422,
-      "brotli": 1283
+      "raw": 5204,
+      "gzip": 1576,
+      "brotli": 1437
     },
     {
       "name": "code/legacy-converter-worker.js",
       "group": "code",
-      "raw": 611,
-      "gzip": 321,
-      "brotli": 269
+      "raw": 639,
+      "gzip": 339,
+      "brotli": 286
     },
     {
       "name": "code/limits.js",
@@ -206,13 +199,6 @@
       "raw": 6716,
       "gzip": 1824,
       "brotli": 1604
-    },
-    {
-      "name": "code/pdf-worker.js",
-      "group": "code",
-      "raw": 1756,
-      "gzip": 531,
-      "brotli": 458
     },
     {
       "name": "code/registry.js",
@@ -234,6 +220,13 @@
       "raw": 4160,
       "gzip": 1323,
       "brotli": 1147
+    },
+    {
+      "name": "code/spreadsheet-viewport.js",
+      "group": "code",
+      "raw": 24351,
+      "gzip": 5201,
+      "brotli": 4519
     },
     {
       "name": "code/styles.css",
@@ -259,16 +252,16 @@
     {
       "name": "code/viewer.js",
       "group": "code",
-      "raw": 32666,
-      "gzip": 6474,
-      "brotli": 5734
+      "raw": 33137,
+      "gzip": 6521,
+      "brotli": 5786
     },
     {
       "name": "code/viewport.js",
       "group": "code",
-      "raw": 21358,
-      "gzip": 4679,
-      "brotli": 4056
+      "raw": 32700,
+      "gzip": 6588,
+      "brotli": 5801
     },
     {
       "name": "code/worker-adapter.js",
@@ -315,23 +308,1430 @@
     {
       "name": "code/workers/image-worker.js",
       "group": "code",
-      "raw": 1575,
-      "gzip": 561,
-      "brotli": 480
+      "raw": 1607,
+      "gzip": 578,
+      "brotli": 500
     },
     {
       "name": "code/workers/legacy-converter-worker.js",
       "group": "code",
-      "raw": 611,
-      "gzip": 321,
-      "brotli": 269
+      "raw": 639,
+      "gzip": 339,
+      "brotli": 286
     },
     {
-      "name": "code/workers/pdf-worker.js",
-      "group": "code",
-      "raw": 1756,
-      "gzip": 531,
-      "brotli": 458
+      "name": "pdfjs/assets/pdfjs/cmaps/78-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 2404,
+      "gzip": 2123,
+      "brotli": 1787
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 173,
+      "gzip": 164,
+      "brotli": 143
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78-H.bcmap",
+      "group": "pdf",
+      "raw": 2379,
+      "gzip": 2059,
+      "brotli": 1766
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 2398,
+      "gzip": 2089,
+      "brotli": 1779
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 173,
+      "gzip": 166,
+      "brotli": 140
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78-V.bcmap",
+      "group": "pdf",
+      "raw": 169,
+      "gzip": 159,
+      "brotli": 137
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78ms-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 2651,
+      "gzip": 2320,
+      "brotli": 1995
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/78ms-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 290,
+      "gzip": 287,
+      "brotli": 235
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/83pv-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 905,
+      "gzip": 820,
+      "brotli": 681
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90ms-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 721,
+      "gzip": 691,
+      "brotli": 597
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90ms-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 290,
+      "gzip": 287,
+      "brotli": 234
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90msp-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 715,
+      "gzip": 677,
+      "brotli": 608
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90msp-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 291,
+      "gzip": 288,
+      "brotli": 235
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90pv-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 982,
+      "gzip": 903,
+      "brotli": 816
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/90pv-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 260,
+      "gzip": 251,
+      "brotli": 197
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Add-H.bcmap",
+      "group": "pdf",
+      "raw": 2419,
+      "gzip": 2106,
+      "brotli": 1810
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Add-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 2413,
+      "gzip": 2111,
+      "brotli": 1818
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Add-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 287,
+      "gzip": 278,
+      "brotli": 225
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Add-V.bcmap",
+      "group": "pdf",
+      "raw": 282,
+      "gzip": 267,
+      "brotli": 215
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-0.bcmap",
+      "group": "pdf",
+      "raw": 317,
+      "gzip": 268,
+      "brotli": 158
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-1.bcmap",
+      "group": "pdf",
+      "raw": 371,
+      "gzip": 305,
+      "brotli": 192
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-2.bcmap",
+      "group": "pdf",
+      "raw": 376,
+      "gzip": 308,
+      "brotli": 189
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-3.bcmap",
+      "group": "pdf",
+      "raw": 401,
+      "gzip": 319,
+      "brotli": 200
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-4.bcmap",
+      "group": "pdf",
+      "raw": 405,
+      "gzip": 321,
+      "brotli": 213
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-5.bcmap",
+      "group": "pdf",
+      "raw": 406,
+      "gzip": 322,
+      "brotli": 201
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-6.bcmap",
+      "group": "pdf",
+      "raw": 406,
+      "gzip": 320,
+      "brotli": 200
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-CNS1-UCS2.bcmap",
+      "group": "pdf",
+      "raw": 41193,
+      "gzip": 35663,
+      "brotli": 32525
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-0.bcmap",
+      "group": "pdf",
+      "raw": 217,
+      "gzip": 208,
+      "brotli": 127
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-1.bcmap",
+      "group": "pdf",
+      "raw": 250,
+      "gzip": 227,
+      "brotli": 139
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-2.bcmap",
+      "group": "pdf",
+      "raw": 465,
+      "gzip": 339,
+      "brotli": 246
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-3.bcmap",
+      "group": "pdf",
+      "raw": 470,
+      "gzip": 340,
+      "brotli": 244
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-4.bcmap",
+      "group": "pdf",
+      "raw": 601,
+      "gzip": 389,
+      "brotli": 263
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-5.bcmap",
+      "group": "pdf",
+      "raw": 625,
+      "gzip": 397,
+      "brotli": 288
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-GB1-UCS2.bcmap",
+      "group": "pdf",
+      "raw": 33974,
+      "gzip": 29045,
+      "brotli": 24897
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-0.bcmap",
+      "group": "pdf",
+      "raw": 225,
+      "gzip": 212,
+      "brotli": 132
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-1.bcmap",
+      "group": "pdf",
+      "raw": 226,
+      "gzip": 212,
+      "brotli": 131
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-2.bcmap",
+      "group": "pdf",
+      "raw": 233,
+      "gzip": 217,
+      "brotli": 132
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-3.bcmap",
+      "group": "pdf",
+      "raw": 242,
+      "gzip": 222,
+      "brotli": 135
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-4.bcmap",
+      "group": "pdf",
+      "raw": 337,
+      "gzip": 279,
+      "brotli": 162
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-5.bcmap",
+      "group": "pdf",
+      "raw": 430,
+      "gzip": 329,
+      "brotli": 230
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-6.bcmap",
+      "group": "pdf",
+      "raw": 485,
+      "gzip": 347,
+      "brotli": 244
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Japan1-UCS2.bcmap",
+      "group": "pdf",
+      "raw": 40951,
+      "gzip": 31895,
+      "brotli": 28578
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Korea1-0.bcmap",
+      "group": "pdf",
+      "raw": 241,
+      "gzip": 222,
+      "brotli": 135
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Korea1-1.bcmap",
+      "group": "pdf",
+      "raw": 386,
+      "gzip": 313,
+      "brotli": 193
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Korea1-2.bcmap",
+      "group": "pdf",
+      "raw": 391,
+      "gzip": 314,
+      "brotli": 197
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Adobe-Korea1-UCS2.bcmap",
+      "group": "pdf",
+      "raw": 23293,
+      "gzip": 18899,
+      "brotli": 15986
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/B5-H.bcmap",
+      "group": "pdf",
+      "raw": 1086,
+      "gzip": 976,
+      "brotli": 811
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/B5-V.bcmap",
+      "group": "pdf",
+      "raw": 142,
+      "gzip": 157,
+      "brotli": 118
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/B5pc-H.bcmap",
+      "group": "pdf",
+      "raw": 1099,
+      "gzip": 989,
+      "brotli": 814
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/B5pc-V.bcmap",
+      "group": "pdf",
+      "raw": 144,
+      "gzip": 159,
+      "brotli": 122
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 1780,
+      "gzip": 960,
+      "brotli": 765
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 1920,
+      "gzip": 1011,
+      "brotli": 754
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS1-H.bcmap",
+      "group": "pdf",
+      "raw": 706,
+      "gzip": 612,
+      "brotli": 468
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS1-V.bcmap",
+      "group": "pdf",
+      "raw": 143,
+      "gzip": 158,
+      "brotli": 116
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS2-H.bcmap",
+      "group": "pdf",
+      "raw": 504,
+      "gzip": 398,
+      "brotli": 258
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/CNS2-V.bcmap",
+      "group": "pdf",
+      "raw": 93,
+      "gzip": 108,
+      "brotli": 86
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETHK-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 4426,
+      "gzip": 3758,
+      "brotli": 3223
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETHK-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 158,
+      "gzip": 174,
+      "brotli": 129
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETen-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 1125,
+      "gzip": 1011,
+      "brotli": 823
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETen-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 158,
+      "gzip": 174,
+      "brotli": 126
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETenms-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 101,
+      "gzip": 116,
+      "brotli": 98
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/ETenms-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 172,
+      "gzip": 188,
+      "brotli": 133
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 578,
+      "gzip": 496,
+      "brotli": 365
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 170,
+      "gzip": 161,
+      "brotli": 138
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Ext-H.bcmap",
+      "group": "pdf",
+      "raw": 2536,
+      "gzip": 2200,
+      "brotli": 1891
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Ext-RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 2542,
+      "gzip": 2219,
+      "brotli": 1882
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Ext-RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 218,
+      "gzip": 214,
+      "brotli": 193
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Ext-V.bcmap",
+      "group": "pdf",
+      "raw": 215,
+      "gzip": 208,
+      "brotli": 190
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GB-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 549,
+      "gzip": 453,
+      "brotli": 332
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GB-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 179,
+      "gzip": 190,
+      "brotli": 145
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GB-H.bcmap",
+      "group": "pdf",
+      "raw": 528,
+      "gzip": 435,
+      "brotli": 301
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GB-V.bcmap",
+      "group": "pdf",
+      "raw": 175,
+      "gzip": 184,
+      "brotli": 147
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBK-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 14692,
+      "gzip": 12314,
+      "brotli": 9314
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBK-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 180,
+      "gzip": 196,
+      "brotli": 147
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBK2K-H.bcmap",
+      "group": "pdf",
+      "raw": 19662,
+      "gzip": 14829,
+      "brotli": 11250
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBK2K-V.bcmap",
+      "group": "pdf",
+      "raw": 219,
+      "gzip": 227,
+      "brotli": 188
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBKp-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 14686,
+      "gzip": 12308,
+      "brotli": 9358
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBKp-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 181,
+      "gzip": 197,
+      "brotli": 156
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBT-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 7290,
+      "gzip": 6223,
+      "brotli": 4354
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBT-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 180,
+      "gzip": 191,
+      "brotli": 146
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBT-H.bcmap",
+      "group": "pdf",
+      "raw": 7269,
+      "gzip": 6171,
+      "brotli": 4279
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBT-V.bcmap",
+      "group": "pdf",
+      "raw": 176,
+      "gzip": 186,
+      "brotli": 150
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBTpc-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 7298,
+      "gzip": 6232,
+      "brotli": 4347
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBTpc-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 182,
+      "gzip": 193,
+      "brotli": 158
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBpc-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 557,
+      "gzip": 462,
+      "brotli": 340
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/GBpc-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 181,
+      "gzip": 192,
+      "brotli": 157
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/H.bcmap",
+      "group": "pdf",
+      "raw": 553,
+      "gzip": 472,
+      "brotli": 336
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKdla-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 2654,
+      "gzip": 2525,
+      "brotli": 2210
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKdla-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 148,
+      "gzip": 163,
+      "brotli": 121
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKdlb-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 2414,
+      "gzip": 2296,
+      "brotli": 1981
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKdlb-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 148,
+      "gzip": 163,
+      "brotli": 118
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKgccs-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 2292,
+      "gzip": 1992,
+      "brotli": 1661
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKgccs-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 149,
+      "gzip": 164,
+      "brotli": 116
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKm314-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 1772,
+      "gzip": 1667,
+      "brotli": 1450
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKm314-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 149,
+      "gzip": 164,
+      "brotli": 114
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKm471-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 2171,
+      "gzip": 2040,
+      "brotli": 1763
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKm471-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 149,
+      "gzip": 164,
+      "brotli": 114
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKscs-B5-H.bcmap",
+      "group": "pdf",
+      "raw": 4437,
+      "gzip": 3766,
+      "brotli": 3222
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/HKscs-B5-V.bcmap",
+      "group": "pdf",
+      "raw": 159,
+      "gzip": 175,
+      "brotli": 127
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Hankaku.bcmap",
+      "group": "pdf",
+      "raw": 132,
+      "gzip": 147,
+      "brotli": 121
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Hiragana.bcmap",
+      "group": "pdf",
+      "raw": 124,
+      "gzip": 139,
+      "brotli": 110
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 1848,
+      "gzip": 1585,
+      "brotli": 1328
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 164,
+      "gzip": 181,
+      "brotli": 148
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-H.bcmap",
+      "group": "pdf",
+      "raw": 1831,
+      "gzip": 1550,
+      "brotli": 1302
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-Johab-H.bcmap",
+      "group": "pdf",
+      "raw": 16791,
+      "gzip": 13178,
+      "brotli": 9522
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-Johab-V.bcmap",
+      "group": "pdf",
+      "raw": 166,
+      "gzip": 183,
+      "brotli": 154
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSC-V.bcmap",
+      "group": "pdf",
+      "raw": 160,
+      "gzip": 177,
+      "brotli": 145
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCms-UHC-H.bcmap",
+      "group": "pdf",
+      "raw": 2787,
+      "gzip": 2355,
+      "brotli": 1799
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCms-UHC-HW-H.bcmap",
+      "group": "pdf",
+      "raw": 2789,
+      "gzip": 2359,
+      "brotli": 1819
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCms-UHC-HW-V.bcmap",
+      "group": "pdf",
+      "raw": 169,
+      "gzip": 186,
+      "brotli": 152
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCms-UHC-V.bcmap",
+      "group": "pdf",
+      "raw": 166,
+      "gzip": 183,
+      "brotli": 151
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCpc-EUC-H.bcmap",
+      "group": "pdf",
+      "raw": 2024,
+      "gzip": 1757,
+      "brotli": 1486
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/KSCpc-EUC-V.bcmap",
+      "group": "pdf",
+      "raw": 166,
+      "gzip": 183,
+      "brotli": 155
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Katakana.bcmap",
+      "group": "pdf",
+      "raw": 100,
+      "gzip": 115,
+      "brotli": 91
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/LICENSE",
+      "group": "pdf",
+      "raw": 2080,
+      "gzip": 861,
+      "brotli": 623
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/NWP-H.bcmap",
+      "group": "pdf",
+      "raw": 2765,
+      "gzip": 2371,
+      "brotli": 2032
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/NWP-V.bcmap",
+      "group": "pdf",
+      "raw": 252,
+      "gzip": 240,
+      "brotli": 188
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/RKSJ-H.bcmap",
+      "group": "pdf",
+      "raw": 534,
+      "gzip": 521,
+      "brotli": 409
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/RKSJ-V.bcmap",
+      "group": "pdf",
+      "raw": 170,
+      "gzip": 163,
+      "brotli": 139
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/Roman.bcmap",
+      "group": "pdf",
+      "raw": 96,
+      "gzip": 111,
+      "brotli": 84
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UCS2-H.bcmap",
+      "group": "pdf",
+      "raw": 48280,
+      "gzip": 41501,
+      "brotli": 37432
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UCS2-V.bcmap",
+      "group": "pdf",
+      "raw": 156,
+      "gzip": 171,
+      "brotli": 151
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF16-H.bcmap",
+      "group": "pdf",
+      "raw": 50419,
+      "gzip": 44165,
+      "brotli": 40214
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF16-V.bcmap",
+      "group": "pdf",
+      "raw": 156,
+      "gzip": 171,
+      "brotli": 130
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 52679,
+      "gzip": 44450,
+      "brotli": 40623
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 160,
+      "gzip": 175,
+      "brotli": 151
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF8-H.bcmap",
+      "group": "pdf",
+      "raw": 53629,
+      "gzip": 46633,
+      "brotli": 41561
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniCNS-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 157,
+      "gzip": 173,
+      "brotli": 135
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UCS2-H.bcmap",
+      "group": "pdf",
+      "raw": 43366,
+      "gzip": 37098,
+      "brotli": 29960
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UCS2-V.bcmap",
+      "group": "pdf",
+      "raw": 193,
+      "gzip": 209,
+      "brotli": 171
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF16-H.bcmap",
+      "group": "pdf",
+      "raw": 44086,
+      "gzip": 37668,
+      "brotli": 32438
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF16-V.bcmap",
+      "group": "pdf",
+      "raw": 178,
+      "gzip": 194,
+      "brotli": 166
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 45738,
+      "gzip": 38155,
+      "brotli": 32090
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 182,
+      "gzip": 198,
+      "brotli": 162
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF8-H.bcmap",
+      "group": "pdf",
+      "raw": 46837,
+      "gzip": 39677,
+      "brotli": 33570
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniGB-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 181,
+      "gzip": 198,
+      "brotli": 165
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UCS2-H.bcmap",
+      "group": "pdf",
+      "raw": 25439,
+      "gzip": 21222,
+      "brotli": 19047
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UCS2-HW-H.bcmap",
+      "group": "pdf",
+      "raw": 119,
+      "gzip": 134,
+      "brotli": 109
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UCS2-HW-V.bcmap",
+      "group": "pdf",
+      "raw": 680,
+      "gzip": 581,
+      "brotli": 525
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UCS2-V.bcmap",
+      "group": "pdf",
+      "raw": 664,
+      "gzip": 568,
+      "brotli": 506
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF16-H.bcmap",
+      "group": "pdf",
+      "raw": 39443,
+      "gzip": 33482,
+      "brotli": 30079
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF16-V.bcmap",
+      "group": "pdf",
+      "raw": 643,
+      "gzip": 574,
+      "brotli": 507
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 40539,
+      "gzip": 33706,
+      "brotli": 30309
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 677,
+      "gzip": 587,
+      "brotli": 525
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF8-H.bcmap",
+      "group": "pdf",
+      "raw": 41695,
+      "gzip": 35315,
+      "brotli": 31564
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 678,
+      "gzip": 624,
+      "brotli": 557
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF16-H.bcmap",
+      "group": "pdf",
+      "raw": 39534,
+      "gzip": 33662,
+      "brotli": 30210
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF16-V.bcmap",
+      "group": "pdf",
+      "raw": 647,
+      "gzip": 577,
+      "brotli": 509
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 40630,
+      "gzip": 33862,
+      "brotli": 30446
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 681,
+      "gzip": 590,
+      "brotli": 522
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF8-H.bcmap",
+      "group": "pdf",
+      "raw": 41779,
+      "gzip": 35494,
+      "brotli": 31701
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJIS2004-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 682,
+      "gzip": 629,
+      "brotli": 560
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISPro-UCS2-HW-V.bcmap",
+      "group": "pdf",
+      "raw": 705,
+      "gzip": 598,
+      "brotli": 539
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISPro-UCS2-V.bcmap",
+      "group": "pdf",
+      "raw": 689,
+      "gzip": 584,
+      "brotli": 524
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISPro-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 726,
+      "gzip": 640,
+      "brotli": 561
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISX0213-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 40517,
+      "gzip": 33690,
+      "brotli": 30264
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISX0213-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 684,
+      "gzip": 593,
+      "brotli": 528
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISX02132004-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 40608,
+      "gzip": 33841,
+      "brotli": 30339
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniJISX02132004-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 688,
+      "gzip": 597,
+      "brotli": 537
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UCS2-H.bcmap",
+      "group": "pdf",
+      "raw": 25783,
+      "gzip": 22111,
+      "brotli": 17044
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UCS2-V.bcmap",
+      "group": "pdf",
+      "raw": 178,
+      "gzip": 195,
+      "brotli": 162
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF16-H.bcmap",
+      "group": "pdf",
+      "raw": 26327,
+      "gzip": 21059,
+      "brotli": 16851
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF16-V.bcmap",
+      "group": "pdf",
+      "raw": 164,
+      "gzip": 180,
+      "brotli": 155
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF32-H.bcmap",
+      "group": "pdf",
+      "raw": 26451,
+      "gzip": 21104,
+      "brotli": 16988
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF32-V.bcmap",
+      "group": "pdf",
+      "raw": 168,
+      "gzip": 184,
+      "brotli": 158
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF8-H.bcmap",
+      "group": "pdf",
+      "raw": 27790,
+      "gzip": 22400,
+      "brotli": 18337
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/UniKS-UTF8-V.bcmap",
+      "group": "pdf",
+      "raw": 169,
+      "gzip": 186,
+      "brotli": 163
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/V.bcmap",
+      "group": "pdf",
+      "raw": 166,
+      "gzip": 156,
+      "brotli": 134
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/cmaps/WP-Symbol.bcmap",
+      "group": "pdf",
+      "raw": 179,
+      "gzip": 191,
+      "brotli": 139
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/iccs/CGATS001Compat-v2-micro.icc",
+      "group": "pdf",
+      "raw": 8464,
+      "gzip": 7902,
+      "brotli": 7748
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/iccs/LICENSE",
+      "group": "pdf",
+      "raw": 6553,
+      "gzip": 2523,
+      "brotli": 1942
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitDingbats.pfb",
+      "group": "pdf",
+      "raw": 29513,
+      "gzip": 27222,
+      "brotli": 25079
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitFixed.pfb",
+      "group": "pdf",
+      "raw": 17597,
+      "gzip": 15726,
+      "brotli": 14848
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitFixedBold.pfb",
+      "group": "pdf",
+      "raw": 18055,
+      "gzip": 16186,
+      "brotli": 15173
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitFixedBoldItalic.pfb",
+      "group": "pdf",
+      "raw": 19151,
+      "gzip": 17049,
+      "brotli": 16086
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitFixedItalic.pfb",
+      "group": "pdf",
+      "raw": 18746,
+      "gzip": 16629,
+      "brotli": 15675
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitSerif.pfb",
+      "group": "pdf",
+      "raw": 19469,
+      "gzip": 17678,
+      "brotli": 16766
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitSerifBold.pfb",
+      "group": "pdf",
+      "raw": 19395,
+      "gzip": 17398,
+      "brotli": 16503
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitSerifBoldItalic.pfb",
+      "group": "pdf",
+      "raw": 20733,
+      "gzip": 18801,
+      "brotli": 17692
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitSerifItalic.pfb",
+      "group": "pdf",
+      "raw": 21227,
+      "gzip": 19198,
+      "brotli": 18208
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/FoxitSymbol.pfb",
+      "group": "pdf",
+      "raw": 16729,
+      "gzip": 15022,
+      "brotli": 14157
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LICENSE_FOXIT",
+      "group": "pdf",
+      "raw": 1553,
+      "gzip": 825,
+      "brotli": 595
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LICENSE_LIBERATION",
+      "group": "pdf",
+      "raw": 4414,
+      "gzip": 2007,
+      "brotli": 1450
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LiberationSans-Bold.ttf",
+      "group": "pdf",
+      "raw": 137052,
+      "gzip": 85752,
+      "brotli": 72685
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LiberationSans-BoldItalic.ttf",
+      "group": "pdf",
+      "raw": 135124,
+      "gzip": 83792,
+      "brotli": 72410
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LiberationSans-Italic.ttf",
+      "group": "pdf",
+      "raw": 162036,
+      "gzip": 98957,
+      "brotli": 83504
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/standard_fonts/LiberationSans-Regular.ttf",
+      "group": "pdf",
+      "raw": 139512,
+      "gzip": 90416,
+      "brotli": 78323
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_JBIG2",
+      "group": "pdf",
+      "raw": 12862,
+      "gzip": 4603,
+      "brotli": 3567
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_OPENJPEG",
+      "group": "pdf",
+      "raw": 2112,
+      "gzip": 1072,
+      "brotli": 809
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_PDFJS_JBIG2",
+      "group": "pdf",
+      "raw": 555,
+      "gzip": 375,
+      "brotli": 239
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_PDFJS_OPENJPEG",
+      "group": "pdf",
+      "raw": 1285,
+      "gzip": 702,
+      "brotli": 512
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_PDFJS_QCMS",
+      "group": "pdf",
+      "raw": 1285,
+      "gzip": 702,
+      "brotli": 512
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/LICENSE_QCMS",
+      "group": "pdf",
+      "raw": 1121,
+      "gzip": 684,
+      "brotli": 490
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/jbig2.wasm",
+      "group": "pdf",
+      "raw": 104852,
+      "gzip": 40466,
+      "brotli": 32420
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/jbig2_nowasm_fallback.js",
+      "group": "pdf",
+      "raw": 145703,
+      "gzip": 44427,
+      "brotli": 37127
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/openjpeg.wasm",
+      "group": "pdf",
+      "raw": 252032,
+      "gzip": 82944,
+      "brotli": 68190
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/openjpeg_nowasm_fallback.js",
+      "group": "pdf",
+      "raw": 451590,
+      "gzip": 116652,
+      "brotli": 92913
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/qcms_bg.wasm",
+      "group": "pdf",
+      "raw": 88837,
+      "gzip": 33176,
+      "brotli": 27045
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/quickjs-eval.js",
+      "group": "pdf",
+      "raw": 6232,
+      "gzip": 3016,
+      "brotli": 2697
+    },
+    {
+      "name": "pdfjs/assets/pdfjs/wasm/quickjs-eval.wasm",
+      "group": "pdf",
+      "raw": 469105,
+      "gzip": 218445,
+      "brotli": 187051
+    },
+    {
+      "name": "pdfjs/workers/pdf.worker.min.mjs",
+      "group": "pdf",
+      "raw": 1304896,
+      "gzip": 387212,
+      "brotli": 319166
+    },
+    {
+      "name": "pdfjs/dependency/build/pdf.mjs",
+      "group": "pdf",
+      "raw": 849976,
+      "gzip": 174099,
+      "brotli": 137542
     },
     {
       "name": "wasm/ooxml-docx",
@@ -357,23 +1757,16 @@
     {
       "name": "wasm/legacy-office",
       "group": "wasm",
-      "raw": 1131348,
+      "raw": 1131544,
       "gzip": 545690,
-      "brotli": 428904
-    },
-    {
-      "name": "wasm/pdf",
-      "group": "wasm",
-      "raw": 5970604,
-      "gzip": 2562377,
-      "brotli": 1908091
+      "brotli": 429234
     },
     {
       "name": "wasm/tiff-image",
       "group": "wasm",
-      "raw": 546044,
-      "gzip": 210487,
-      "brotli": 172061
+      "raw": 276747,
+      "gzip": 124236,
+      "brotli": 103998
     },
     {
       "name": "font/OFL-1.1.txt",

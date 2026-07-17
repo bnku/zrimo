@@ -6,8 +6,12 @@ import type {
   TextRun,
   TextSelectionRange,
   ViewerState,
+  SpreadsheetViewportRange,
 } from "./contracts.js";
-import { visibleRange } from "./interaction.js";
+import { snapGraphemeOffset, visibleRange } from "./interaction.js";
+import { SpreadsheetViewport } from "./spreadsheet-viewport.js";
+
+import type { DocxHighlightMatch, DocxTextRunInfo } from "@silurus/ooxml/docx";
 
 const BASE_WIDTH = 816;
 const BASE_HEIGHT = 1056;
@@ -18,6 +22,12 @@ export interface ViewportHost {
   renderPage(
     pageIndex: number,
     target: HTMLCanvasElement,
+    options: HeadlessRenderOptions,
+  ): Promise<void>;
+  renderSheetViewport(
+    sheetIndex: number,
+    target: HTMLCanvasElement,
+    range: SpreadsheetViewportRange,
     options: HeadlessRenderOptions,
   ): Promise<void>;
   getTextRuns(
@@ -32,9 +42,82 @@ export interface ViewportHost {
   onCellSelection(range: CellRange): void;
 }
 
+interface ViewportStrategy {
+  setDocument(info: DocumentInfo | undefined): void;
+  update(): void;
+  panBy(deltaX: number, deltaY: number): void;
+  goToPage(pageIndex: number): void;
+  fitWidth(): number;
+  fitPage(): number;
+  destroy(): void;
+}
+
+export class AdaptiveViewport implements ViewportStrategy {
+  readonly #container: HTMLElement;
+  readonly #host: ViewportHost;
+  readonly #options: {
+    readonly overscan?: number;
+    readonly layout?: "continuous" | "single";
+  };
+  #strategy: ViewportStrategy;
+  #kind: "page" | "sheet" = "page";
+
+  constructor(
+    container: HTMLElement,
+    host: ViewportHost,
+    options: {
+      readonly overscan?: number;
+      readonly layout?: "continuous" | "single";
+    },
+  ) {
+    this.#container = container;
+    this.#host = host;
+    this.#options = options;
+    this.#strategy = new ViewerViewport(container, host, options);
+  }
+
+  setDocument(info: DocumentInfo | undefined): void {
+    const nextKind = info?.unit === "sheet" ? "sheet" : "page";
+    if (nextKind !== this.#kind) {
+      this.#strategy.destroy();
+      this.#kind = nextKind;
+      this.#strategy =
+        nextKind === "sheet"
+          ? new SpreadsheetViewport(this.#container, this.#host)
+          : new ViewerViewport(this.#container, this.#host, this.#options);
+    }
+    this.#strategy.setDocument(info);
+  }
+
+  update(): void {
+    this.#strategy.update();
+  }
+
+  panBy(deltaX: number, deltaY: number): void {
+    this.#strategy.panBy(deltaX, deltaY);
+  }
+
+  goToPage(pageIndex: number): void {
+    this.#strategy.goToPage(pageIndex);
+  }
+
+  fitWidth(): number {
+    return this.#strategy.fitWidth();
+  }
+
+  fitPage(): number {
+    return this.#strategy.fitPage();
+  }
+
+  destroy(): void {
+    this.#strategy.destroy();
+  }
+}
+
 interface PageSlot {
   readonly root: HTMLDivElement;
   readonly canvas: HTMLCanvasElement;
+  readonly highlightLayer: HTMLDivElement;
   readonly textLayer: HTMLDivElement;
   controller?: AbortController;
   generation: number;
@@ -295,16 +378,26 @@ export class ViewerViewport {
       maxWidth: "none",
     });
     const textLayer = document.createElement("div");
+    const highlightLayer = document.createElement("div");
+    textLayer.dataset.docsViewerLayer = "text";
+    highlightLayer.dataset.docsViewerLayer = "highlight";
+    for (const layer of [highlightLayer, textLayer])
+      Object.assign(layer.style, {
+        position: "absolute",
+        inset: "0",
+        overflow: "hidden",
+      });
+    Object.assign(highlightLayer.style, {
+      pointerEvents: "none",
+      userSelect: "none",
+    });
     Object.assign(textLayer.style, {
-      position: "absolute",
-      inset: "0",
-      overflow: "hidden",
       userSelect: "text",
       cursor: "text",
     });
-    root.append(canvas, textLayer);
+    root.append(canvas, highlightLayer, textLayer);
     this.#spacer.append(root);
-    const slot = { root, canvas, textLayer, generation: 0 };
+    const slot = { root, canvas, highlightLayer, textLayer, generation: 0 };
     this.#slots.set(pageIndex, slot);
     return slot;
   }
@@ -330,7 +423,15 @@ export class ViewerViewport {
         });
       const runs = await this.#host.getTextRuns(pageIndex, controller.signal);
       if (controller.signal.aborted || slot.generation !== generation) return;
-      this.#buildTextLayer(slot.textLayer, pageIndex, runs, zoom);
+      await this.#buildTextLayers(
+        slot.textLayer,
+        slot.highlightLayer,
+        pageIndex,
+        runs,
+        zoom,
+        controller.signal,
+      );
+      if (controller.signal.aborted || slot.generation !== generation) return;
       await rendering;
       if (renderError) throw renderError;
       if (controller.signal.aborted || slot.generation !== generation) return;
@@ -346,28 +447,70 @@ export class ViewerViewport {
     }
   }
 
-  #buildTextLayer(
-    layer: HTMLDivElement,
+  async #buildTextLayers(
+    textLayer: HTMLDivElement,
+    highlightLayer: HTMLDivElement,
     pageIndex: number,
     runs: readonly TextRun[],
     zoom: number,
-  ): void {
-    layer.replaceChildren();
+    signal: AbortSignal,
+  ): Promise<void> {
+    textLayer.replaceChildren();
+    highlightLayer.replaceChildren();
     const matches = this.#host.getSearchMatches(pageIndex);
+    if (runs.length > 0 && runs.every(isDocxTextRun)) {
+      const coordinateWidth = runs[0]!.coordinateWidth;
+      const coordinateHeight = runs[0]!.coordinateHeight;
+      scaleOverlay(textLayer, coordinateWidth, coordinateHeight, zoom);
+      scaleOverlay(highlightLayer, coordinateWidth, coordinateHeight, zoom);
+      const { buildDocxHighlightLayer, buildDocxTextLayer } =
+        await import("@silurus/ooxml/docx");
+      if (signal.aborted) return;
+      const docxRuns = runs.map(toDocxTextRunInfo);
+      const measureForFont = textMeasureFactory();
+      buildDocxHighlightLayer(
+        highlightLayer,
+        docxRuns,
+        toDocxHighlightMatches(runs, matches),
+        coordinateWidth,
+        coordinateHeight,
+        measureForFont,
+        { match: "rgb(255 215 0 / 45%)" },
+      );
+      buildDocxTextLayer(
+        textLayer,
+        docxRuns,
+        coordinateWidth,
+        coordinateHeight,
+        undefined,
+        measureForFont,
+      );
+      annotateTextSpans(textLayer, pageIndex, runs);
+      return;
+    }
+
+    if (runs.length > 0 && runs.every(isPdfTextRun)) {
+      const coordinateWidth = runs[0]!.coordinateWidth;
+      const coordinateHeight = runs[0]!.coordinateHeight;
+      scaleOverlay(textLayer, coordinateWidth, coordinateHeight, zoom);
+      scaleOverlay(highlightLayer, coordinateWidth, coordinateHeight, zoom);
+      buildPdfTextLayers(textLayer, highlightLayer, pageIndex, runs, matches);
+      return;
+    }
+
+    resetOverlay(textLayer);
+    resetOverlay(highlightLayer);
     let logicalOffset = 0;
     for (const run of runs) {
+      const logicalStart = run.logicalStart ?? logicalOffset;
+      const logicalEnd = run.logicalEnd ?? logicalStart + run.text.length;
       const span = document.createElement("span");
       span.textContent = run.text;
       span.dataset.pageIndex = String(pageIndex);
-      span.dataset.start = String(logicalOffset);
-      span.dataset.end = String(logicalOffset + run.text.length);
+      span.dataset.start = String(logicalStart);
+      span.dataset.end = String(logicalEnd);
       if (run.row !== undefined) span.dataset.row = String(run.row);
       if (run.column !== undefined) span.dataset.column = String(run.column);
-      const highlighted = matches.some(
-        (match) =>
-          match.start < logicalOffset + run.text.length &&
-          match.end > logicalOffset,
-      );
       Object.assign(span.style, {
         position: "absolute",
         left: `${run.x * zoom}px`,
@@ -378,12 +521,37 @@ export class ViewerViewport {
         whiteSpace: "pre",
         lineHeight: `${Math.max(1, run.height * zoom)}px`,
         direction: run.direction ?? "ltr",
-        background: highlighted
-          ? "var(--docs-viewer-highlight, rgb(255 215 0 / 45%))"
-          : "transparent",
+        font: run.font,
+        fontSize:
+          run.font === undefined && run.fontSize !== undefined
+            ? `${run.fontSize * zoom}px`
+            : undefined,
+        letterSpacing:
+          run.letterSpacingPx === undefined
+            ? undefined
+            : `${run.letterSpacingPx * zoom}px`,
+        transform: run.transform,
+        transformOrigin: run.transform ? "top left" : undefined,
       });
-      layer.append(span);
-      logicalOffset += run.text.length;
+      textLayer.append(span);
+      if (
+        matches.some(
+          (match) => match.start < logicalEnd && match.end > logicalStart,
+        )
+      ) {
+        const highlight = document.createElement("div");
+        Object.assign(highlight.style, {
+          position: "absolute",
+          left: `${run.x * zoom}px`,
+          top: `${run.y * zoom}px`,
+          width: `${Math.max(1, run.width * zoom)}px`,
+          height: `${Math.max(1, run.height * zoom)}px`,
+          background: "var(--docs-viewer-highlight, rgb(255 215 0 / 45%))",
+          pointerEvents: "none",
+        });
+        highlightLayer.append(highlight);
+      }
+      logicalOffset = logicalEnd;
     }
   }
 
@@ -632,8 +800,40 @@ export class ViewerViewport {
       return;
     const startPageIndex = Number(start.dataset.pageIndex);
     const endPageIndex = Number(end.dataset.pageIndex);
-    const startOffset = Number(start.dataset.start) + range.startOffset;
-    const endOffset = Number(end.dataset.start) + range.endOffset;
+    const startText = start.textContent ?? "";
+    const endText = end.textContent ?? "";
+    const rawStartOffset = endpointOffset(
+      start,
+      range.startContainer,
+      range.startOffset,
+    );
+    const rawEndOffset = endpointOffset(
+      end,
+      range.endContainer,
+      range.endOffset,
+    );
+    const snappedStartOffset = snapGraphemeOffset(
+      startText,
+      rawStartOffset,
+      "start",
+    );
+    const snappedEndOffset = snapGraphemeOffset(endText, rawEndOffset, "end");
+    if (
+      rawStartOffset !== snappedStartOffset ||
+      rawEndOffset !== snappedEndOffset
+    ) {
+      const startNode = firstTextNode(start);
+      const endNode = firstTextNode(end);
+      if (startNode && endNode) {
+        const adjusted = document.createRange();
+        adjusted.setStart(startNode, snappedStartOffset);
+        adjusted.setEnd(endNode, snappedEndOffset);
+        selection.removeAllRanges();
+        selection.addRange(adjusted);
+      }
+    }
+    const startOffset = Number(start.dataset.start) + snappedStartOffset;
+    const endOffset = Number(end.dataset.start) + snappedEndOffset;
     this.#host.onTextSelection({
       startPageIndex,
       startOffset,
@@ -674,4 +874,215 @@ function parentTextSpan(node: Node): HTMLElement | null {
   return node instanceof HTMLElement
     ? node.closest<HTMLElement>("[data-start]")
     : (node.parentElement?.closest<HTMLElement>("[data-start]") ?? null);
+}
+
+function endpointOffset(span: HTMLElement, node: Node, offset: number): number {
+  if (node === span) return offset <= 0 ? 0 : (span.textContent?.length ?? 0);
+  return offset;
+}
+
+function firstTextNode(span: HTMLElement): Text | null {
+  return span.firstChild instanceof Text ? span.firstChild : null;
+}
+
+function isDocxTextRun(run: TextRun): run is TextRun & {
+  readonly textLayer: "docx";
+  readonly font: string;
+  readonly fontSize: number;
+  readonly coordinateWidth: number;
+  readonly coordinateHeight: number;
+} {
+  return (
+    run.textLayer === "docx" &&
+    typeof run.font === "string" &&
+    typeof run.fontSize === "number" &&
+    Number.isFinite(run.fontSize) &&
+    typeof run.coordinateWidth === "number" &&
+    Number.isFinite(run.coordinateWidth) &&
+    run.coordinateWidth > 0 &&
+    typeof run.coordinateHeight === "number" &&
+    Number.isFinite(run.coordinateHeight) &&
+    run.coordinateHeight > 0
+  );
+}
+
+function isPdfTextRun(run: TextRun): run is TextRun & {
+  readonly textLayer: "pdf";
+  readonly font: string;
+  readonly fontSize: number;
+  readonly coordinateWidth: number;
+  readonly coordinateHeight: number;
+} {
+  return (
+    run.textLayer === "pdf" &&
+    typeof run.font === "string" &&
+    typeof run.fontSize === "number" &&
+    Number.isFinite(run.fontSize) &&
+    typeof run.coordinateWidth === "number" &&
+    Number.isFinite(run.coordinateWidth) &&
+    run.coordinateWidth > 0 &&
+    typeof run.coordinateHeight === "number" &&
+    Number.isFinite(run.coordinateHeight) &&
+    run.coordinateHeight > 0
+  );
+}
+
+function buildPdfTextLayers(
+  textLayer: HTMLDivElement,
+  highlightLayer: HTMLDivElement,
+  pageIndex: number,
+  runs: readonly (TextRun & {
+    readonly font: string;
+    readonly fontSize: number;
+  })[],
+  matches: readonly SearchMatch[],
+): void {
+  const measureForFont = textMeasureFactory();
+  for (const run of runs) {
+    const start = run.logicalStart ?? 0;
+    const end = run.logicalEnd ?? start + run.text.length;
+    const measured = measureForFont(run.font)(run.text);
+    const scaleX = measured > 0 ? run.width / measured : 1;
+    const span = document.createElement("span");
+    span.textContent = run.text;
+    span.dataset.pageIndex = String(pageIndex);
+    span.dataset.start = String(start);
+    span.dataset.end = String(end);
+    Object.assign(span.style, {
+      position: "absolute",
+      left: `${run.x}px`,
+      top: `${run.y}px`,
+      color: "transparent",
+      whiteSpace: "pre",
+      lineHeight: "1",
+      font: run.font,
+      direction: run.direction ?? "ltr",
+      transform: `${run.transform ?? ""} scaleX(${scaleX})`.trim(),
+      transformOrigin: "top left",
+    });
+    textLayer.append(span);
+    if (matches.some((match) => match.start < end && match.end > start)) {
+      const highlight = document.createElement("div");
+      Object.assign(highlight.style, {
+        position: "absolute",
+        left: `${run.x}px`,
+        top: `${run.y}px`,
+        width: `${Math.max(1, run.width)}px`,
+        height: `${Math.max(1, run.height)}px`,
+        background: "var(--docs-viewer-highlight, rgb(255 215 0 / 45%))",
+        pointerEvents: "none",
+        transform: run.transform,
+        transformOrigin: run.transform ? "top left" : undefined,
+      });
+      highlightLayer.append(highlight);
+    }
+  }
+}
+
+function toDocxTextRunInfo(
+  run: TextRun & {
+    readonly font: string;
+    readonly fontSize: number;
+  },
+): DocxTextRunInfo {
+  return {
+    text: run.text,
+    x: run.x,
+    y: run.y,
+    w: run.width,
+    h: run.height,
+    font: run.font,
+    fontSize: run.fontSize,
+    ...(run.letterSpacingPx === undefined
+      ? {}
+      : { letterSpacingPx: run.letterSpacingPx }),
+    ...(run.transform === undefined ? {} : { transform: run.transform }),
+    ...(run.eastAsianVert === undefined
+      ? {}
+      : { eastAsianVert: run.eastAsianVert }),
+    ...(run.hyperlink === undefined ? {} : { hyperlink: run.hyperlink }),
+  };
+}
+
+function toDocxHighlightMatches(
+  runs: readonly TextRun[],
+  matches: readonly SearchMatch[],
+): DocxHighlightMatch[] {
+  return matches.flatMap((match) => {
+    const slices: { runIndex: number; start: number; end: number }[] = [];
+    let offset = 0;
+    runs.forEach((run, runIndex) => {
+      const runStart = run.logicalStart ?? offset;
+      const runEnd = run.logicalEnd ?? runStart + run.text.length;
+      offset = runEnd;
+      const start = Math.max(match.start, runStart);
+      const end = Math.min(match.end, runEnd);
+      if (start < end)
+        slices.push({
+          runIndex,
+          start: start - runStart,
+          end: end - runStart,
+        });
+    });
+    return slices.length > 0 ? [{ slices, active: false }] : [];
+  });
+}
+
+function annotateTextSpans(
+  layer: HTMLDivElement,
+  pageIndex: number,
+  runs: readonly TextRun[],
+): void {
+  const spans = Array.from(layer.children).filter(
+    (node): node is HTMLElement => node instanceof HTMLElement,
+  );
+  let offset = 0;
+  runs.forEach((run, index) => {
+    const span = spans[index];
+    if (!span) return;
+    const start = run.logicalStart ?? offset;
+    const end = run.logicalEnd ?? start + run.text.length;
+    offset = end;
+    span.dataset.pageIndex = String(pageIndex);
+    span.dataset.start = String(start);
+    span.dataset.end = String(end);
+    if (run.row !== undefined) span.dataset.row = String(run.row);
+    if (run.column !== undefined) span.dataset.column = String(run.column);
+  });
+}
+
+function scaleOverlay(
+  layer: HTMLDivElement,
+  width: number,
+  height: number,
+  zoom: number,
+): void {
+  Object.assign(layer.style, {
+    inset: "auto",
+    left: "0",
+    top: "0",
+    width: `${width}px`,
+    height: `${height}px`,
+    transform: `scale(${zoom})`,
+    transformOrigin: "top left",
+  });
+}
+
+function resetOverlay(layer: HTMLDivElement): void {
+  Object.assign(layer.style, {
+    inset: "0",
+    width: "auto",
+    height: "auto",
+    transform: "none",
+    transformOrigin: "top left",
+  });
+}
+
+function textMeasureFactory(): (font: string) => (text: string) => number {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  return (font) => {
+    if (context) context.font = font;
+    return (text) => context?.measureText(text).width ?? 0;
+  };
 }

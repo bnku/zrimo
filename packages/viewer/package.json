@@ -1,6 +1,6 @@
 {
   "name": "@docs-viewer-wasm/viewer",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Embeddable browser-only document viewer with Rust/WASM adapters",
   "license": "MIT OR Apache-2.0",
   "type": "module",
@@ -42,6 +42,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@silurus/ooxml": "0.72.2"
+    "@silurus/ooxml": "0.72.2",
+    "pdfjs-dist": "6.1.200"
   }
 }

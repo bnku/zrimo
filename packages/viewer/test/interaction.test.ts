@@ -6,6 +6,7 @@ import {
   cellRangeToTsv,
   findNormalizedMatches,
   normalizeCellRange,
+  snapGraphemeOffset,
   visibleRange,
 } from "../src/index.js";
 
@@ -51,6 +52,21 @@ describe("Unicode literal search", () => {
   it("preserves Arabic diacritics instead of silently stripping them", () => {
     assert.equal(findNormalizedMatches("سَلَام", "سلام", 0).length, 0);
     assert.equal(findNormalizedMatches("سَلَام", "سَلَام", 0).length, 1);
+  });
+});
+
+describe("grapheme-aware selection boundaries", () => {
+  it("keeps UTF-16 public offsets but expands native endpoints to clusters", () => {
+    const text = "A👨‍👩‍👧‍👦क्षिB";
+    const emojiStart = 1;
+    const emojiEnd = emojiStart + "👨‍👩‍👧‍👦".length;
+    assert.equal(snapGraphemeOffset(text, emojiStart + 2, "start"), emojiStart);
+    assert.equal(snapGraphemeOffset(text, emojiStart + 2, "end"), emojiEnd);
+    const indicStart = emojiEnd;
+    const indicEnd = indicStart + "क्षि".length;
+    assert.equal(snapGraphemeOffset(text, indicStart + 1, "start"), indicStart);
+    assert.equal(snapGraphemeOffset(text, indicStart + 1, "end"), indicEnd);
+    assert.equal(snapGraphemeOffset(text, indicEnd, "end"), indicEnd);
   });
 });
 

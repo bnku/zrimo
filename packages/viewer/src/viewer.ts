@@ -34,7 +34,7 @@ import {
 import { enforceContainerLimits, resolveLimits } from "./limits.js";
 import type { AdapterRegistry } from "./registry.js";
 import { loadDocumentSource } from "./source.js";
-import { ViewerViewport } from "./viewport.js";
+import { AdaptiveViewport } from "./viewport.js";
 import type { FontManager } from "./fonts.js";
 import { BasicViewerUi } from "./ui.js";
 import { resolveTranslations } from "./i18n.js";
@@ -65,7 +65,7 @@ export class DocumentViewer implements ViewerApi {
   >();
   readonly #operations = new Set<AbortController>();
   readonly #textMaps = new Map<number, readonly TextRun[]>();
-  readonly #viewport: ViewerViewport | undefined;
+  readonly #viewport: AdaptiveViewport | undefined;
   readonly #ui: BasicViewerUi | undefined;
   #state: ViewerState;
   #adapter: DocumentAdapter | undefined;
@@ -106,7 +106,7 @@ export class DocumentViewer implements ViewerApi {
     }
     if (viewportContainer) {
       const thisViewer = this;
-      this.#viewport = new ViewerViewport(
+      this.#viewport = new AdaptiveViewport(
         viewportContainer,
         {
           get state() {
@@ -114,6 +114,8 @@ export class DocumentViewer implements ViewerApi {
           },
           renderPage: (pageIndex, target, renderOptions) =>
             this.renderPage(pageIndex, target, renderOptions),
+          renderSheetViewport: (sheetIndex, target, range, renderOptions) =>
+            this.renderSheetViewport(sheetIndex, target, range, renderOptions),
           getTextRuns: (pageIndex, signal) =>
             this.#getTextRuns(pageIndex, signal),
           getSearchMatches: (pageIndex) => this.#matchesForPage(pageIndex),
@@ -483,6 +485,12 @@ export class DocumentViewer implements ViewerApi {
               ...(options.height === undefined
                 ? {}
                 : { height: options.height }),
+              ...(options.scrollOffsetX === undefined
+                ? {}
+                : { scrollOffsetX: options.scrollOffsetX }),
+              ...(options.scrollOffsetY === undefined
+                ? {}
+                : { scrollOffsetY: options.scrollOffsetY }),
             },
             operation.signal,
           );

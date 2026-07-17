@@ -13,7 +13,9 @@ const workerScope = self as unknown as DedicatedWorkerGlobalScope;
 
 workerScope.onmessage = async (event: MessageEvent<ConvertRequest>) => {
   try {
-    const module = (await import(event.data.moduleUrl)) as LegacyModule;
+    const module = (await import(
+      /* @vite-ignore */ event.data.moduleUrl
+    )) as LegacyModule;
     await module.default();
     const output = module.convertLegacyToOoxml(
       new Uint8Array(event.data.data),

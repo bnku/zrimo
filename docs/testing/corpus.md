@@ -6,7 +6,7 @@ The initial seven-file qualification set contains DOC, XLS, PPT, DOCX, XLSX, PPT
 
 ## Expected outputs
 
-- DOC/XLS/PPT must convert to a ZIP-signature OOXML buffer larger than 500 bytes and parse again as the corresponding DOCX/XLSX/PPTX type.
+- DOC must fail closed with `fidelity-unsupported`; XLS/PPT must convert to a ZIP-signature OOXML buffer larger than 500 bytes and parse again as XLSX/PPTX.
 - DOCX must produce at least one page and a non-empty 816×1056 canvas for the current sample; its Chromium screenshot is tracked as a visual baseline.
 - PDF must report one page, produce a valid PNG at 72 DPI, and return a positioned text map containing characters.
 - XLSX/PPTX are present for the production Office task; sheet/slide rendering assertions will be added there.
@@ -21,3 +21,6 @@ Generated fixtures should commit their deterministic generator and source text i
 
 The v1 release corpus target remains at least 20 representative files per format family plus corrupted, decompression-bomb, oversized-page/image, external-relationship, and active-SVG cases. The initial set proves plumbing only and is not a fidelity claim.
 
+Corrective fidelity gates and the strict separation between committed/public
+fixtures and private local inputs are documented in
+[`regressions.md`](./regressions.md).

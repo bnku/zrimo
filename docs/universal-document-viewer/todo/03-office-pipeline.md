@@ -1,5 +1,9 @@
 # Задача 03. Modern и legacy Office pipeline
 
+> Исторический результат superseded задачей 13: DOC plain-text heuristic
+> conversion запрещён как недостоверный. Текущий legacy conversion поддерживает
+> XLS/PPT; DOC возвращает `fidelity-unsupported`.
+
 **Статус:** ✅ Выполнена 2026-07-16
 
 ## Цель

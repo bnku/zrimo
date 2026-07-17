@@ -1,5 +1,11 @@
 # Roadmap: `docs-viewer-wasm` v1
 
+> **Release correction, 2026-07-17:** alpha qualification выявила четыре
+> блокирующих класса fidelity-дефектов в DOCX selection, PDF fonts, legacy DOC
+> layout и XLSX viewport. До завершения
+> [`01-fidelity-corrective-roadmap.md`](./01-fidelity-corrective-roadmap.md)
+> текущий alpha artifact не является кандидатом на promotion в beta/1.0.
+
 ## Назначение документа
 
 Этот roadmap фиксирует согласованную последовательность разработки framework-agnostic npm-пакета для полностью клиентского просмотра документов. Пакет должен скрывать форматные Rust/WASM-модули за единым TypeScript API и предоставлять готовый базовый viewer с pan, zoom, навигацией, поиском и выделением.

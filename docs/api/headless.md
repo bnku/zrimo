@@ -68,11 +68,21 @@ await viewer.renderSheetViewport(
   0,
   sheetCanvas,
   { row: 100, column: 20, rowCount: 40, columnCount: 12 },
-  { width: 960, height: 640, devicePixelRatio: 2 },
+  {
+    width: 960,
+    height: 640,
+    devicePixelRatio: 2,
+    // Unscaled pixels clipped inside row 100 / column 20:
+    scrollOffsetX: 18,
+    scrollOffsetY: 6,
+  },
 );
 ```
 
 Rows and columns in both `SpreadsheetViewportRange` and `CellRange` are one-based spreadsheet coordinates; `sheetIndex` remains zero-based.
+The attached `SpreadsheetViewport` calculates this range and the partial-cell
+offsets from sparse row/column geometry. A custom headless scroller should use
+the same convention; offsets do not include frozen panes or headers.
 
 ## Search without UI
 

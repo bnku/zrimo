@@ -14,12 +14,23 @@ fn formats(format: &str) -> Result<(DocumentFormat, DocumentFormat), String> {
     }
 }
 
+fn ensure_faithful_conversion(format: &str) -> Result<(), String> {
+    if format.eq_ignore_ascii_case("doc") {
+        return Err(
+            "fidelity-unsupported: legacy DOC conversion is disabled because the parser exposes only plain text and cannot preserve source formatting, sections, or tables"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 /// Convert a legacy Office buffer to OOXML without touching the file system.
 ///
 /// # Errors
 ///
 /// Returns an error when the format is unsupported, parsing fails, or serialization fails.
 pub fn convert_legacy_bytes(data: &[u8], format: &str) -> Result<Vec<u8>, String> {
+    ensure_faithful_conversion(format)?;
     let (source_format, target_format) = formats(format)?;
     let document = Document::from_reader(Cursor::new(data.to_vec()), source_format)
         .map_err(|error| error.to_string())?;
@@ -54,7 +65,7 @@ pub fn extract_legacy_plain_text(data: &[u8], format: &str) -> Result<String, Js
 
 #[cfg(test)]
 mod tests {
-    use super::formats;
+    use super::{ensure_faithful_conversion, formats};
 
     #[test]
     fn maps_all_legacy_formats() {
@@ -62,5 +73,12 @@ mod tests {
         assert!(formats("xls").is_ok());
         assert!(formats("ppt").is_ok());
         assert!(formats("docx").is_err());
+    }
+
+    #[test]
+    fn refuses_lossy_doc_projection() {
+        assert!(ensure_faithful_conversion("DOC").is_err());
+        assert!(ensure_faithful_conversion("xls").is_ok());
+        assert!(ensure_faithful_conversion("ppt").is_ok());
     }
 }

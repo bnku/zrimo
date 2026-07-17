@@ -9,12 +9,6 @@
       "ssim": 1
     },
     {
-      "family": "legacy-office",
-      "fileName": "word6.doc",
-      "threshold": 0.9,
-      "ssim": 1
-    },
-    {
       "family": "pdf",
       "fileName": "hello.pdf",
       "threshold": 0.97,

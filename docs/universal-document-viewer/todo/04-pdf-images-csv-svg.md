@@ -2,6 +2,10 @@
 
 **Статус:** ✅ Выполнена 2026-07-16
 
+> PDF-часть этого исторического результата заменена corrective task 12:
+> production path теперь использует PDF.js; `pdf_oxide` worker/WASM/PNG cache
+> удалены из npm artifact.
+
 ## Цель
 
 Завершить format matrix безопасными adapters для PDF, raster/vector images и tabular text, сохранив общий API страниц, sheet viewports, search и selection maps.

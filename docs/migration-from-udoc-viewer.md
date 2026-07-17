@@ -26,16 +26,16 @@ The new client/viewer constructors are synchronous; parsing and WASM initializat
 
 ## Main mappings
 
-| `@docmentis/udoc-viewer` concept | This package |
-| --- | --- |
-| `UDocClient.create()` | `ViewerClient.create()` (synchronous) |
-| `baseUrl` | `assetBaseUrl` |
-| async `client.createViewer()` | synchronous `client.createViewer()` |
-| selector or element container | `HTMLElement` container |
-| `searchPrev()` | `searchPrevious()` |
-| viewer-owned render result | caller-owned canvas passed to `renderPage()` |
-| built-in source download | `downloadOriginal()` preserving exact input bytes |
-| page events/state | typed `ViewerEventMap` plus immutable `viewer.state` |
+| `@docmentis/udoc-viewer` concept | This package                                         |
+| -------------------------------- | ---------------------------------------------------- |
+| `UDocClient.create()`            | `ViewerClient.create()` (synchronous)                |
+| `baseUrl`                        | `assetBaseUrl`                                       |
+| async `client.createViewer()`    | synchronous `client.createViewer()`                  |
+| selector or element container    | `HTMLElement` container                              |
+| `searchPrev()`                   | `searchPrevious()`                                   |
+| viewer-owned render result       | caller-owned canvas passed to `renderPage()`         |
+| built-in source download         | `downloadOriginal()` preserving exact input bytes    |
+| page events/state                | typed `ViewerEventMap` plus immutable `viewer.state` |
 
 Both libraries use zero-based page indices and provide pan/zoom, fit, search, page navigation, headless rendering, browser-only document processing, and framework-neutral lifecycle cleanup.
 
@@ -43,7 +43,7 @@ Both libraries use zero-based page indices and provide pan/zoom, fit, search, pa
 
 - This package has no telemetry, permit verification, license-key check, attribution enforcement, or implicit third-party font request. URL fetches are limited to a source explicitly supplied by the host and package assets under `assetBaseUrl`.
 - The runtime and shipped dependencies are selected through a permissive-license gate intended for closed commercial applications. Consult [dependencies](./dependencies.md) for the audited inventory.
-- DOC/XLS/PPT legacy binaries are supported through in-browser legacy-to-OOXML normalization. The exact original bytes remain available for download.
+- XLS/PPT legacy binaries use in-browser legacy-to-OOXML normalization. DOC is recognized but returns `fidelity-unsupported`, because the current permissive browser parser cannot preserve Word Binary formatting and tables. The exact original bytes remain available for download for successfully opened inputs.
 - Macro-enabled OOXML is rendered without executing VBA. Spreadsheet formulas use stored cached values and are not calculated.
 - Password-protected documents return `encrypted-document`; password authentication is outside v1.
 - Annotations, editing, rotation/region-render helpers, and custom page overlays are outside the current v1 scope.

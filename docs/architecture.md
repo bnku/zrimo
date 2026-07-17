@@ -1,6 +1,6 @@
 # Architecture: modular browser document runtime
 
-Status: accepted for the v1 implementation baseline on 2026-07-16.
+Status: updated for the fidelity-corrective baseline on 2026-07-17.
 
 ## Decision
 
@@ -19,21 +19,28 @@ TypeScript facade / ViewerClient / DocumentViewer
         ┌───────────┼────────────────────┬───────────────┐
         ▼           ▼                    ▼               ▼
   OOXML adapter  Legacy adapter       PDF adapter    Web adapters
-  @silurus       office_oxide WASM     pdf_oxide      images/CSV/SVG
-  TS + WASM          │ bytes-out        Rust/WASM      browser APIs
+  @silurus       office_oxide WASM    PDF.js worker   images/CSV/SVG
+  TS + WASM          │ bytes-out      + local assets   browser APIs
         ▲            ▼
         └──── normalized OOXML bytes
 ```
 
-WASM is split by format family. The current optimized binaries are approximately 0.8 MiB per OOXML parser, 1.1 MiB for legacy Office, and 6.0 MiB for PDF before transport compression. Keeping them separate prevents a PNG or DOCX viewer from paying the PDF startup cost.
+WASM and worker assets are split by format family. OOXML parsers, legacy Office,
+TIFF, and PDF.js codecs/CMaps/fonts load only for their respective formats. The
+old 6 MiB PDF Rust renderer and PNG transfer bridge are no longer part of the
+package; PDF.js code is lazy and its module worker/assets are self-hosted.
 
 ## Ownership boundaries
 
 TypeScript owns host-facing API stability, source acquisition, capability detection, worker scheduling, lifecycle, viewport state, DOM/canvas composition, selection, search, localization, and UI. Imports must remain SSR-safe: no DOM access or WASM initialization occurs at module evaluation time.
 
-Rust owns parsing untrusted binary formats, deterministic conversion, PDF rasterization/text geometry, shared normalized error codes, and compute-heavy image operations. Rust functions return owned buffers or serializable maps; they do not retain DOM objects or perform network access.
+Rust owns legacy conversion, shared normalized error codes, and compute-heavy
+TIFF operations. PDF.js owns PDF parsing, font/CMap interpretation, canvas
+rasterization, annotations, and text geometry. Rust functions return owned
+buffers or serializable maps; they do not retain DOM objects or perform network
+access.
 
-`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy DOC/XLS/PPT uses `office_oxide::Document::to_ir` and the public `create_from_ir_to_writer` API to return OOXML bytes from memory, then enters the same modern Office path.
+`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy XLS/PPT use `office_oxide::Document::to_ir` and the public `create_from_ir_to_writer` API to return OOXML bytes from memory, then enter the same modern Office path. DOC is stopped at a capability gate because the pinned parser exposes only extracted text/images; the Rust binding independently refuses DOC so direct WASM use cannot reach the heuristic IR projection.
 
 ## Internal adapter draft
 
@@ -52,8 +59,7 @@ All input is untrusted. The runtime will enforce source size, decompression, ent
 ## Consequences
 
 - A single npm package can expose one API while keeping startup and transfer costs format-specific.
-- Legacy conversion reuses permissive code and does not require LibreOffice, OnlyOffice, a server process, or copyleft runtime code.
+- Qualified legacy conversion reuses permissive code and does not require LibreOffice, OnlyOffice, a server process, or copyleft runtime code; unsupported DOC fidelity is explicit.
 - The TypeScript/Rust boundary stays coarse-grained; page buffers and text maps cross it, not individual glyph calls.
 - Upstream upgrades require corpus, browser, size, license, and API qualification before changing a pin.
 - Initial alpha names such as `createViewer` may change to the roadmap's `ViewerClient.create` surface during task 05; no 1.0 compatibility promise applies yet.
-

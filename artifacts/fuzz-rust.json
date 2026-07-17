@@ -5,22 +5,22 @@
   "results": [
     {
       "target": "format_detection",
-      "elapsedMs": 11580.937968999999,
+      "elapsedMs": 24027.473416,
       "status": 0
     },
     {
       "target": "legacy_office",
-      "elapsedMs": 11577.471649,
+      "elapsedMs": 16720.739474,
       "status": 0
     },
     {
       "target": "pdf_parser",
-      "elapsedMs": 11397.835951000001,
+      "elapsedMs": 26351.282532999998,
       "status": 0
     },
     {
       "target": "tiff_parser",
-      "elapsedMs": 11729.482630000006,
+      "elapsedMs": 12093.447407999993,
       "status": 0
     }
   ]

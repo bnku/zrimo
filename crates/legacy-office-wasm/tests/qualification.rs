@@ -5,10 +5,13 @@ use office_oxide::{Document, DocumentFormat};
 
 #[test]
 #[ignore = "requires npm run corpus:fetch"]
-fn converts_doc_xls_and_ppt_to_valid_ooxml_bytes() {
+fn refuses_doc_and_converts_xls_and_ppt_to_valid_ooxml_bytes() {
     let corpus = PathBuf::from(std::env::var("CORPUS_DIR").expect("CORPUS_DIR is required"));
+    let doc = fs::read(corpus.join("word6.doc")).expect("DOC fixture must be readable");
+    let error = convert_legacy_bytes(&doc, "doc").expect_err("DOC conversion must be refused");
+    assert!(error.starts_with("fidelity-unsupported:"));
+
     let cases = [
-        ("word6.doc", "doc", DocumentFormat::Docx),
         ("simple.xls", "xls", DocumentFormat::Xlsx),
         ("basic.ppt", "ppt", DocumentFormat::Pptx),
     ];

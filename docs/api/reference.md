@@ -29,15 +29,15 @@ await viewer.load(file, { fileName: file.name });
 
 ### `ViewerClientOptions`
 
-| Option         | Type                         | Meaning                                                                     |
-| -------------- | ---------------------------- | --------------------------------------------------------------------------- |
-| `assetBaseUrl` | `string \| URL`              | Base URL for package-owned workers, WASM, and future font assets.           |
-| `fetch`        | `ViewerFetch`                | Host-controlled fetch implementation used only for explicit URL sources.    |
-| `logger`       | `ViewerLogger`               | Optional debug/warning/error sink.                                          |
+| Option         | Type                         | Meaning                                                                                        |
+| -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `assetBaseUrl` | `string \| URL`              | Base URL for package-owned workers, WASM, and future font assets.                              |
+| `fetch`        | `ViewerFetch`                | Host-controlled fetch implementation used only for explicit URL sources.                       |
+| `logger`       | `ViewerLogger`               | Optional debug/warning/error sink.                                                             |
 | `limits`       | `Partial<ResourceLimits>`    | Runtime defaults for input/archive/pixel/SVG/CSV/text/unit/concurrency/operation-time budgets. |
-| `adapters`     | `readonly DocumentAdapter[]` | Replace the built-in adapter set, primarily for testing or custom formats.  |
-| `fontPolicy`   | `FontPolicy`                 | Select `auto`, `offline`, or host `custom` font resolution.                 |
-| `fonts`        | `readonly RegisteredFont[]`  | App-provided URL/byte faces resolved before system/package fallback.        |
+| `adapters`     | `readonly DocumentAdapter[]` | Replace the built-in adapter set, primarily for testing or custom formats.                     |
+| `fontPolicy`   | `FontPolicy`                 | Select `auto`, `offline`, or host `custom` font resolution.                                    |
+| `fonts`        | `readonly RegisteredFont[]`  | App-provided URL/byte faces resolved before system/package fallback.                           |
 
 `client.registerAdapter(adapter)` registers an additional adapter and returns an unregister function. `await client.destroy()` destroys every owned viewer and shared adapter.
 
@@ -89,7 +89,12 @@ interface ViewerState {
 | `next()` / `previous()`    | Navigate one unit.                                                                  |
 | `setSheet(index)`          | Navigate a sheet document; throws `lifecycle-error` for non-sheet documents.        |
 
-The managed viewport also supports pointer drag, Ctrl/Cmd+wheel, two-pointer pinch, Page Up/Down, and arrow-key pan. Spreadsheet cells support pointer drag and Shift+arrow range extension.
+The managed viewport also supports pointer drag, Ctrl/Cmd+wheel, two-pointer
+pinch, Page Up/Down, and arrow-key pan. Spreadsheet documents automatically use
+a full-used-range virtual surface with variable/hidden row and column geometry,
+fixed headers/frozen panes, and one bounded canvas. Sheet `fitWidth` fits the
+used columns, `fitPage` fits both axes, and zoom preserves the pointer or center
+anchor. Spreadsheet cells support pointer drag and Shift+arrow range extension.
 
 The optional controls, shortcuts, localization, and CSS variables are documented in [Basic UI](../ui.md). Font policies and resolver types are documented in [Fonts](../fonts.md).
 
@@ -108,6 +113,13 @@ viewer.clearSearch();
 
 Use `selectText({ startPageIndex, startOffset, endPageIndex, endOffset })` for logical cross-page ranges. Use `selectCells({ sheetIndex, startRow, startColumn, endRow, endColumn })` for spreadsheets; merged cells expand the returned range. `copySelection()` writes to the Clipboard API when permission is available and always resolves to the deterministic text/TSV value. `getSelection()` and `clearSelection()` expose the current model.
 
+Text/search offsets are UTF-16 code-unit offsets. Programmatic ranges preserve
+that contract exactly; native drag/double-click endpoints are grapheme-aware so
+the UI does not split emoji, combining sequences, or Indic clusters. DOCX
+selectable spans use the renderer's exact font, pitch, rotation, and vertical
+metadata. Search highlights live in a separate `pointer-events:none` overlay and
+cannot change native selection geometry.
+
 ## Headless rendering
 
 | Method                                                | Result                                                                                       |
@@ -117,7 +129,11 @@ Use `selectText({ startPageIndex, startOffset, endPageIndex, endOffset })` for l
 | `renderSheetViewport(index, canvas, range, options?)` | Render a bounded row/column region.                                                          |
 | `getPageText(index, signal?)`                         | Return logical text for one render unit.                                                     |
 
-Render options are `zoom`, `devicePixelRatio`, optional `width`/`height`, and `signal`. Operations reject stale completion after close/reload and normalize cancellation to `ViewerError` with code `aborted`. See [headless rendering](./headless.md).
+Render options are `zoom`, `devicePixelRatio`, optional `width`/`height`, and
+`signal`. Sheet-region rendering additionally accepts unscaled
+`scrollOffsetX/Y` for a partially clipped first column/row. Operations reject
+stale completion after close/reload and normalize cancellation to `ViewerError`
+with code `aborted`. See [headless rendering](./headless.md).
 
 ## Original bytes
 
@@ -142,6 +158,6 @@ Render options are `zoom`, `devicePixelRatio`, optional `width`/`height`, and `s
 
 ## Errors and warnings
 
-Catch `ViewerError` and branch on its stable `code`: `unsupported-format`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, or `internal`.
+Catch `ViewerError` and branch on its stable `code`: `unsupported-format`, `fidelity-unsupported`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, or `internal`. `fidelity-unsupported` means that the input format was recognized but the available browser backend cannot render it without inventing or losing material document structure; legacy DOC currently uses this outcome.
 
 Warnings use `format-hint-mismatch`, `unsupported-feature`, `font-substitution`, `external-resource-blocked`, or `fidelity-degraded`. Warnings report explicit degradation and do not silently enable active content.

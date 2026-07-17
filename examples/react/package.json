@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "dev": "vite",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@docs-viewer-wasm/viewer": "0.1.0-alpha.0",
+    "@docs-viewer-wasm/viewer": "0.1.0-alpha.1",
     "@vitejs/plugin-react": "6.0.3",
     "vite": "8.1.5",
     "react": "19.2.7",

@@ -22,5 +22,4 @@ Import is SSR-safe, but viewer creation with a container and document loading be
 
 ## Office fidelity differs from the authoring application
 
-The viewer is display-only and prioritizes safe practical fidelity. Legacy Office is converted to OOXML, formulas use stored cached values, macros never execute, image documents have no OCR, and unsupported features emit warnings. Check `viewer.getDocumentInfo().warnings` and the compatibility matrix.
-
+The viewer is display-only and prioritizes safe practical fidelity. Legacy XLS/PPT are converted to OOXML, formulas use stored cached values, macros never execute, image documents have no OCR, and unsupported features emit warnings. Legacy DOC currently returns `fidelity-unsupported` instead of fabricating layout from plain text. Check the typed error, `viewer.getDocumentInfo().warnings`, and the compatibility matrix.

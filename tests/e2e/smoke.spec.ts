@@ -5,6 +5,31 @@ test("loads the ESM package in Chromium", async ({ page }) => {
   await expect(page.getByText("Viewer status: idle")).toBeVisible();
 });
 
+test("vanilla example stretches the viewer through the available height", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/?demo=1");
+
+  const layout = await page.locator("#viewer").evaluate((host) => {
+    const root = host.querySelector<HTMLElement>(".docs-viewer-ui");
+    const hostRect = host.getBoundingClientRect();
+    const rootRect = root?.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      hostHeight: hostRect.height,
+      hostBottom: hostRect.bottom,
+      rootHeight: rootRect?.height ?? 0,
+      rootBottom: rootRect?.bottom ?? 0,
+    };
+  });
+
+  expect(layout.hostHeight).toBeGreaterThan(layout.viewportHeight * 0.7);
+  expect(layout.rootHeight).toBeCloseTo(layout.hostHeight, 0);
+  expect(layout.hostBottom).toBeCloseTo(layout.viewportHeight, 0);
+  expect(layout.rootBottom).toBeCloseTo(layout.viewportHeight, 0);
+});
+
 test("virtualizes a long document and exposes viewport interactions", async ({
   page,
 }) => {
@@ -201,12 +226,20 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
             mergedRanges: [],
             maxRow: 2,
             maxColumn: 2,
+            defaultColumnWidth: 120,
+            defaultRowHeight: 50,
+            rowHeaderWidth: 50,
+            columnHeaderHeight: 22,
           },
         ],
       }),
-      render: async (_handle: unknown, target: HTMLCanvasElement) => {
-        target.width = 816;
-        target.height = 1056;
+      render: async (
+        _handle: unknown,
+        target: HTMLCanvasElement,
+        viewport: { width: number; height: number; devicePixelRatio: number },
+      ) => {
+        target.width = viewport.width * viewport.devicePixelRatio;
+        target.height = viewport.height * viewport.devicePixelRatio;
       },
       getTextMap: async () => cells,
       close: () => {},
@@ -223,16 +256,14 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer="viewport"]',
+      '[data-docs-viewer="spreadsheet-viewport"]',
     )!;
-    const first = root.querySelector<HTMLElement>(
-      '[data-row="1"][data-column="1"]',
+    const surface = root.querySelector<HTMLElement>(
+      '[data-docs-viewer-layer="cell-selection"]',
     )!;
-    const last = root.querySelector<HTMLElement>(
-      '[data-row="2"][data-column="2"]',
-    )!;
-    const start = first.getBoundingClientRect();
-    const end = last.getBoundingClientRect();
+    const bounds = root.getBoundingClientRect();
+    const start = { x: bounds.x + 55, y: bounds.y + 27 };
+    const end = { x: bounds.x + 175, y: bounds.y + 77 };
     const pointer = (
       target: HTMLElement,
       type: string,
@@ -251,13 +282,13 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
           bubbles: true,
         }),
       );
-    pointer(first, "pointerdown", start.x + 4, start.y + 4, 1);
-    pointer(root, "pointermove", end.x + 4, end.y + 4, 1);
-    pointer(root, "pointerup", end.x + 4, end.y + 4, 0);
+    pointer(surface, "pointerdown", start.x, start.y, 1);
+    pointer(surface, "pointermove", end.x, end.y, 1);
+    pointer(surface, "pointerup", end.x, end.y, 0);
     const dragged = viewer.getSelection();
 
-    pointer(first, "pointerdown", start.x + 4, start.y + 4, 1);
-    pointer(root, "pointerup", start.x + 4, start.y + 4, 0);
+    pointer(surface, "pointerdown", start.x, start.y, 1);
+    pointer(surface, "pointerup", start.x, start.y, 0);
     root.dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowRight", shiftKey: true }),
     );
@@ -285,6 +316,216 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     endColumn: 2,
   });
   expect(result.copied).toBe("A\tB\nC\tD");
+});
+
+test("virtualizes the full spreadsheet used range at every supported zoom", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = (await import("/main.js")) as any;
+    const renders: Array<{
+      row: number;
+      column: number;
+      rowCount: number;
+      columnCount: number;
+      offsetX: number;
+      offsetY: number;
+    }> = [];
+    const maxRow = 10_000;
+    const maxColumn = 1_000;
+    const adapter = {
+      id: "e2e-sheet-virtualization",
+      formats: ["csv"],
+      open: async () => ({}),
+      getInfo: async () => ({
+        format: "csv",
+        unit: "sheet",
+        pageCount: 1,
+        sheetNames: ["Sparse"],
+        sheets: [
+          {
+            name: "Sparse",
+            frozenRows: 2,
+            frozenColumns: 2,
+            mergedRanges: [
+              {
+                startRow: 9_998,
+                startColumn: 998,
+                endRow: maxRow,
+                endColumn: maxColumn,
+              },
+            ],
+            maxRow,
+            maxColumn,
+            defaultColumnWidth: 80,
+            defaultRowHeight: 24,
+            columnWidths: { 3: 0, 500: 160, 999: 32 },
+            rowHeights: { 3: 0, 5_000: 48, 9_999: 12 },
+            rowHeaderWidth: 50,
+            columnHeaderHeight: 22,
+          },
+        ],
+      }),
+      render: async (
+        _handle: unknown,
+        target: HTMLCanvasElement,
+        viewport: {
+          sheetRange: {
+            row: number;
+            column: number;
+            rowCount: number;
+            columnCount: number;
+          };
+          width: number;
+          height: number;
+          devicePixelRatio: number;
+          scrollOffsetX?: number;
+          scrollOffsetY?: number;
+        },
+      ) => {
+        const range = viewport.sheetRange;
+        renders.push({
+          ...range,
+          offsetX: viewport.scrollOffsetX ?? 0,
+          offsetY: viewport.scrollOffsetY ?? 0,
+        });
+        const isDeep = range.row > maxRow / 2;
+        await new Promise((resolve) => setTimeout(resolve, isDeep ? 5 : 70));
+        target.width = Math.ceil(viewport.width * viewport.devicePixelRatio);
+        target.height = Math.ceil(viewport.height * viewport.devicePixelRatio);
+        const context = target.getContext("2d")!;
+        context.fillStyle = isDeep ? "#00ff00" : "#ff0000";
+        context.fillRect(0, 0, target.width, target.height);
+      },
+      getTextMap: async () => [
+        {
+          text: "origin",
+          x: 54,
+          y: 24,
+          width: 70,
+          height: 20,
+          row: 1,
+          column: 1,
+        },
+        {
+          text: "last",
+          x: 0,
+          y: 0,
+          width: 32,
+          height: 24,
+          row: maxRow,
+          column: maxColumn,
+        },
+      ],
+      close: () => {},
+    };
+    const container = document.createElement("div");
+    Object.assign(container.style, { width: "720px", height: "480px" });
+    document.body.append(container);
+    const client = ViewerClient.create({ adapters: [adapter] });
+    const viewer = client.createViewer({ container });
+    await viewer.load(new TextEncoder().encode("synthetic"), {
+      fileName: "sparse.csv",
+    });
+    const root = container.querySelector<HTMLElement>(
+      '[data-docs-viewer="spreadsheet-viewport"]',
+    )!;
+    const settle = async (delay = 0) => {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    };
+    const zoomResults: Array<{
+      zoom: number;
+      lastRow: number;
+      lastColumn: number;
+      scrollWidth: number;
+      scrollHeight: number;
+    }> = [];
+    for (const zoom of [0.25, 0.5, 1, 2, 4]) {
+      viewer.setZoom(zoom);
+      await settle();
+      root.scrollTo({ left: root.scrollWidth, top: root.scrollHeight });
+      await settle(15);
+      const frame = renders[renders.length - 1]!;
+      zoomResults.push({
+        zoom,
+        lastRow: frame.row + frame.rowCount - 1,
+        lastColumn: frame.column + frame.columnCount - 1,
+        scrollWidth: root.scrollWidth,
+        scrollHeight: root.scrollHeight,
+      });
+    }
+    root.scrollTo({ left: 0, top: 0 });
+    viewer.setZoom(1);
+    await settle();
+    root.scrollTo({ left: root.scrollWidth, top: root.scrollHeight });
+    await settle(100);
+    const canvas = root.querySelector<HTMLCanvasElement>(
+      '[data-docs-viewer-layer="spreadsheet-canvas"]',
+    )!;
+    const pixel = Array.from(
+      canvas.getContext("2d")!.getImageData(0, 0, 1, 1).data,
+    );
+    const surface = root.querySelector<HTMLElement>(
+      '[data-docs-viewer-layer="cell-selection"]',
+    )!;
+    const bounds = root.getBoundingClientRect();
+    const pointer = (type: string, x: number, y: number, buttons: number) =>
+      surface.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: 44,
+          pointerType: "mouse",
+          clientX: x,
+          clientY: y,
+          button: 0,
+          buttons,
+          bubbles: true,
+        }),
+      );
+    pointer("pointerdown", bounds.right - 20, bounds.bottom - 20, 1);
+    pointer("pointerup", bounds.right - 20, bounds.bottom - 20, 0);
+    root.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowLeft", shiftKey: true }),
+    );
+    const selection = viewer.getSelection();
+    const metrics = {
+      canvasCount: root.querySelectorAll("canvas").length,
+      elementCount: root.querySelectorAll("*").length,
+      canvasCssWidth: canvas.getBoundingClientRect().width,
+      canvasCssHeight: canvas.getBoundingClientRect().height,
+      rootWidth: root.clientWidth,
+      rootHeight: root.clientHeight,
+      spacerWidth: root.firstElementChild?.getBoundingClientRect().width ?? 0,
+      spacerHeight: root.firstElementChild?.getBoundingClientRect().height ?? 0,
+    };
+    await viewer.destroy();
+    await client.destroy();
+    container.remove();
+    return { zoomResults, pixel, selection, metrics };
+  });
+
+  for (const entry of result.zoomResults) {
+    expect(entry.lastRow).toBe(10_000);
+    expect(entry.lastColumn).toBe(1_000);
+    expect(entry.scrollWidth).toBeGreaterThan(816);
+    expect(entry.scrollHeight).toBeGreaterThan(1056);
+  }
+  expect(result.pixel.slice(0, 3)).toEqual([0, 255, 0]);
+  expect(result.selection).toMatchObject({
+    sheetIndex: 0,
+    startColumn: 998,
+    endRow: 10_000,
+    endColumn: 1_000,
+  });
+  expect(result.metrics.canvasCount).toBe(1);
+  expect(result.metrics.elementCount).toBeLessThan(10);
+  expect(result.metrics.canvasCssWidth).toBe(result.metrics.rootWidth);
+  expect(result.metrics.canvasCssHeight).toBe(result.metrics.rootHeight);
+  expect(result.metrics.spacerWidth).not.toBeCloseTo(816, 0);
+  expect(result.metrics.spacerHeight).not.toBeCloseTo(1056, 0);
 });
 
 test("runs the localized basic UI workflow without leaking styles", async ({
@@ -841,7 +1082,7 @@ test("converts legacy Office in the package worker and opens the result", async 
       assetBaseUrl: new URL("/", location.href),
     });
     const output = [];
-    for (const fileName of ["word6.doc", "simple.xls", "basic.ppt"]) {
+    for (const fileName of ["simple.xls", "basic.ppt"]) {
       const viewer = client.createViewer();
       const response = await fetch(`/corpus/${fileName}`);
       await viewer.load(new Uint8Array(await response.arrayBuffer()), {
@@ -854,11 +1095,46 @@ test("converts legacy Office in the package worker and opens the result", async 
     return output;
   });
 
-  expect(result.map((state) => state.format)).toEqual(["doc", "xls", "ppt"]);
+  expect(result.map((state) => state.format)).toEqual(["xls", "ppt"]);
   for (const state of result) {
     expect(state.status).toBe("ready");
     expect(state.pageCount).toBeGreaterThan(0);
   }
+});
+
+test("returns a typed fidelity error for legacy DOC", async ({ page }) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = await import("/main.js");
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const viewer = client.createViewer();
+    const response = await fetch("/corpus/word6.doc");
+    try {
+      await viewer.load(new Uint8Array(await response.arrayBuffer()), {
+        fileName: "word6.doc",
+      });
+      return { code: "unexpected-success", details: undefined };
+    } catch (error) {
+      return typeof error === "object" && error !== null && "code" in error
+        ? {
+            code: String(error.code),
+            details: "details" in error ? error.details : undefined,
+          }
+        : { code: "untyped", details: undefined };
+    } finally {
+      await viewer.destroy();
+      await client.destroy();
+    }
+  });
+
+  expect(result.code).toBe("fidelity-unsupported");
+  expect(result.details).toMatchObject({
+    format: "doc",
+    capability: "structured-word-binary",
+    fallback: "extractLegacyPlainText",
+  });
 });
 
 test("opens PDF, raster, TIFF, SVG, and delimited data through built-in adapters", async ({
@@ -947,7 +1223,9 @@ test("opens PDF, raster, TIFF, SVG, and delimited data through built-in adapters
   }
 });
 
-test("converts legacy DOC to OOXML in browser WASM", async ({ page }) => {
+test("refuses lossy legacy DOC conversion in browser WASM", async ({
+  page,
+}) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
     const loadModule = new Function("url", "return import(url)") as (
@@ -961,70 +1239,119 @@ test("converts legacy DOC to OOXML in browser WASM", async ({ page }) => {
       fetch("/corpus/word6.doc"),
     ]);
     await module.default();
-    const startedAt = performance.now();
-    const output = module.convertLegacyToOoxml(
-      new Uint8Array(await response.arrayBuffer()),
-      "doc",
-    );
-    return {
-      elapsedMs: performance.now() - startedAt,
-      size: output.byteLength,
-      signature: Array.from(output.slice(0, 4)),
-    };
+    try {
+      module.convertLegacyToOoxml(
+        new Uint8Array(await response.arrayBuffer()),
+        "doc",
+      );
+      return "unexpected-success";
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error);
+    }
   });
 
-  expect(result.signature).toEqual([0x50, 0x4b, 0x03, 0x04]);
-  expect(result.size).toBeGreaterThan(500);
-  console.log(
-    "QUALIFICATION_METRIC",
-    JSON.stringify({ adapter: "legacy-doc", ...result }),
-  );
+  expect(result).toContain("fidelity-unsupported");
 });
 
-test("renders PDF and extracts its text map in browser WASM", async ({
+test("renders PDF and extracts its text map through self-hosted PDF.js", async ({
   page,
 }) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
-    const loadModule = new Function("url", "return import(url)") as (
-      url: string,
-    ) => Promise<{
-      default(): Promise<void>;
-      PdfViewerDocument: new (data: Uint8Array) => {
-        pageCount(): number;
-        renderPagePng(pageIndex: number, dpi?: number): Uint8Array;
-        pageTextJson(pageIndex: number): string;
-        free(): void;
-      };
-    }>;
-    const [module, response] = await Promise.all([
-      loadModule("/wasm/pdf/index.js"),
-      fetch("/corpus/hello.pdf"),
-    ]);
-    await module.default();
+    const { ViewerClient } = (await import("/main.js")) as any;
+    performance.clearResourceTimings();
+    const response = await fetch("/corpus/hello.pdf");
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const container = document.createElement("div");
+    Object.assign(container.style, { width: "700px", height: "820px" });
+    document.body.append(container);
+    const viewer = client.createViewer({ container });
     const startedAt = performance.now();
-    const document = new module.PdfViewerDocument(
-      new Uint8Array(await response.arrayBuffer()),
+    await viewer.load(bytes, { fileName: "hello.pdf" });
+    const pageCount = viewer.state.pageCount;
+    const canvas = document.createElement("canvas");
+    await viewer.renderPage(0, canvas, { zoom: 1, devicePixelRatio: 1 });
+    const text = await viewer.getPageText(0);
+    const context = canvas.getContext("2d")!;
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let darkPixels = 0;
+    for (let index = 0; index < pixels.length; index += 4)
+      if (
+        pixels[index]! < 230 ||
+        pixels[index + 1]! < 230 ||
+        pixels[index + 2]! < 230
+      )
+        darkPixels += 1;
+    const resources = performance
+      .getEntriesByType("resource")
+      .map((entry) => new URL(entry.name))
+      .filter(
+        (url) => url.pathname.includes("pdf") || url.pathname.includes("cmaps"),
+      );
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
-    const pageCount = document.pageCount();
-    const png = document.renderPagePng(0, 72);
-    const text = JSON.parse(document.pageTextJson(0)) as { chars: unknown[] };
-    document.free();
+    const spans = Array.from(
+      container.querySelectorAll<HTMLElement>(
+        '[data-docs-viewer-layer="text"] [data-start]',
+      ),
+    );
+    const attachedCanvas = container.querySelector("canvas")!;
+    const attachedBounds = attachedCanvas.getBoundingClientRect();
+    const overlayInsideCanvas = spans.every((span) => {
+      const bounds = span.getBoundingClientRect();
+      return (
+        bounds.left >= attachedBounds.left - 1 &&
+        bounds.top >= attachedBounds.top - 1 &&
+        bounds.right <= attachedBounds.right + 1 &&
+        bounds.bottom <= attachedBounds.bottom + 1
+      );
+    });
+    const firstText = spans[0]?.firstChild;
+    const lastText = spans.at(-1)?.firstChild;
+    if (firstText && lastText) {
+      const range = document.createRange();
+      range.setStart(firstText, 0);
+      range.setEnd(lastText, lastText.textContent?.length ?? 0);
+      const selection = document.getSelection()!;
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.dispatchEvent(new Event("selectionchange"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+    const copied = await viewer.copySelection();
+    await viewer.destroy();
+    await client.destroy();
+    container.remove();
     return {
       elapsedMs: performance.now() - startedAt,
       pageCount,
-      pngSize: png.byteLength,
-      pngSignature: Array.from(png.slice(0, 8)),
-      characterCount: text.chars.length,
+      width: canvas.width,
+      height: canvas.height,
+      text,
+      characterCount: text.length,
+      darkPixels,
+      resourceHosts: resources.map((url) => url.host),
+      resourcePaths: resources.map((url) => url.pathname),
+      spanCount: spans.length,
+      overlayInsideCanvas,
+      copied,
     };
   });
 
+  expect(result.width).toBe(612);
+  expect(result.height).toBe(792);
   expect(result.pageCount).toBe(1);
-  expect(result.pngSignature).toEqual([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-  ]);
-  expect(result.pngSize).toBeGreaterThan(100);
   expect(result.characterCount).toBeGreaterThan(0);
+  expect(result.darkPixels).toBeGreaterThan(100);
+  expect(result.spanCount).toBeGreaterThan(0);
+  expect(result.overlayInsideCanvas).toBe(true);
+  expect(result.copied).toBe(result.text);
+  expect(new Set(result.resourceHosts)).toEqual(new Set(["127.0.0.1:4173"]));
+  expect(result.resourcePaths).toContain("/workers/pdf.worker.min.mjs");
   console.log(
     "QUALIFICATION_METRIC",
     JSON.stringify({ adapter: "pdf", ...result }),

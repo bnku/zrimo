@@ -2,26 +2,36 @@ import type {
   AdapterOpenContext,
   DocumentAdapter,
   DocumentInfo,
+  HyperlinkTarget,
   RenderViewport,
   TextRun,
 } from "../contracts.js";
 import { abortError, ViewerError } from "../errors.js";
-import { drawEncodedImage } from "./bitmap.js";
+
+const CSS_UNITS = 1;
 
 export interface PdfBackend {
   readonly pageCount: number;
-  renderPagePng(
+  renderPage(
+    target: HTMLCanvasElement | OffscreenCanvas,
     pageIndex: number,
-    dpi: number,
+    zoom: number,
+    devicePixelRatio: number,
     signal?: AbortSignal,
-  ): Promise<Uint8Array>;
-  pageTextJson(pageIndex: number, signal?: AbortSignal): Promise<string>;
-  close(): void;
+  ): Promise<void>;
+  pageText(
+    pageIndex: number,
+    signal?: AbortSignal,
+  ): Promise<readonly TextRun[]>;
+  close(): void | Promise<void>;
 }
 
 export interface PdfAdapterOptions {
   readonly workerUrl?: string | URL;
-  readonly moduleUrl?: string | URL;
+  readonly cMapUrl?: string | URL;
+  readonly standardFontDataUrl?: string | URL;
+  readonly wasmUrl?: string | URL;
+  readonly iccUrl?: string | URL;
   readonly open?: (
     data: Uint8Array,
     context: AdapterOpenContext,
@@ -30,32 +40,83 @@ export interface PdfAdapterOptions {
 
 interface PdfHandle {
   readonly backend: PdfBackend;
-  readonly cache: Map<string, CachedPage>;
-  readonly maxPixels: number;
-  cachedPixels: number;
 }
 
-interface CachedPage {
-  readonly png: Uint8Array;
-  readonly pixels: number;
-}
-
-interface PdfPageText {
-  readonly pageWidth?: number;
-  readonly page_width?: number;
-  readonly pageHeight?: number;
-  readonly page_height?: number;
-  readonly chars?: readonly PdfCharacter[];
-}
-
-interface PdfCharacter {
-  readonly char: string;
-  readonly bbox: {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
+interface PdfJsModule {
+  readonly getDocument: (parameters: Readonly<Record<string, unknown>>) => {
+    readonly promise: Promise<PdfJsDocument>;
+    destroy(): Promise<void>;
   };
+  readonly PDFWorker: new (parameters: {
+    readonly port: Worker;
+  }) => PdfJsWorker;
+  readonly RenderingCancelledException: new (...args: unknown[]) => Error;
+  readonly version: string;
+}
+
+interface PdfJsWorker {
+  readonly promise: Promise<void>;
+  destroy(): void;
+}
+
+interface PdfJsDocument {
+  readonly numPages: number;
+  getPage(pageNumber: number): Promise<PdfJsPage>;
+  getDestination(name: string): Promise<readonly unknown[] | null>;
+  getPageIndex(reference: unknown): Promise<number>;
+  cleanup(): Promise<void>;
+}
+
+interface PdfJsPage {
+  getViewport(parameters: { readonly scale: number }): PdfJsViewport;
+  render(parameters: Readonly<Record<string, unknown>>): PdfJsRenderTask;
+  getTextContent(): Promise<PdfJsTextContent>;
+  getAnnotations(parameters: {
+    readonly intent: "display";
+  }): Promise<readonly PdfJsAnnotation[]>;
+}
+
+interface PdfJsViewport {
+  readonly width: number;
+  readonly height: number;
+  readonly scale: number;
+  readonly transform: readonly number[];
+  convertToViewportPoint(x: number, y: number): readonly [number, number];
+}
+
+interface PdfJsRenderTask {
+  readonly promise: Promise<void>;
+  cancel(extraDelay?: number): void;
+}
+
+interface PdfJsTextContent {
+  readonly items: readonly (PdfJsTextItem | { readonly type: string })[];
+  readonly styles: Readonly<Record<string, PdfJsTextStyle>>;
+}
+
+interface PdfJsTextItem {
+  readonly str: string;
+  readonly dir: string;
+  readonly transform: readonly number[];
+  readonly width: number;
+  readonly height: number;
+  readonly fontName: string;
+  readonly hasEOL: boolean;
+}
+
+interface PdfJsTextStyle {
+  readonly ascent?: number;
+  readonly descent?: number;
+  readonly vertical?: boolean;
+  readonly fontFamily?: string;
+}
+
+interface PdfJsAnnotation {
+  readonly subtype?: string;
+  readonly rect?: readonly number[];
+  readonly url?: string;
+  readonly unsafeUrl?: string;
+  readonly dest?: string | readonly unknown[];
 }
 
 export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
@@ -71,36 +132,17 @@ export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
     data: Uint8Array,
     context: AdapterOpenContext,
   ): Promise<PdfHandle> {
-    if (containsAscii(data, "/Encrypt"))
-      throw new ViewerError(
-        "encrypted-document",
-        "Password-protected PDF documents are not supported",
-      );
     context.reportProgress({ phase: "parsing", loaded: 0, total: 1 });
     try {
       const backend = this.#options.open
         ? await this.#options.open(data, context)
-        : await WorkerPdfBackend.open(
-            data,
-            this.#options.workerUrl
-              ? new URL(this.#options.workerUrl, context.assetBaseUrl)
-              : context.assetBaseUrl
-                ? new URL("workers/pdf-worker.js", context.assetBaseUrl)
-                : new URL("../pdf-worker.js", import.meta.url),
-            this.#options.moduleUrl
-              ? new URL(this.#options.moduleUrl, context.assetBaseUrl)
-              : context.assetBaseUrl
-                ? new URL("wasm/pdf/index.js", context.assetBaseUrl)
-                : new URL("../assets/pdf/index.js", import.meta.url),
-            context.signal,
-            context.limits.maxOperationMs,
-          );
+        : await PdfJsBackend.open(data, context, this.#options);
       if (context.signal.aborted) {
-        backend.close();
+        await backend.close();
         throw abortError();
       }
       if (backend.pageCount < 1) {
-        backend.close();
+        await backend.close();
         throw new ViewerError("invalid-file", "PDF contains no pages");
       }
       context.reportProgress({
@@ -109,20 +151,16 @@ export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
         total: 1,
         ratio: 1,
       });
-      return {
-        backend,
-        cache: new Map(),
-        maxPixels: context.limits.maxDecodedPixels,
-        cachedPixels: 0,
-      };
+      return { backend };
     } catch (error) {
+      if (context.signal.aborted) throw abortError();
       if (error instanceof ViewerError) throw error;
       const message = error instanceof Error ? error.message : String(error);
       throw new ViewerError(
-        /encrypt|password/i.test(message)
-          ? "encrypted-document"
-          : "invalid-file",
-        message,
+        isPasswordError(error, message) ? "encrypted-document" : "invalid-file",
+        isPasswordError(error, message)
+          ? "Password-protected PDF documents are not supported"
+          : message,
         { cause: error },
       );
     }
@@ -140,46 +178,13 @@ export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
   ): Promise<void> {
     assertPage(viewport.pageIndex, handle.backend.pageCount);
     if (signal?.aborted) throw abortError();
-    const dpr = Math.max(1, viewport.devicePixelRatio);
-    const dpi = Math.max(
-      36,
-      Math.min(600, Math.round(72 * viewport.zoom * dpr)),
+    await handle.backend.renderPage(
+      target,
+      viewport.pageIndex,
+      viewport.zoom,
+      viewport.devicePixelRatio,
+      signal,
     );
-    const key = `${viewport.pageIndex}@${dpi}`;
-    let page = handle.cache.get(key);
-    if (page) {
-      handle.cache.delete(key);
-      handle.cache.set(key, page);
-    } else {
-      const png = await handle.backend.renderPagePng(
-        viewport.pageIndex,
-        dpi,
-        signal,
-      );
-      const dimensions = pngDimensions(png);
-      const pixels = dimensions.width * dimensions.height;
-      if (!Number.isSafeInteger(pixels) || pixels > handle.maxPixels)
-        throw new ViewerError(
-          "resource-limit",
-          "Rendered PDF page exceeds pixel limit",
-          {
-            details: { pixels, limit: handle.maxPixels },
-          },
-        );
-      page = { png, pixels };
-      while (
-        handle.cachedPixels + pixels > handle.maxPixels &&
-        handle.cache.size > 0
-      ) {
-        const oldest = handle.cache.keys().next().value as string;
-        const removed = handle.cache.get(oldest)!;
-        handle.cache.delete(oldest);
-        handle.cachedPixels -= removed.pixels;
-      }
-      handle.cache.set(key, page);
-      handle.cachedPixels += pixels;
-    }
-    await drawEncodedImage(page.png, "image/png", target, { dpr });
     if (signal?.aborted) throw abortError();
   }
 
@@ -190,32 +195,11 @@ export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
   ): Promise<readonly TextRun[]> {
     assertPage(pageIndex, handle.backend.pageCount);
     if (signal?.aborted) throw abortError();
-    let parsed: PdfPageText;
-    try {
-      parsed = JSON.parse(
-        await handle.backend.pageTextJson(pageIndex, signal),
-      ) as PdfPageText;
-    } catch (error) {
-      throw new ViewerError("invalid-file", "Invalid PDF text-map response", {
-        cause: error,
-      });
-    }
-    return (parsed.chars ?? []).map((character) => ({
-      text: character.char,
-      x: character.bbox.x,
-      y: character.bbox.y,
-      width: character.bbox.width,
-      height: character.bbox.height,
-      direction: /[\u0590-\u08ff\ufb1d-\ufefc]/u.test(character.char)
-        ? "rtl"
-        : "ltr",
-    }));
+    return handle.backend.pageText(pageIndex, signal);
   }
 
-  close(handle: PdfHandle): void {
-    handle.cache.clear();
-    handle.cachedPixels = 0;
-    handle.backend.close();
+  async close(handle: PdfHandle): Promise<void> {
+    await handle.backend.close();
   }
 }
 
@@ -225,203 +209,492 @@ export function createPdfAdapter(
   return new PdfDocumentAdapter(options);
 }
 
-class WorkerPdfBackend implements PdfBackend {
+class PdfJsBackend implements PdfBackend {
   readonly pageCount: number;
-  readonly #worker: Worker;
-  readonly #pending = new Map<
-    number,
-    { resolve(value: unknown): void; reject(error: unknown): void }
-  >();
-  #requestId = 0;
+  readonly #module: PdfJsModule;
+  readonly #document: PdfJsDocument;
+  readonly #worker: PdfJsWorker;
+  readonly #loadingTask: { destroy(): Promise<void> };
+  readonly #maxPixels: number;
+  readonly #pages = new Map<number, Promise<PdfJsPage>>();
   #closed = false;
-  readonly #timeoutMs: number;
 
-  private constructor(worker: Worker, pageCount: number, timeoutMs: number) {
+  private constructor(
+    module: PdfJsModule,
+    document: PdfJsDocument,
+    worker: PdfJsWorker,
+    loadingTask: { destroy(): Promise<void> },
+    maxPixels: number,
+  ) {
+    this.#module = module;
+    this.#document = document;
     this.#worker = worker;
-    this.pageCount = pageCount;
-    this.#timeoutMs = timeoutMs;
-    worker.onmessage = (event: MessageEvent<PdfWorkerResponse>) => {
-      const pending = this.#pending.get(event.data.id);
-      if (!pending) return;
-      this.#pending.delete(event.data.id);
-      if (event.data.ok) pending.resolve(event.data);
-      else pending.reject(new ViewerError("invalid-file", event.data.message));
-    };
-    worker.onerror = (event) => {
-      for (const pending of this.#pending.values())
-        pending.reject(
-          new ViewerError("worker-crashed", "PDF worker crashed", {
-            details: { message: event.message },
-          }),
-        );
-      this.#pending.clear();
-    };
+    this.#loadingTask = loadingTask;
+    this.#maxPixels = maxPixels;
+    this.pageCount = document.numPages;
   }
 
   static async open(
     data: Uint8Array,
-    workerUrl: URL,
-    moduleUrl: URL,
-    signal: AbortSignal,
-    timeoutMs: number,
-  ): Promise<WorkerPdfBackend> {
-    const worker = new Worker(workerUrl, {
-      type: "module",
-      name: "pdf-renderer",
-    });
-    const copy = data.slice().buffer;
-    const response = await oneShotRequest(
-      worker,
-      { id: 0, type: "open", data: copy, moduleUrl: moduleUrl.href },
-      [copy],
-      signal,
-      timeoutMs,
-    );
-    if (!response.ok || typeof response.pageCount !== "number") {
-      worker.terminate();
+    context: AdapterOpenContext,
+    options: PdfAdapterOptions,
+  ): Promise<PdfJsBackend> {
+    if (typeof Worker === "undefined")
       throw new ViewerError(
-        "invalid-file",
-        response.ok ? "PDF worker returned no page count" : response.message,
+        "internal",
+        "PDF.js requires a browser module Worker",
       );
+    // PDF.js' modern build targets browsers with very recent JavaScript
+    // intrinsics (for example Math.sumPrecise). The legacy build keeps the
+    // same API while installing the required polyfills in both the main
+    // realm and its matching worker, which is necessary for our supported
+    // browser matrix.
+    const module =
+      (await import("pdfjs-dist/legacy/build/pdf.mjs")) as unknown as PdfJsModule;
+    const assetRoot = context.assetBaseUrl
+      ? new URL("assets/pdfjs/", context.assetBaseUrl)
+      : packageRelativeUrl(["..", "assets", "pdfjs", ""]);
+    const defaultWorkerUrl = context.assetBaseUrl
+      ? new URL("workers/pdf.worker.min.mjs", context.assetBaseUrl)
+      : packageRelativeUrl(["..", "workers", "pdf.worker.min.mjs"]);
+    // The worker filename is intentionally stable for package consumers, so
+    // attach the PDF.js version to avoid reusing an incompatible cached worker
+    // after a dependency upgrade.
+    defaultWorkerUrl.searchParams.set("v", module.version);
+    const workerUrl = resolveAssetUrl(
+      options.workerUrl,
+      context.assetBaseUrl,
+      defaultWorkerUrl,
+    );
+    const workerPort = new Worker(workerUrl, {
+      type: "module",
+      name: `pdfjs-${module.version}`,
+    });
+    const worker = new module.PDFWorker({ port: workerPort });
+    const loadingTask = module.getDocument({
+      data: data.slice(),
+      worker,
+      cMapUrl: directoryUrl(options.cMapUrl, context, assetRoot, "cmaps/"),
+      cMapPacked: true,
+      standardFontDataUrl: directoryUrl(
+        options.standardFontDataUrl,
+        context,
+        assetRoot,
+        "standard_fonts/",
+      ),
+      wasmUrl: directoryUrl(options.wasmUrl, context, assetRoot, "wasm/"),
+      iccUrl: directoryUrl(options.iccUrl, context, assetRoot, "iccs/"),
+      useWorkerFetch: true,
+      useWasm: true,
+      useSystemFonts: false,
+      disableFontFace: false,
+      isEvalSupported: false,
+      enableXfa: false,
+      stopAtErrors: false,
+      maxImageSize: context.limits.maxDecodedPixels,
+      canvasMaxAreaInBytes: context.limits.maxDecodedPixels * 4,
+    });
+    const onAbort = (): void => {
+      void loadingTask.destroy();
+      worker.destroy();
+      workerPort.terminate();
+    };
+    context.signal.addEventListener("abort", onAbort, { once: true });
+    try {
+      const document = await withTimeout(
+        loadingTask.promise,
+        context.limits.maxOperationMs,
+        "PDF parsing",
+      );
+      if (context.signal.aborted) throw abortError();
+      return new PdfJsBackend(
+        module,
+        document,
+        worker,
+        loadingTask,
+        context.limits.maxDecodedPixels,
+      );
+    } catch (error) {
+      await loadingTask.destroy().catch(() => undefined);
+      worker.destroy();
+      workerPort.terminate();
+      throw error;
+    } finally {
+      context.signal.removeEventListener("abort", onAbort);
     }
-    return new WorkerPdfBackend(worker, response.pageCount, timeoutMs);
   }
 
-  async renderPagePng(
+  async renderPage(
+    target: HTMLCanvasElement | OffscreenCanvas,
     pageIndex: number,
-    dpi: number,
+    zoom: number,
+    devicePixelRatio: number,
     signal?: AbortSignal,
-  ): Promise<Uint8Array> {
-    const response = (await this.#request(
-      { type: "render", pageIndex, dpi },
-      signal,
-    )) as PdfWorkerResponse;
-    if (!response.ok || !response.data)
-      throw new ViewerError("render-failed", "PDF worker returned no bitmap");
-    return new Uint8Array(response.data);
+  ): Promise<void> {
+    this.#assertOpen();
+    const page = await this.#page(pageIndex);
+    if (signal?.aborted) throw abortError();
+    const viewport = page.getViewport({ scale: CSS_UNITS * zoom });
+    const dpr = Math.max(1, devicePixelRatio);
+    const width = Math.max(1, viewport.width);
+    const height = Math.max(1, viewport.height);
+    const pixels = Math.ceil(width * dpr) * Math.ceil(height * dpr);
+    if (!Number.isSafeInteger(pixels) || pixels > this.#maxPixels)
+      throw new ViewerError(
+        "resource-limit",
+        "Rendered PDF page exceeds pixel limit",
+        { details: { pixels, limit: this.#maxPixels } },
+      );
+    target.width = Math.max(1, Math.ceil(width * dpr));
+    target.height = Math.max(1, Math.ceil(height * dpr));
+    if ("style" in target) {
+      target.style.width = `${width}px`;
+      target.style.height = `${height}px`;
+    }
+    const context = target.getContext("2d");
+    if (!context)
+      throw new ViewerError(
+        "render-failed",
+        "Canvas 2D context is unavailable",
+      );
+    const renderTask = page.render({
+      canvas: null,
+      canvasContext: context,
+      viewport,
+      transform: dpr === 1 ? undefined : [dpr, 0, 0, dpr, 0, 0],
+      background: "rgb(255,255,255)",
+      intent: "display",
+    });
+    const onAbort = (): void => renderTask.cancel(0);
+    signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      await renderTask.promise;
+      if (signal?.aborted) throw abortError();
+    } catch (error) {
+      if (
+        signal?.aborted ||
+        error instanceof this.#module.RenderingCancelledException ||
+        (error instanceof Error && error.name === "RenderingCancelledException")
+      )
+        throw abortError();
+      throw new ViewerError("render-failed", "PDF.js page rendering failed", {
+        cause: error,
+      });
+    } finally {
+      signal?.removeEventListener("abort", onAbort);
+    }
   }
 
-  async pageTextJson(pageIndex: number, signal?: AbortSignal): Promise<string> {
-    const response = (await this.#request(
-      { type: "text", pageIndex },
-      signal,
-    )) as PdfWorkerResponse;
-    if (!response.ok || response.json === undefined)
-      throw new ViewerError("invalid-file", "PDF worker returned no text map");
-    return response.json;
+  async pageText(
+    pageIndex: number,
+    signal?: AbortSignal,
+  ): Promise<readonly TextRun[]> {
+    this.#assertOpen();
+    const page = await this.#page(pageIndex);
+    if (signal?.aborted) throw abortError();
+    const viewport = page.getViewport({ scale: CSS_UNITS });
+    const [content, annotations] = await Promise.all([
+      raceAbort(page.getTextContent(), signal),
+      raceAbort(page.getAnnotations({ intent: "display" }), signal),
+    ]);
+    const links = await this.#links(annotations, viewport, signal);
+    const runs: TextRun[] = [];
+    let logicalOffset = 0;
+    for (const item of content.items) {
+      if (!("str" in item) || item.str.length === 0) continue;
+      const style = content.styles[item.fontName] ?? {};
+      const run = textItemToRun(item, style, viewport, links, logicalOffset);
+      logicalOffset = run.logicalEnd ?? logicalOffset + item.str.length;
+      runs.push(run);
+    }
+    return runs;
   }
 
-  close(): void {
+  async close(): Promise<void> {
     if (this.#closed) return;
     this.#closed = true;
-    this.#worker.postMessage({ id: ++this.#requestId, type: "close" });
-    for (const pending of this.#pending.values())
-      pending.reject(abortError("PDF closed"));
-    this.#pending.clear();
-    this.#worker.terminate();
-  }
-
-  #request(
-    payload: Omit<PdfWorkerRequest, "id">,
-    signal?: AbortSignal,
-  ): Promise<unknown> {
-    if (this.#closed)
-      return Promise.reject(
-        new ViewerError("lifecycle-error", "PDF backend is closed"),
-      );
-    if (signal?.aborted) return Promise.reject(abortError());
-    const id = ++this.#requestId;
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        this.#pending.delete(id);
-        this.close();
-        reject(workerTimeout("PDF", this.#timeoutMs));
-      }, this.#timeoutMs);
-      const onAbort = (): void => {
-        clearTimeout(timeout);
-        this.#pending.delete(id);
-        reject(abortError());
-      };
-      signal?.addEventListener("abort", onAbort, { once: true });
-      this.#pending.set(id, {
-        resolve: (value) => {
-          clearTimeout(timeout);
-          signal?.removeEventListener("abort", onAbort);
-          resolve(value);
-        },
-        reject: (error) => {
-          clearTimeout(timeout);
-          signal?.removeEventListener("abort", onAbort);
-          reject(error);
-        },
-      });
-      this.#worker.postMessage({ id, ...payload });
-    });
-  }
-}
-
-interface PdfWorkerRequest {
-  readonly id: number;
-  readonly type: "open" | "render" | "text" | "close";
-  readonly pageIndex?: number;
-  readonly dpi?: number;
-}
-
-type PdfWorkerResponse =
-  | {
-      readonly id: number;
-      readonly ok: true;
-      readonly pageCount?: number;
-      readonly data?: ArrayBuffer;
-      readonly json?: string;
+    this.#pages.clear();
+    try {
+      await this.#document.cleanup();
+      await this.#loadingTask.destroy();
+    } finally {
+      this.#worker.destroy();
     }
-  | { readonly id: number; readonly ok: false; readonly message: string };
+  }
 
-function oneShotRequest(
-  worker: Worker,
-  payload: Readonly<Record<string, unknown>>,
-  transfer: Transferable[],
-  signal: AbortSignal,
-  timeoutMs: number,
-): Promise<PdfWorkerResponse> {
-  return new Promise((resolve, reject) => {
-    const finish = (): void => {
-      clearTimeout(timeout);
-      signal.removeEventListener("abort", onAbort);
-    };
-    const onAbort = (): void => {
-      finish();
-      worker.terminate();
-      reject(abortError());
-    };
-    const timeout = setTimeout(() => {
-      finish();
-      worker.terminate();
-      reject(workerTimeout("PDF", timeoutMs));
-    }, timeoutMs);
-    signal.addEventListener("abort", onAbort, { once: true });
-    worker.onerror = (event) => {
-      finish();
-      worker.terminate();
-      reject(
-        new ViewerError("worker-crashed", "PDF worker crashed", {
-          details: { message: event.message },
-        }),
+  #page(pageIndex: number): Promise<PdfJsPage> {
+    let page = this.#pages.get(pageIndex);
+    if (!page) {
+      page = this.#document.getPage(pageIndex + 1);
+      this.#pages.set(pageIndex, page);
+    }
+    return page;
+  }
+
+  async #links(
+    annotations: readonly PdfJsAnnotation[],
+    viewport: PdfJsViewport,
+    signal?: AbortSignal,
+  ): Promise<readonly PdfLinkBox[]> {
+    const result: PdfLinkBox[] = [];
+    for (const annotation of annotations) {
+      if (
+        annotation.subtype !== "Link" ||
+        !annotation.rect ||
+        annotation.rect.length < 4
+      )
+        continue;
+      const target = await this.#linkTarget(annotation, signal);
+      if (!target) continue;
+      const first = viewport.convertToViewportPoint(
+        annotation.rect[0]!,
+        annotation.rect[1]!,
       );
+      const second = viewport.convertToViewportPoint(
+        annotation.rect[2]!,
+        annotation.rect[3]!,
+      );
+      result.push({
+        left: Math.min(first[0], second[0]),
+        top: Math.min(first[1], second[1]),
+        right: Math.max(first[0], second[0]),
+        bottom: Math.max(first[1], second[1]),
+        target,
+      });
+    }
+    return result;
+  }
+
+  async #linkTarget(
+    annotation: PdfJsAnnotation,
+    signal?: AbortSignal,
+  ): Promise<HyperlinkTarget | undefined> {
+    const external = safeExternalUrl(annotation.url ?? annotation.unsafeUrl);
+    if (external) return external;
+    if (!annotation.dest) return undefined;
+    const reference =
+      typeof annotation.dest === "string"
+        ? await raceAbort(
+            this.#document.getDestination(annotation.dest),
+            signal,
+          )
+        : annotation.dest;
+    if (!reference || reference.length === 0) return undefined;
+    let pageIndex: number | undefined;
+    try {
+      pageIndex = await raceAbort(
+        this.#document.getPageIndex(reference[0]),
+        signal,
+      );
+    } catch {
+      // A malformed destination remains a typed internal link without a page.
+    }
+    return {
+      kind: "internal",
+      ref: typeof annotation.dest === "string" ? annotation.dest : "pdf-dest",
+      ...(pageIndex === undefined ? {} : { pageIndex }),
     };
-    worker.onmessage = (event: MessageEvent<PdfWorkerResponse>) => {
-      finish();
-      resolve(event.data);
-    };
-    worker.postMessage(payload, transfer);
+  }
+
+  #assertOpen(): void {
+    if (this.#closed)
+      throw new ViewerError("lifecycle-error", "PDF backend is closed");
+  }
+}
+
+interface PdfLinkBox {
+  readonly left: number;
+  readonly top: number;
+  readonly right: number;
+  readonly bottom: number;
+  readonly target: HyperlinkTarget;
+}
+
+function textItemToRun(
+  item: PdfJsTextItem,
+  style: PdfJsTextStyle,
+  viewport: PdfJsViewport,
+  links: readonly PdfLinkBox[],
+  logicalStart: number,
+): TextRun {
+  const transform = multiplyTransform(viewport.transform, item.transform);
+  let angle = Math.atan2(transform[1], transform[0]);
+  if (style.vertical) angle += Math.PI / 2;
+  const fontHeight = Math.max(1, Math.hypot(transform[2], transform[3]));
+  const ascent =
+    style.ascent !== undefined
+      ? style.ascent * fontHeight
+      : style.descent !== undefined
+        ? (1 + style.descent) * fontHeight
+        : fontHeight;
+  const left =
+    transform[4] + fontHeight * Math.sin(angle) * (ascent / fontHeight);
+  const top =
+    transform[5] - fontHeight * Math.cos(angle) * (ascent / fontHeight);
+  const width = Math.max(1, item.width * viewport.scale);
+  const height = Math.max(1, item.height * viewport.scale, fontHeight);
+  const hyperlink = links.find((link) =>
+    rectanglesOverlap(
+      { left, top, right: left + width, bottom: top + height },
+      link,
+    ),
+  )?.target;
+  const fontFamily = style.fontFamily ?? "sans-serif";
+  return {
+    text: item.str,
+    x: left,
+    y: top,
+    width,
+    height,
+    direction: item.dir === "rtl" ? "rtl" : "ltr",
+    fontFamily,
+    fontSize: fontHeight,
+    font: `${fontHeight}px ${fontFamily}`,
+    ...(Math.abs(angle) < 0.000_001
+      ? {}
+      : { transform: `rotate(${angle}rad)` }),
+    textLayer: "pdf",
+    coordinateWidth: viewport.width,
+    coordinateHeight: viewport.height,
+    logicalStart,
+    logicalEnd: logicalStart + item.str.length,
+    ...(hyperlink ? { hyperlink } : {}),
+  };
+}
+
+function multiplyTransform(
+  first: readonly number[],
+  second: readonly number[],
+): readonly [number, number, number, number, number, number] {
+  return [
+    first[0]! * second[0]! + first[2]! * second[1]!,
+    first[1]! * second[0]! + first[3]! * second[1]!,
+    first[0]! * second[2]! + first[2]! * second[3]!,
+    first[1]! * second[2]! + first[3]! * second[3]!,
+    first[0]! * second[4]! + first[2]! * second[5]! + first[4]!,
+    first[1]! * second[4]! + first[3]! * second[5]! + first[5]!,
+  ];
+}
+
+function rectanglesOverlap(
+  left: {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  },
+  right: {
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
+  },
+): boolean {
+  return !(
+    left.right < right.left ||
+    left.left > right.right ||
+    left.bottom < right.top ||
+    left.top > right.bottom
+  );
+}
+
+function safeExternalUrl(
+  value: string | undefined,
+): HyperlinkTarget | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return ["http:", "https:", "mailto:", "tel:"].includes(url.protocol)
+      ? { kind: "external", url: url.href }
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveAssetUrl(
+  value: string | URL | undefined,
+  base: URL | undefined,
+  fallback: URL,
+): URL {
+  return value === undefined ? fallback : new URL(value, base);
+}
+
+function packageRelativeUrl(segments: readonly string[]): URL {
+  // Keeping the path data-driven prevents application bundlers from treating
+  // the package-owned directory as an import to hash or inline. Hosts that
+  // bundle the facade should normally provide assetBaseUrl.
+  const moduleUrl: string = import.meta.url;
+  return new URL(segments.join("/"), moduleUrl);
+}
+
+function directoryUrl(
+  value: string | URL | undefined,
+  context: AdapterOpenContext,
+  assetRoot: URL,
+  directory: string,
+): string {
+  const url = resolveAssetUrl(
+    value,
+    context.assetBaseUrl,
+    new URL(directory, assetRoot),
+  );
+  return url.href.endsWith("/") ? url.href : `${url.href}/`;
+}
+
+function raceAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(abortError());
+  return new Promise((resolve, reject) => {
+    const onAbort = (): void => reject(abortError());
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(error);
+      },
+    );
   });
 }
 
-function workerTimeout(kind: string, timeoutMs: number): ViewerError {
-  return new ViewerError(
-    "resource-limit",
-    `${kind} worker operation exceeded maxOperationMs`,
-    { details: { timeoutMs } },
+function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(
+      () =>
+        reject(
+          new ViewerError(
+            "resource-limit",
+            `${operation} exceeded maxOperationMs`,
+            { details: { timeoutMs } },
+          ),
+        ),
+      timeoutMs,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+}
+
+function isPasswordError(error: unknown, message: string): boolean {
+  return (
+    (error instanceof Error && error.name === "PasswordException") ||
+    /password|encrypted/i.test(message)
   );
 }
 
@@ -430,32 +703,4 @@ function assertPage(pageIndex: number, pageCount: number): void {
     throw new ViewerError("render-failed", "PDF page index is out of range", {
       details: { pageIndex, pageCount },
     });
-}
-
-function pngDimensions(data: Uint8Array): { width: number; height: number } {
-  if (
-    data.length < 24 ||
-    data[0] !== 0x89 ||
-    String.fromCharCode(...data.subarray(1, 4)) !== "PNG"
-  )
-    throw new ViewerError(
-      "render-failed",
-      "PDF backend returned invalid PNG data",
-    );
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  return { width: view.getUint32(16), height: view.getUint32(20) };
-}
-
-function containsAscii(data: Uint8Array, needle: string): boolean {
-  const bytes = new TextEncoder().encode(needle);
-  outer: for (
-    let offset = 0;
-    offset <= data.length - bytes.length;
-    offset += 1
-  ) {
-    for (let index = 0; index < bytes.length; index += 1)
-      if (data[offset + index] !== bytes[index]) continue outer;
-    return true;
-  }
-  return false;
 }

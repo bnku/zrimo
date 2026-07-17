@@ -4,16 +4,23 @@ The built-in `OfficeDocumentAdapter` is registered by `ViewerClient` and routes 
 
 ## Format matrix
 
-| Input | Internal path | Unit | Rendering and text |
-|---|---|---|---|
-| DOCX, DOCM | `@silurus/ooxml` DOCX engine | page | Section-aware canvas pages and positioned text runs |
-| XLSX, XLSM | `@silurus/ooxml` XLSX engine | sheet | Sheet viewport, merged ranges, frozen panes, cell coordinates and positioned text |
-| PPTX, PPTM, PPSX | `@silurus/ooxml` PPTX engine | slide | Master/layout-aware canvas slides and positioned text runs |
-| DOC | `office_oxide` WASM → DOCX engine | page | Same navigation/text semantics as DOCX after in-memory normalization |
-| XLS | `office_oxide` WASM → XLSX engine | sheet | Same navigation/text semantics as XLSX after in-memory normalization |
-| PPT | `office_oxide` WASM → PPTX engine | slide | Same navigation/text semantics as PPTX after in-memory normalization |
+| Input            | Internal path                     | Unit  | Rendering and text                                                                                          |
+| ---------------- | --------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
+| DOCX, DOCM       | `@silurus/ooxml` DOCX engine      | page  | Section-aware canvas pages and positioned text runs                                                         |
+| XLSX, XLSM       | `@silurus/ooxml` XLSX engine      | sheet | Sheet viewport, merged ranges, frozen panes, cell coordinates and positioned text                           |
+| PPTX, PPTM, PPSX | `@silurus/ooxml` PPTX engine      | slide | Master/layout-aware canvas slides and positioned text runs                                                  |
+| DOC              | Fail-closed capability gate       | —     | Recognized input returns `fidelity-unsupported`; optional diagnostic plain-text extraction is not rendering |
+| XLS              | `office_oxide` WASM → XLSX engine | sheet | Same navigation/text semantics as XLSX after in-memory normalization                                        |
+| PPT              | `office_oxide` WASM → PPTX engine | slide | Same navigation/text semantics as PPTX after in-memory normalization                                        |
 
-Modern OOXML parsing occurs in the backend's module worker. Legacy conversion occurs in the package's `legacy-converter-worker.js`: input and generated OOXML use transferable buffers, never a Blob URL, server request, native executable, or temporary file. Generated OOXML is an internal derived artifact; only the original input remains available through `getOriginalBytes()` and all parser/converter state is released on `close()`/`destroy()`.
+DOCX canvas pages and selectable DOM are driven by the same
+`DocxTextRunInfo` geometry. The adapter retains CSS font shorthand/size, letter
+spacing, page transform, tate-chu-yoko metadata, hyperlink target, coordinate
+extent, and logical UTF-16 offsets. The viewport delegates selection and find
+geometry to the pinned `@silurus/ooxml` overlay builders; zoom scales the entire
+natural coordinate layer rather than re-estimating individual glyph boxes.
+
+Modern OOXML parsing occurs in the backend's module worker. Qualified XLS/PPT conversion occurs in the package's `legacy-converter-worker.js`: input and generated OOXML use transferable buffers, never a Blob URL, server request, native executable, or temporary file. Generated OOXML is an internal derived artifact; only the original input remains available through `getOriginalBytes()` and all parser/converter state is released on `close()`/`destroy()`.
 
 The package distribution contains the converter worker and `assets/legacy/index.js`/`index_bg.wasm`. With a self-hosted asset directory, set `assetBaseUrl`; the expected paths are `workers/legacy-converter-worker.js` and `wasm/legacy/index.js`. `legacy.workerUrl` and `legacy.moduleUrl` can be overridden when constructing `OfficeDocumentAdapter`.
 
@@ -21,7 +28,19 @@ The package distribution contains the converter worker and `assets/legacy/index.
 
 The viewer does not contain a formula engine. During open it reads every worksheet, retains the saved cell value, and removes the formula from the render model. This also disables the upstream renderer's convenience recalculation of volatile `TODAY()` and `NOW()` cells.
 
-If a formula cell has no saved value, its formula is shown as text with a leading `=` and the document receives a `fidelity-degraded` warning containing the affected cell count. `DocumentInfo.sheets` exposes sheet names, used row/column bounds, frozen rows/columns, and merged ranges. `RenderViewport.sheetRange` selects the 1-based sheet window passed to the backend; public document/sheet indices remain 0-based.
+If a formula cell has no saved value, its formula is shown as text with a leading
+`=` and the document receives a `fidelity-degraded` warning containing the
+affected cell count. `DocumentInfo.sheets` exposes sheet names, used row/column
+bounds, frozen rows/columns, merged ranges, default/custom row and column sizes,
+hidden zero-sized bands, headers, and RTL layout metadata. These sizes are
+unscaled CSS pixels keyed by 1-based row/column indexes.
+
+Attached sheets use a dedicated virtual spreadsheet surface rather than page
+slots: its spacer covers the full used range and its single canvas renders only
+the visible region. `RenderViewport.sheetRange` selects that 1-based window;
+`scrollOffsetX/Y` describes the clipped part of its first row/column. Frozen
+panes are supplied to the renderer. Public document/sheet indices remain
+0-based, and `fitWidth`/`fitPage` operate on the used range rather than A4.
 
 ## Active content and network policy
 
@@ -33,9 +52,9 @@ If a formula cell has no saved value, its formula is shown as text with a leadin
 
 ## Fidelity and known limitations
 
-The goal is practical viewing fidelity, not editing compatibility. Modern documents use the feature set of pinned `@silurus/ooxml@0.72.2`; unsupported equations (the optional math bundle is not included), embedded OLE objects, uncommon effects, and malformed sheet parts can degrade. A partially parsed sheet and a legacy normalization both produce explicit `fidelity-degraded` warnings.
+The goal is practical viewing fidelity, not editing compatibility. Modern documents use the feature set of pinned `@silurus/ooxml@0.72.2`; unsupported equations (the optional math bundle is not included), embedded OLE objects, uncommon effects, and malformed sheet parts can degrade. A partially parsed sheet and an XLS/PPT legacy normalization both produce explicit `fidelity-degraded` warnings.
 
-Legacy conversion is necessarily lossy for constructs that `office_oxide@0.1.6` cannot represent in its intermediate model. The source file is never overwritten. Golden thresholds and broader adversarial/fidelity corpora are release gates in roadmap task 07 rather than a claim of pixel identity for every Office producer.
+DOC does not enter that lossy path. `office_oxide@0.1.6` reads DOC FIB/CLX text but has no STSH, PAPX/CHPX, section, or table-grid model; its stock IR invents headings from short/all-caps lines. Both the TypeScript adapter and Rust conversion binding therefore refuse DOC before conversion. The source file is never overwritten.
 
 ## Programmatic adapter configuration
 

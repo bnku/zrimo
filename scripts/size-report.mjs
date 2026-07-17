@@ -9,7 +9,6 @@ const wasmArtifacts = [
   ["ooxml-xlsx", "node_modules/@silurus/ooxml/dist/xlsx_parser_bg.wasm"],
   ["ooxml-pptx", "node_modules/@silurus/ooxml/dist/pptx_parser_bg.wasm"],
   ["legacy-office", "packages/viewer/dist/assets/legacy/index_bg.wasm"],
-  ["pdf", "packages/viewer/dist/assets/pdf/index_bg.wasm"],
   ["tiff-image", "packages/viewer/dist/assets/image/index_bg.wasm"],
 ];
 
@@ -17,11 +16,19 @@ const files = await walk(dist);
 const codePaths = files.filter((path) => {
   const name = relative(dist, path);
   return (
+    !name.startsWith("assets/pdfjs/") &&
+    name !== "workers/pdf.worker.min.mjs" &&
     !name.startsWith("fonts/") &&
     !name.endsWith(".map") &&
     !name.endsWith(".d.ts") &&
     !name.endsWith(".wasm") &&
     [".js", ".css", ".json"].includes(extname(name))
+  );
+});
+const pdfPaths = files.filter((path) => {
+  const name = relative(dist, path);
+  return (
+    name.startsWith("assets/pdfjs/") || name === "workers/pdf.worker.min.mjs"
   );
 });
 const fontPaths = files.filter(
@@ -33,6 +40,15 @@ const fontPaths = files.filter(
 const assets = [];
 for (const path of codePaths)
   assets.push(await measure(`code/${relative(dist, path)}`, path, "code"));
+for (const path of pdfPaths)
+  assets.push(await measure(`pdfjs/${relative(dist, path)}`, path, "pdf"));
+assets.push(
+  await measure(
+    "pdfjs/dependency/build/pdf.mjs",
+    resolve(root, "node_modules/pdfjs-dist/build/pdf.mjs"),
+    "pdf",
+  ),
+);
 for (const [name, path] of wasmArtifacts)
   assets.push(await measure(`wasm/${name}`, resolve(root, path), "wasm"));
 for (const path of fontPaths)

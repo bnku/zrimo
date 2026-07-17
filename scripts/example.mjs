@@ -57,6 +57,20 @@ try {
     throw error;
 }
 try {
+  await cp(
+    resolve(root, "../../packages/viewer/dist/assets"),
+    resolve(outdir, "assets"),
+    { recursive: true },
+  );
+} catch (error) {
+  if (
+    !(error instanceof Error) ||
+    !("code" in error) ||
+    error.code !== "ENOENT"
+  )
+    throw error;
+}
+try {
   await cp(resolve(root, "../../.cache/corpus"), resolve(outdir, "corpus"), {
     recursive: true,
   });

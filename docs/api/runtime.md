@@ -58,4 +58,4 @@ The complete public contract and headless examples are in [the API reference](./
 
 ## Error catalog
 
-Stable codes are `unsupported-format`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, and `internal`. Worker errors cross the boundary as `{ name: "ViewerError", code, message, details? }`; stack traces and arbitrary causes are not serialized.
+Stable codes are `unsupported-format`, `fidelity-unsupported`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, and `internal`. `fidelity-unsupported` distinguishes recognized input (currently legacy DOC) from an unknown format when the available backend cannot preserve material structure. Worker errors cross the boundary as `{ name: "ViewerError", code, message, details? }`; stack traces and arbitrary causes are not serialized.

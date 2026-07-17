@@ -29,6 +29,7 @@ export type RenderUnit = "page" | "slide" | "sheet" | "image";
 
 export type ViewerErrorCode =
   | "unsupported-format"
+  | "fidelity-unsupported"
   | "invalid-file"
   | "encrypted-document"
   | "resource-limit"
@@ -226,6 +227,24 @@ export interface TextRun {
   readonly fontFamily?: string;
   readonly fontWeight?: number;
   readonly fontStyle?: FontStyle;
+  /** Exact CSS font shorthand used by a canvas renderer. */
+  readonly font?: string;
+  /** Font size in the run coordinate space, in CSS pixels. */
+  readonly fontSize?: number;
+  /** Uniform canvas letter spacing in the run coordinate space. */
+  readonly letterSpacingPx?: number;
+  /** Renderer-provided CSS transform for rotated/vertical glyph runs. */
+  readonly transform?: string;
+  /** True for a horizontal-in-vertical (tate-chu-yoko) run. */
+  readonly eastAsianVert?: boolean;
+  /** Selectable overlay implementation that owns this run's geometry. */
+  readonly textLayer?: "docx" | "pdf" | "pptx" | "generic";
+  /** Unscaled coordinate-space width/height shared by all runs on a unit. */
+  readonly coordinateWidth?: number;
+  readonly coordinateHeight?: number;
+  /** UTF-16 offsets in the page's logical text stream. */
+  readonly logicalStart?: number;
+  readonly logicalEnd?: number;
   readonly hyperlink?: HyperlinkTarget;
   readonly row?: number;
   readonly column?: number;
@@ -301,6 +320,10 @@ export interface HeadlessRenderOptions {
   readonly devicePixelRatio?: number;
   readonly width?: number;
   readonly height?: number;
+  /** Unscaled pixels hidden before the first rendered spreadsheet column. */
+  readonly scrollOffsetX?: number;
+  /** Unscaled pixels hidden before the first rendered spreadsheet row. */
+  readonly scrollOffsetY?: number;
   readonly signal?: AbortSignal;
   readonly priority?: "visible" | "adjacent" | "background";
 }
@@ -318,6 +341,8 @@ export interface RenderViewport {
   readonly devicePixelRatio: number;
   readonly width?: number;
   readonly height?: number;
+  readonly scrollOffsetX?: number;
+  readonly scrollOffsetY?: number;
   readonly sheetRange?: SpreadsheetViewportRange;
 }
 
@@ -342,6 +367,14 @@ export interface SpreadsheetSheetInfo {
   readonly mergedRanges: readonly SpreadsheetMergedRange[];
   readonly maxRow: number;
   readonly maxColumn: number;
+  /** Geometry is expressed in unscaled CSS pixels and uses 1-based indexes. */
+  readonly defaultColumnWidth?: number;
+  readonly defaultRowHeight?: number;
+  readonly columnWidths?: Readonly<Record<number, number>>;
+  readonly rowHeights?: Readonly<Record<number, number>>;
+  readonly rowHeaderWidth?: number;
+  readonly columnHeaderHeight?: number;
+  readonly rightToLeft?: boolean;
 }
 
 export interface DocumentInfo {

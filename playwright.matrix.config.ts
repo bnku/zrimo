@@ -7,13 +7,21 @@ const chromiumPath =
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: "compat.spec.ts",
+  testMatch: ["compat.spec.ts", "selection.spec.ts", "pdf.spec.ts"],
   fullyParallel: true,
   projects: [
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
+        launchOptions: chromiumPath ? { executablePath: chromiumPath } : {},
+      },
+    },
+    {
+      name: "chromium-dpr2",
+      use: {
+        ...devices["Desktop Chrome"],
+        deviceScaleFactor: 2,
         launchOptions: chromiumPath ? { executablePath: chromiumPath } : {},
       },
     },

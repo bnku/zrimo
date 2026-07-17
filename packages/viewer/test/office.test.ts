@@ -56,6 +56,9 @@ describe("OfficeDocumentAdapter", () => {
               y: 2,
               w: 30,
               h: 12,
+              fontSize: 12,
+              font: '700 12px "Noto Sans"',
+              letterSpacingPx: 0.5,
               hyperlink: { kind: "external", url: "https://example.com/a" },
             },
             {
@@ -64,6 +67,9 @@ describe("OfficeDocumentAdapter", () => {
               y: 15,
               w: 30,
               h: 12,
+              fontSize: 12,
+              font: 'italic 12px "Noto Sans"',
+              transform: "rotate(90deg)",
               hyperlink: { kind: "external", url: "javascript:alert(1)" },
             },
             {
@@ -72,6 +78,9 @@ describe("OfficeDocumentAdapter", () => {
               y: 28,
               w: 30,
               h: 12,
+              fontSize: 12,
+              font: '12px "Noto Sans CJK"',
+              eastAsianVert: true,
               hyperlink: { kind: "internal", ref: "chapter" },
             },
           ],
@@ -96,6 +105,36 @@ describe("OfficeDocumentAdapter", () => {
     assert.equal(renderedWidth, 1632);
     const runs = await adapter.getTextMap(handle, 0);
     assert.equal(runs[0]?.hyperlink?.kind, "external");
+    assert.deepEqual(
+      {
+        font: runs[0]?.font,
+        fontSize: runs[0]?.fontSize,
+        fontFamily: runs[0]?.fontFamily,
+        fontWeight: runs[0]?.fontWeight,
+        letterSpacingPx: runs[0]?.letterSpacingPx,
+        textLayer: runs[0]?.textLayer,
+        coordinateWidth: runs[0]?.coordinateWidth,
+        coordinateHeight: runs[0]?.coordinateHeight,
+        logicalStart: runs[0]?.logicalStart,
+        logicalEnd: runs[0]?.logicalEnd,
+      },
+      {
+        font: '700 12px "Noto Sans"',
+        fontSize: 12,
+        fontFamily: "Noto Sans",
+        fontWeight: 700,
+        letterSpacingPx: 0.5,
+        textLayer: "docx",
+        coordinateWidth: 816,
+        coordinateHeight: 1056,
+        logicalStart: 0,
+        logicalEnd: 6,
+      },
+    );
+    assert.equal(runs[1]?.fontStyle, "italic");
+    assert.equal(runs[1]?.transform, "rotate(90deg)");
+    assert.equal(runs[2]?.eastAsianVert, true);
+    assert.equal(runs[2]?.logicalStart, 13);
     assert.equal(runs[1]?.hyperlink, undefined);
     assert.deepEqual(runs[2]?.hyperlink, {
       kind: "internal",
@@ -147,6 +186,10 @@ describe("OfficeDocumentAdapter", () => {
 
   it("uses cached spreadsheet values, exposes sheet geometry, and never calculates formulas", async () => {
     let volatileFormulaAfterOpen: string | undefined = "not-rendered";
+    let renderedOffsets: {
+      x: number | undefined;
+      y: number | undefined;
+    } = { x: undefined, y: undefined };
     const worksheet = {
       name: "Данные",
       rows: [
@@ -169,6 +212,11 @@ describe("OfficeDocumentAdapter", () => {
         },
       ],
       mergeCells: [{ top: 1, left: 1, bottom: 1, right: 2 }],
+      colWidths: { 2: 12 },
+      rowHeights: { 1: 18 },
+      colHidden: { 3: true },
+      defaultColWidth: 9,
+      defaultRowHeight: 15,
       freezeRows: 1,
       freezeCols: 2,
       hyperlinks: [
@@ -184,6 +232,10 @@ describe("OfficeDocumentAdapter", () => {
           getWorksheet: async () => worksheet,
           renderViewport: async (_target, _index, _range, options) => {
             volatileFormulaAfterOpen = worksheet.rows[0]?.cells[0]?.formula;
+            renderedOffsets = {
+              x: options.scrollOffsetX,
+              y: options.scrollOffsetY,
+            };
             options.onTextRun?.({
               text: "42",
               x: 10,
@@ -206,7 +258,14 @@ describe("OfficeDocumentAdapter", () => {
       frozenColumns: 2,
       mergedRanges: [{ startRow: 1, startColumn: 1, endRow: 1, endColumn: 2 }],
       maxRow: 1,
-      maxColumn: 2,
+      maxColumn: 3,
+      defaultColumnWidth: 72,
+      defaultRowHeight: 20,
+      columnWidths: { 2: 96, 3: 0 },
+      rowHeights: { 1: 24 },
+      rowHeaderWidth: 50,
+      columnHeaderHeight: 22,
+      rightToLeft: false,
     });
     assert.match(info.warnings?.[0]?.message ?? "", /no cached result/);
     assert.deepEqual(worksheet.rows[0]?.cells[1]?.value, {
@@ -214,34 +273,35 @@ describe("OfficeDocumentAdapter", () => {
       text: "=1+1",
     });
     const runs = await adapter.getTextMap(handle, 0);
-    assert.equal(volatileFormulaAfterOpen, undefined);
+    assert.equal(volatileFormulaAfterOpen, "not-rendered");
     assert.equal(runs[0]?.row, 1);
     assert.equal(runs[0]?.column, 1);
     assert.equal(runs[0]?.hyperlink?.kind, "external");
+    await adapter.render(
+      handle,
+      { width: 640, height: 480 } as OffscreenCanvas,
+      {
+        pageIndex: 0,
+        zoom: 1,
+        devicePixelRatio: 1,
+        width: 640,
+        height: 480,
+        sheetRange: { row: 8, column: 5, rowCount: 20, columnCount: 10 },
+        scrollOffsetX: 6.5,
+        scrollOffsetY: 4.25,
+      },
+    );
+    assert.equal(volatileFormulaAfterOpen, undefined);
+    assert.deepEqual(renderedOffsets, { x: 6.5, y: 4.25 });
   });
 
-  it("routes legacy bytes through the converter and retains source semantics", async () => {
-    const converted = new Uint8Array(46);
-    new DataView(converted.buffer).setUint32(0, 0x02014b50, true);
-    let converterInput: Uint8Array | undefined;
-    let engineInput: Uint8Array | undefined;
+  it("refuses the lossy legacy DOC projection before conversion", async () => {
+    let converterCalled = false;
     const adapter = new OfficeDocumentAdapter({
       legacy: {
-        convert: async (data) => {
-          converterInput = data;
-          return converted;
-        },
-      },
-      engines: {
-        docx: async (data) => {
-          engineInput = new Uint8Array(data);
-          return {
-            pageCount: 1,
-            pageSize: () => ({ widthPt: 1, heightPt: 1 }),
-            renderPage: async () => {},
-            collectPageRuns: async () => [],
-            destroy: () => {},
-          };
+        convert: async () => {
+          converterCalled = true;
+          return new Uint8Array();
         },
       },
     });
@@ -250,13 +310,11 @@ describe("OfficeDocumentAdapter", () => {
       ...defaultResourceLimits,
       maxInputBytes: 1024,
     };
-    const handle = await adapter.open(original, context("doc", limits));
-    assert.equal(converterInput, original);
-    assert.deepEqual(engineInput, converted);
-    const info = await adapter.getInfo(handle);
-    assert.equal(info.format, "doc");
-    assert.equal(info.unit, "page");
-    assert.equal(info.warnings?.[0]?.code, "fidelity-degraded");
+    await assert.rejects(
+      adapter.open(original, context("doc", limits)),
+      isCode("fidelity-unsupported"),
+    );
+    assert.equal(converterCalled, false);
   });
 
   it("maps encrypted backend errors and destroys a parsed handle on abort", async () => {

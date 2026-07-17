@@ -91,6 +91,12 @@ export class CsvDocumentAdapter implements DocumentAdapter<CsvHandle> {
         mergedRanges: [],
         maxRow: parsed.rows.length,
         maxColumn,
+        defaultColumnWidth: COLUMN_WIDTH,
+        defaultRowHeight: ROW_HEIGHT,
+        columnWidths: {},
+        rowHeights: {},
+        rowHeaderWidth: ROW_HEADER_WIDTH,
+        columnHeaderHeight: COLUMN_HEADER_HEIGHT,
       },
     };
   }
@@ -142,7 +148,16 @@ export class CsvDocumentAdapter implements DocumentAdapter<CsvHandle> {
         "Canvas 2D context is unavailable",
       );
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawGrid(context, handle.parsed.rows, range, zoom, width, height);
+    drawGrid(
+      context,
+      handle.parsed.rows,
+      range,
+      zoom,
+      width,
+      height,
+      viewport.scrollOffsetX ?? 0,
+      viewport.scrollOffsetY ?? 0,
+    );
     if (signal?.aborted) throw abortError();
   }
 
@@ -195,6 +210,8 @@ function drawGrid(
   zoom: number,
   width: number,
   height: number,
+  scrollOffsetX: number,
+  scrollOffsetY: number,
 ): void {
   const rowHeight = ROW_HEIGHT * zoom;
   const columnWidth = COLUMN_WIDTH * zoom;
@@ -213,7 +230,8 @@ function drawGrid(
     visibleColumn < range.columnCount;
     visibleColumn += 1
   ) {
-    const x = ROW_HEADER_WIDTH + visibleColumn * columnWidth;
+    const x =
+      ROW_HEADER_WIDTH + visibleColumn * columnWidth - scrollOffsetX * zoom;
     context.beginPath();
     context.moveTo(x, 0);
     context.lineTo(x, height);
@@ -227,7 +245,8 @@ function drawGrid(
   }
   for (let visibleRow = 0; visibleRow < range.rowCount; visibleRow += 1) {
     const rowNumber = range.row + visibleRow;
-    const y = COLUMN_HEADER_HEIGHT + visibleRow * rowHeight;
+    const y =
+      COLUMN_HEADER_HEIGHT + visibleRow * rowHeight - scrollOffsetY * zoom;
     context.beginPath();
     context.moveTo(0, y);
     context.lineTo(width, y);

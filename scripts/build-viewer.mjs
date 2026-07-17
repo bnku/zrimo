@@ -41,18 +41,29 @@ await cp(
   resolve(dist, "assets/legacy"),
   { recursive: true },
 );
-for (const asset of ["pdf", "image"])
+for (const asset of ["image"])
   await cp(
     resolve(root, ".cache/wasm-bindgen", asset),
     resolve(dist, "assets", asset),
     { recursive: true },
   );
-for (const worker of [
-  "legacy-converter-worker.js",
-  "pdf-worker.js",
-  "image-worker.js",
-])
+for (const worker of ["legacy-converter-worker.js", "image-worker.js"])
   await cp(resolve(dist, worker), resolve(dist, "workers", worker));
+
+const pdfJsRoot = resolve(root, "node_modules/pdfjs-dist");
+const pdfJsAssets = resolve(dist, "assets/pdfjs");
+await mkdir(pdfJsAssets, { recursive: true });
+for (const directory of ["cmaps", "standard_fonts", "wasm", "iccs"])
+  await cp(resolve(pdfJsRoot, directory), resolve(pdfJsAssets, directory), {
+    recursive: true,
+  });
+await cp(
+  // Keep the worker on the same compatibility build as the lazy-loaded
+  // PDF.js runtime. Mixing the modern worker with the legacy runtime still
+  // leaves unsupported intrinsics inside the worker realm.
+  resolve(pdfJsRoot, "legacy/build/pdf.worker.min.mjs"),
+  resolve(dist, "workers/pdf.worker.min.mjs"),
+);
 
 await cp(resolve(packageRoot, "fonts"), resolve(dist, "fonts"), {
   recursive: true,

@@ -1,11 +1,12 @@
 # docs-viewer-wasm
 
-Framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern and legacy Office, PDF, images, SVG and delimited data without uploading documents to a conversion service.
+Framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
 
 ## Supported formats
 
 - DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX
-- DOC, XLS, PPT through in-memory legacy → OOXML normalization
+- XLS and PPT through in-memory legacy → OOXML normalization
+- DOC is detected but returns `fidelity-unsupported` until a structured Word Binary backend is available
 - PDF
 - PNG, JPEG, WebP, GIF, BMP and multi-page TIFF
 - SVG, CSV and TSV
@@ -14,7 +15,10 @@ The viewer supports Latin/Cyrillic, CJK, Arabic-script and the agreed Indic scri
 
 ## Install and quick start
 
-The prepared package is currently `@docs-viewer-wasm/viewer@0.1.0-alpha.0`. Until it is published, install the locally qualified tarball:
+The existing `@docs-viewer-wasm/viewer@0.1.0-alpha.0` artifact is quarantined
+after fidelity regressions were found in DOCX selection, PDF fonts, legacy DOC
+layout, and XLSX scrolling. It must not be promoted or treated as a qualified
+release. For historical local diagnosis only, the artifact remains at:
 
 ```bash
 npm install ./artifacts/docs-viewer-wasm-viewer-0.1.0-alpha.0.tgz
@@ -66,6 +70,13 @@ npm run test:pack
 ```
 
 Release/security gates additionally include `npm run fuzz:js`, `npm run fuzz:rust`, `npm run audit:vulnerabilities`, `npm run report:size`, and `npm run report:sbom`.
+
+Run either development example from the workspace root:
+
+```bash
+npm run dev --workspace @docs-viewer-wasm/example-vanilla
+npm run dev --workspace @docs-viewer-wasm/example-react
+```
 
 ## Documentation
 

@@ -5,7 +5,10 @@ export { ViewerClient, WorkerRpcClient };
 const status = document.querySelector<HTMLParagraphElement>("#status");
 const container = document.querySelector<HTMLElement>("#viewer");
 const input = document.querySelector<HTMLInputElement>("#file");
-if (navigator.webdriver) {
+const search = new URLSearchParams(location.search);
+const sheetDemoRequested = search.has("large-sheet");
+const demoRequested = search.has("demo") || sheetDemoRequested;
+if (navigator.webdriver && !demoRequested) {
   if (status) status.textContent = "Viewer status: idle";
   const main = document.querySelector<HTMLElement>("main");
   if (main) {
@@ -40,4 +43,20 @@ if (navigator.webdriver) {
           error instanceof Error ? error.message : "Document load failed";
     }
   });
+  if (sheetDemoRequested) {
+    const rows = Array.from({ length: 250 }, (_, row) =>
+      Array.from({ length: 100 }, (_, column) =>
+        row === 0
+          ? `Column ${column + 1}`
+          : column === 0
+            ? `Row ${row + 1}`
+            : row === 249 && column === 99
+              ? "Last used cell"
+              : "",
+      ).join(","),
+    ).join("\n");
+    void viewer.load(new TextEncoder().encode(rows), {
+      fileName: "large-sheet-demo.csv",
+    });
+  }
 }

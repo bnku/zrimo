@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "docx-selection-geometry",
+      "family": "docx",
+      "source": {
+        "kind": "public-corpus",
+        "manifest": "tests/corpus/manifest.json",
+        "entry": "sample.docx"
+      },
+      "oracle": "selection-glyph-overlap-and-logical-copy",
+      "status": "pass",
+      "runner": "tests/e2e/selection.spec.ts"
+    },
+    {
+      "id": "xlsx-full-used-range-scroll",
+      "family": "xlsx",
+      "source": {
+        "kind": "generated",
+        "generator": "tests/e2e/smoke.spec.ts"
+      },
+      "oracle": "last-used-cell-reachable-at-all-zooms",
+      "status": "pass",
+      "runner": "tests/e2e/smoke.spec.ts"
+    },
+    {
+      "id": "pdf-font-fallback-fidelity",
+      "family": "pdf",
+      "source": {
+        "kind": "public-corpus",
+        "manifest": "tests/corpus/manifest.json",
+        "entry": "pdfjs-arabic-cid-truetype.pdf"
+      },
+      "oracle": "no-rectangle-font-fallback",
+      "status": "pass",
+      "runner": "tests/e2e/pdf.spec.ts"
+    },
+    {
+      "id": "legacy-doc-structured-layout",
+      "family": "doc",
+      "source": {
+        "kind": "public-corpus",
+        "manifest": "tests/corpus/manifest.json",
+        "entry": "word6.doc"
+      },
+      "oracle": "tables-sections-and-source-styles-preserved",
+      "status": "unsupported",
+      "blockedBy": "13"
+    }
+  ]
+}

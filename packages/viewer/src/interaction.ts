@@ -69,6 +69,22 @@ export function normalizeSearchText(
   return caseSensitive ? normalized : unicodeCaseFold(normalized);
 }
 
+/** Clamp a UTF-16 DOM offset to a grapheme boundary for native selection UI. */
+export function snapGraphemeOffset(
+  text: string,
+  offset: number,
+  edge: "start" | "end",
+): number {
+  const safeOffset = Math.max(0, Math.min(text.length, Math.trunc(offset)));
+  for (const segment of graphemeSegments(text)) {
+    if (safeOffset === segment.start || safeOffset === segment.end)
+      return safeOffset;
+    if (safeOffset > segment.start && safeOffset < segment.end)
+      return edge === "start" ? segment.start : segment.end;
+  }
+  return safeOffset;
+}
+
 export function cellRangeToTsv(
   range: CellRange,
   cells: ReadonlyMap<string, string>,

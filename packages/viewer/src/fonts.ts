@@ -53,7 +53,12 @@ export class FontManager {
     reportWarning: (warning: ViewerWarning) => void,
     signal?: AbortSignal,
   ): Promise<void> {
-    const requests = fontRequestsForRuns(runs);
+    // PDF.js owns embedded/subset/standard-font loading for both its canvas and
+    // text layer. Resolving those generated families through the viewer's Noto
+    // policy would race the backend and can substitute the wrong metrics.
+    const requests = fontRequestsForRuns(
+      runs.filter((run) => run.textLayer !== "pdf"),
+    );
     await Promise.all(
       requests.map((request) =>
         this.#ensureRequest(request, reportWarning, signal),

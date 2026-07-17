@@ -1,12 +1,15 @@
 # PDF, images, SVG, CSV and TSV
 
-All non-Office v1 formats are built into the default `ViewerClient` registry. Binary parsing/rasterization and tabular parsing use dedicated module workers; browser-native image decoding remains on the rendering side because `CanvasImageSource` objects are browser resources.
+All non-Office v1 formats are built into the default `ViewerClient` registry.
+PDF.js owns its parsing/render worker, TIFF and tabular parsing use project
+module workers, and browser-native image decoding remains on the rendering side
+because `CanvasImageSource` objects are browser resources.
 
 ## Capability matrix
 
 | Input | Units | Backend | Selectable map | Important limits |
 |---|---|---|---|---|
-| PDF | pages | `pdf_oxide` rendering-only WASM worker | positioned Unicode characters | no passwords; per-page and cache pixel budget |
+| PDF | pages | pinned `pdfjs-dist` display API + module worker | positioned text items with PDF.js font/transform metadata | no passwords; render pixel budget; scripting/XFA disabled |
 | PNG, JPEG, WebP, GIF, BMP | one image | `createImageBitmap`, then `<img>` fallback | none | dimensions checked before decode; EXIF orientation requested from browser |
 | TIFF | IFD pages | project `image-wasm` worker using pinned `tiff`/`image` crates | none | aggregate decoded page pixels bounded; supported Gray/GrayA/RGB/RGBA 8/16-bit and CMYK(A) 8-bit |
 | SVG | one image | sanitized SVG, then browser decoder | none | active/external content removed before decode |
@@ -16,15 +19,44 @@ All document/page indices are 0-based. Spreadsheet cell coordinates and `RenderV
 
 ## PDF behavior
 
-`PdfDocumentAdapter` keeps a persistent worker and a parsed `PdfViewerDocument`. A render request selects a DPI from zoom and device pixel ratio, receives PNG bytes through a transferable buffer, enforces `maxDecodedPixels`, and inserts the compressed page into an LRU cache whose aggregate pixels use the same budget. Close terminates the worker and clears the cache.
+`PdfDocumentAdapter` lazily imports pinned `pdfjs-dist@6.1.200`, creates one
+explicit module worker per document, and passes PDF bytes directly to
+`getDocument`. A render request paints the `PDFPageProxy` directly into the
+caller's canvas with zoom/DPR transform—there is no intermediate PNG, duplicate
+Rust rasterizer, or page-image cache. The actual page pixel count is checked
+against `maxDecodedPixels`; `RenderTask.cancel()` is wired to the viewer's
+`AbortSignal`. Close cleans the document, loading task, page references, fonts,
+and worker deterministically.
 
-`getTextMap` maps the backend's per-character Unicode and PDF-point bounding boxes into common `TextRun` records. This preserves glyph/range geometry for search and selection in task 05. The current minimal binding exposes renderer-visible page content; editing, form filling, signature validation and annotation editing are not implemented. Files with `/Encrypt` or an encryption/password backend error return `encrypted-document`.
+Canvas and selectable text come from the same PDF.js page and viewport.
+`getTextContent()` items retain direction, generated font family, font size,
+rotation, natural page extent, and logical UTF-16 offsets. The PDF-specific DOM
+layer applies renderer widths through `scaleX`, while search highlight remains
+inert. Safe link annotations are associated with intersecting runs; external
+schemes use the common allowlist and internal destinations resolve to a page
+when possible. Password failures return `encrypted-document`; malformed input
+and render failures keep their typed contracts. Editing, form filling,
+signature validation, XFA, and PDF JavaScript execution are not enabled.
+
+Worker, packed Adobe CMaps, standard font programs, OpenJPEG/JBIG2/QCMS WASM and
+ICC assets ship below `workers/` and `assets/pdfjs/`. URLs are resolved from
+`assetBaseUrl` (or package-relative defaults), always with a trailing directory
+slash. `useSystemFonts` is disabled so Base-14 output is deterministic and uses
+the packaged standard-font data. No CDN or document-relative resource fetch is
+performed.
 
 ```ts
 const client = ViewerClient.create({ assetBaseUrl: "/viewer-assets/" });
 const viewer = client.createViewer();
 await viewer.load(pdfBytes, { fileName: "report.pdf" });
 ```
+
+Self-host at least these package directories with the same relative layout:
+
+- `workers/pdf.worker.min.mjs` (`worker-src` in CSP);
+- `assets/pdfjs/cmaps/` and `assets/pdfjs/standard_fonts/` (`connect-src`);
+- `assets/pdfjs/wasm/` and `assets/pdfjs/iccs/` (`connect-src`; WASM execution
+  follows the browser's `script-src`/`wasm-unsafe-eval` policy).
 
 ## Raster and TIFF behavior
 

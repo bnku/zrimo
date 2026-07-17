@@ -38,8 +38,6 @@ execFileSync(
     "-p",
     "legacy-office-wasm",
     "-p",
-    "pdf-wasm",
-    "-p",
     "image-wasm",
   ],
   { cwd: root, stdio: "inherit" },
@@ -47,7 +45,6 @@ execFileSync(
 
 for (const [name, fileName] of [
   ["legacy", "legacy_office_wasm.wasm"],
-  ["pdf", "pdf_wasm.wasm"],
   ["image", "image_wasm.wasm"],
 ]) {
   const outdir = resolve(outputRoot, name);
