@@ -3,15 +3,23 @@ import type {
   DocumentAdapter,
   DocumentInfo,
   HyperlinkTarget,
+  PageSize,
   RenderViewport,
   TextRun,
 } from "../contracts.js";
 import { abortError, ViewerError } from "../errors.js";
 
+// Preserve the public zoom=1 contract: one PDF point maps to one renderer CSS
+// pixel. Per-page geometry still prevents the viewport from coercing pages to
+// A4 or changing their width while virtualizing.
 const CSS_UNITS = 1;
 
 export interface PdfBackend {
   readonly pageCount: number;
+  pageSize?(
+    pageIndex: number,
+    signal?: AbortSignal,
+  ): PageSize | Promise<PageSize>;
   renderPage(
     target: HTMLCanvasElement | OffscreenCanvas,
     pageIndex: number,
@@ -167,7 +175,19 @@ export class PdfDocumentAdapter implements DocumentAdapter<PdfHandle> {
   }
 
   async getInfo(handle: PdfHandle): Promise<DocumentInfo> {
-    return { format: "pdf", unit: "page", pageCount: handle.backend.pageCount };
+    const pageSizes = handle.backend.pageSize
+      ? await Promise.all(
+          Array.from({ length: handle.backend.pageCount }, (_, pageIndex) =>
+            handle.backend.pageSize!(pageIndex),
+          ),
+        )
+      : undefined;
+    return {
+      format: "pdf",
+      unit: "page",
+      pageCount: handle.backend.pageCount,
+      ...(pageSizes ? { pageSizes } : {}),
+    };
   }
 
   async render(
@@ -383,6 +403,13 @@ class PdfJsBackend implements PdfBackend {
     } finally {
       signal?.removeEventListener("abort", onAbort);
     }
+  }
+
+  async pageSize(pageIndex: number, signal?: AbortSignal): Promise<PageSize> {
+    this.#assertOpen();
+    const page = await raceAbort(this.#page(pageIndex), signal);
+    const viewport = page.getViewport({ scale: CSS_UNITS });
+    return { width: viewport.width, height: viewport.height };
   }
 
   async pageText(

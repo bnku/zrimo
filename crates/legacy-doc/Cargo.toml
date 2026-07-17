@@ -1,0 +1,13 @@
+[package]
+name = "legacy-doc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+office_oxide.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

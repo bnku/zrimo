@@ -9,10 +9,11 @@ rust-version.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+legacy-doc = { path = "../legacy-doc" }
 office_oxide.workspace = true
 viewer-core = { path = "../viewer-core" }
 wasm-bindgen.workspace = true
+zip.workspace = true
 
 [lints]
 workspace = true
-

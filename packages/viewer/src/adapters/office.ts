@@ -270,18 +270,6 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
     const warnings: ViewerWarning[] = [];
 
     if (isLegacyFormat(format)) {
-      if (format === "doc")
-        throw new ViewerError(
-          "fidelity-unsupported",
-          "Legacy DOC rendering is disabled because the available browser parser cannot preserve source formatting, sections, or tables",
-          {
-            details: {
-              format,
-              capability: "structured-word-binary",
-              fallback: "extractLegacyPlainText",
-            },
-          },
-        );
       context.reportProgress({ phase: "converting", loaded: 0, total: 1 });
       data = await this.#convertLegacy(input, format, context);
       throwIfAborted(context.signal);
@@ -395,6 +383,16 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
         format: handle.format,
         unit: "page",
         pageCount: handle.backend.pageCount,
+        pageSizes: Array.from(
+          { length: handle.backend.pageCount },
+          (_, pageIndex) => {
+            const page = handle.backend.pageSize(pageIndex);
+            return {
+              width: (page.widthPt * 96) / 72,
+              height: (page.heightPt * 96) / 72,
+            };
+          },
+        ),
         warnings: handle.warnings,
       };
     if (handle.kind === "presentation")
@@ -402,6 +400,10 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
         format: handle.format,
         unit: "slide",
         pageCount: handle.backend.slideCount,
+        pageSizes: Array.from({ length: handle.backend.slideCount }, () => ({
+          width: handle.backend.slideWidth / 9525,
+          height: handle.backend.slideHeight / 9525,
+        })),
         warnings: handle.warnings,
       };
     return {
@@ -617,7 +619,7 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
     const moduleUrl = this.#options.legacy?.moduleUrl
       ? new URL(this.#options.legacy.moduleUrl, context.assetBaseUrl)
       : context.assetBaseUrl
-        ? new URL("wasm/legacy/index.js", context.assetBaseUrl)
+        ? new URL("assets/legacy/index.js", context.assetBaseUrl)
         : new URL("../assets/legacy/index.js", import.meta.url);
     return convertInWorker(
       data,

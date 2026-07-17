@@ -22,4 +22,4 @@ Import is SSR-safe, but viewer creation with a container and document loading be
 
 ## Office fidelity differs from the authoring application
 
-The viewer is display-only and prioritizes safe practical fidelity. Legacy XLS/PPT are converted to OOXML, formulas use stored cached values, macros never execute, image documents have no OCR, and unsupported features emit warnings. Legacy DOC currently returns `fidelity-unsupported` instead of fabricating layout from plain text. Check the typed error, `viewer.getDocumentInfo().warnings`, and the compatibility matrix.
+The viewer is display-only and prioritizes safe practical fidelity. DOC/XLS/PPT are converted to OOXML in a browser worker, formulas use stored cached values, macros never execute, image documents have no OCR, and unsupported features emit warnings. Word 97–2003 DOC preserves core formatting, sections, tables, lists, fields, notes and point/ranged comments, but shapes/OLE and some advanced media/table/list variants can still differ. Check the typed error, `viewer.getDocumentInfo().warnings`, and the compatibility matrix.

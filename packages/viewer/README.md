@@ -24,12 +24,13 @@ const viewer = client.createViewer({
 await viewer.load(file, { fileName: file.name });
 ```
 
-Supported render formats are DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX, legacy XLS/PPT, PDF, PNG/JPEG/WebP/GIF/BMP/TIFF, SVG and CSV/TSV. Legacy DOC is detected but deliberately rejects with `fidelity-unsupported`: the current permissive browser parser exposes only plain text and cannot preserve Word Binary formatting, sections, or tables. Its separate WASM plain-text extractor remains available for diagnostics, but is not presented as document rendering. Search, selection, pan/zoom, page/sheet navigation, thumbnails and original download are available through the same API. Images do not include OCR; encrypted documents and formula/macro execution are outside v1.
+Supported render formats are DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX, Word 97–2003 DOC, legacy XLS/PPT, PDF, PNG/JPEG/WebP/GIF/BMP/TIFF, SVG and CSV/TSV. DOC is parsed by a bounded project-owned Rust backend, serialized in memory to DOCX, and then uses the same page renderer and selectable text layer as DOCX. Source comment authors, bodies and point anchors are preserved; range anchors are still fidelity-degraded. Other advanced Word Binary features such as Word 6, OLE objects, complex floating shapes, complete list semantics and some image/table variants remain unsupported or fidelity-degraded. Search, selection, pan/zoom, page/sheet navigation, thumbnails and original download are available through the same API. Images do not include OCR; encrypted documents and formula/macro execution are outside v1.
 
 Sheets use a dedicated virtual spreadsheet surface: the scrollbar covers the
-complete used range, while only one viewport-sized canvas is rendered. Custom
-and hidden band sizes, frozen panes, sparse far-away cells, zoom `0.1…8`, cell
-selection, and TSV copy do not depend on an A4 page box. The vanilla example's
+complete used range and the visible trailing blank rows/columns, while only one
+viewport-sized canvas is rendered. Custom and hidden band sizes, frozen panes,
+sparse far-away cells, zoom `0.1…8`, cell selection, and TSV copy through
+`copySelection()` or Ctrl/Cmd+C do not depend on an A4 page box. The vanilla example's
 `?large-sheet=1` mode creates a synthetic 250×100 CSV to demonstrate deep
 horizontal and vertical scrolling without shipping a fixture.
 

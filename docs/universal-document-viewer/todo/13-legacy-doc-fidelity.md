@@ -1,6 +1,6 @@
 # Задача 13. Legacy DOC structured conversion
 
-**Статус:** 🟠 В работе: stock-parser отклонён, project-owned parser утверждён
+**Статус:** 🟠 В работе: 13a–13b завершены, core 13c готова, начата 13d
 
 ## Цель
 
@@ -51,14 +51,14 @@ runs, sections и tables.
 
 ### Этапы реализации
 
-1. [`13a-doc-binary-foundation.md`](./13a-doc-binary-foundation.md) — bounded
+1. ✅ [`13a-doc-binary-foundation.md`](./13a-doc-binary-foundation.md) — bounded
    FIB/CLX reader, CP↔FC mapping, stories и собственный structural IR boundary.
-2. [`13b-doc-formatting-sections.md`](./13b-doc-formatting-sections.md) — STSH,
+2. ✅ [`13b-doc-formatting-sections.md`](./13b-doc-formatting-sections.md) — STSH,
    PAPX/CHPX FKP, `sprm`, paragraph/run styles, sections и page geometry.
-3. [`13c-doc-tables-media-serialization.md`](./13c-doc-tables-media-serialization.md)
+3. 🟠 [`13c-doc-tables-media-serialization.md`](./13c-doc-tables-media-serialization.md)
    — table grid/merges/nesting, images, headers/footers и доказанная DOCX
    serialization без эвристик.
-4. [`13d-doc-browser-qualification.md`](./13d-doc-browser-qualification.md) —
+4. 🟠 [`13d-doc-browser-qualification.md`](./13d-doc-browser-qualification.md) —
    WASM worker integration, public API enablement, corpus, fuzz, visual and pack
    gates.
 
@@ -96,15 +96,16 @@ runs, sections и tables.
 Pinned `office_oxide@0.1.6` доказанно ограничен FIB/CLX plain-text extraction и
 images: STSH, PAPX/CHPX FKP, sections и Word table grid отсутствуют. Текущий IR
 эвристически создаёт headings и дублирует первый как section title, поэтому его
-DOC bytes-out path запрещён в TypeScript adapter и Rust binding. Публичный
-runtime возвращает `fidelity-unsupported` с capability details; отдельный
-`extractLegacyPlainText` остаётся только диагностическим API. XLS/PPT продолжают
-квалифицироваться независимо.
+Исторически DOC bytes-out path был запрещён в TypeScript adapter и Rust binding.
+После появления project-owned parser этот gate снят для Word 97–2003: render
+path больше не вызывает stock heuristic IR, а `extractLegacyPlainText` остаётся
+отдельным диагностическим API. XLS/PPT продолжают квалифицироваться независимо.
 
 `No-go` относится к stock DOC converter `office_oxide@0.1.6`, а не к формату DOC.
 Так как DOC остаётся обязательным форматом продукта, продолжение утверждено как
-project-owned permissive parser. До завершения всех четырёх этапов публичный
-runtime продолжает fail closed.
+project-owned permissive parser. Browser path уже включён для квалифицируемых
+Word 97–2003 документов, но release blocker сохраняется до полного 13c/13d и
+повторной cross-format qualification.
 
 Полный decision record и evidence:
 [`../legacy-doc-spike-decision.md`](../legacy-doc-spike-decision.md).

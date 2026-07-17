@@ -11,6 +11,78 @@
       "sha256": "58ea3347378e85e7c8d19ad64e74ad533b2f51b30f047594b434f380712f8b50"
     },
     {
+      "name": "word97-simple.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/simple.doc",
+      "license": "Apache-2.0",
+      "sha256": "4876e828e62d490fa188c7c4e47013e2e0dfdf02f5903dfd374bc0d2b2049ca1"
+    },
+    {
+      "name": "word2000-bug46817.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/Bug46817.doc",
+      "license": "Apache-2.0",
+      "sha256": "a68a9879503f3d65c90759d4b76719743aac048d56e7b1eb9affd63d17d78d8b"
+    },
+    {
+      "name": "word2003-test2.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/test2.doc",
+      "license": "Apache-2.0",
+      "sha256": "773a1db3c6cba870ccad43a4149c6446554a8ef54e6210d6d6987500d1d95ec3"
+    },
+    {
+      "name": "word97-simple-table.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/simple-table.doc",
+      "license": "Apache-2.0",
+      "sha256": "67d7fe8e0555c16516354498a5935f24eeef90beb5efbf526f93a1d6c734da43"
+    },
+    {
+      "name": "word97-header-footer-unicode.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/HeaderFooterUnicode.doc",
+      "license": "Apache-2.0",
+      "sha256": "8bd7fc9552bccb7b71a0dc34ffd801e7d3547d1317fd75d0c35fca3572f6fa4b"
+    },
+    {
+      "name": "word97-footnote.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/footnote.doc",
+      "license": "Apache-2.0",
+      "sha256": "81a18ac63010789ca08c28de107658a308c758a3cfc667a6edf11ffe888d3e13"
+    },
+    {
+      "name": "word97-comments.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/MarkAuthorsTable.doc",
+      "license": "Apache-2.0",
+      "sha256": "42491fab86a86a7f67f4673c2d777a4c1eb5d8817e75da49e303a8a719b07d8d"
+    },
+    {
+      "name": "word97-ranged-comment.doc",
+      "format": "doc",
+      "sourceRepository": "https://github.com/apache/poi",
+      "sourceCommit": "913c78891bd0cd20945b050c63abfb8c66c88009",
+      "sourcePath": "test-data/document/FloatingPictures.doc",
+      "license": "Apache-2.0",
+      "sha256": "41cc0cd8f2d7390266f844f5bddbcd29d08ac5338abc33832d9c9a6ed5d0f85d"
+    },
+    {
       "name": "simple.xls",
       "format": "xls",
       "sourceRepository": "https://github.com/apache/poi",

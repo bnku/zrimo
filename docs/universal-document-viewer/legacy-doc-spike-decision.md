@@ -46,7 +46,7 @@ The candidate audit was repeated against current primary project metadata:
   use licenses excluded by this project's runtime policy. They are not a
   compatible closed-commercial browser dependency.
 
-Therefore the package:
+Therefore, at the time of the spike, the package:
 
 - returns typed `fidelity-unsupported` for DOC before starting conversion;
 - independently refuses DOC in the Rust bytes-out binding, preventing direct
@@ -62,6 +62,15 @@ reuse the public permissive CFB reader and generic IR/DOCX writer from
 `office_oxide`, while owning FIB/CLX, formatting, section and table parsing. The
 implementation stages are indexed from
 [`todo/13-legacy-doc-fidelity.md`](./todo/13-legacy-doc-fidelity.md).
+
+## Current follow-up status
+
+The historical refusal above has since been replaced for Word 97–2003 by the
+project-owned bounded parser. The browser path now projects source-backed
+formatting, sections, tables, headers/footers, notes, comments and list tables;
+the diagnostic plain-text API remains separate. The `no-go` still applies to
+the stock heuristic converter, and the stable-release blocker remains until the
+remaining media/table/pagination and cross-browser visual gates are complete.
 
 ## Required evidence to change the decision
 

@@ -177,6 +177,93 @@ test("virtualizes a long document and exposes viewport interactions", async ({
   expect(result.viewportRemoved).toBe(true);
 });
 
+test("keeps heterogeneous PDF page geometry stable and centered", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = (await import("/main.js")) as any;
+    const pageSizes = [
+      { width: 600, height: 900 },
+      { width: 900, height: 500 },
+      { width: 700, height: 1_200 },
+    ];
+    const adapter = {
+      id: "e2e-variable-pages",
+      formats: ["pdf"],
+      open: async () => ({}),
+      getInfo: async () => ({
+        format: "pdf",
+        unit: "page",
+        pageCount: pageSizes.length,
+        pageSizes,
+      }),
+      render: async (
+        _handle: unknown,
+        target: HTMLCanvasElement,
+        viewport: { pageIndex: number; zoom: number; devicePixelRatio: number },
+      ) => {
+        const size = pageSizes[viewport.pageIndex]!;
+        target.width = size.width * viewport.zoom * viewport.devicePixelRatio;
+        target.height = size.height * viewport.zoom * viewport.devicePixelRatio;
+      },
+      getTextMap: async () => [],
+      close: () => {},
+    };
+    const container = document.createElement("div");
+    Object.assign(container.style, { width: "800px", height: "600px" });
+    document.body.append(container);
+    const client = ViewerClient.create({ adapters: [adapter] });
+    const viewer = client.createViewer({ container });
+    await viewer.load(new TextEncoder().encode("%PDF-1.7\nvariable"), {
+      fileName: "variable.pdf",
+    });
+    const settle = () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      '[data-docs-viewer="viewport"]',
+    )!;
+    const first = root.querySelector<HTMLElement>('[data-page-index="0"]')!;
+    const initial = {
+      left: first.offsetLeft,
+      width: first.getBoundingClientRect().width,
+      scrollWidth: root.scrollWidth,
+    };
+    root.scrollTo({ top: 924 });
+    await settle();
+    const second = root.querySelector<HTMLElement>('[data-page-index="1"]')!;
+    const middle = {
+      left: second.offsetLeft,
+      width: second.getBoundingClientRect().width,
+      scrollWidth: root.scrollWidth,
+    };
+    root.scrollTo({ top: 0 });
+    await settle();
+    const firstAgain = root.querySelector<HTMLElement>(
+      '[data-page-index="0"]',
+    )!;
+    const final = {
+      left: firstAgain.offsetLeft,
+      width: firstAgain.getBoundingClientRect().width,
+      scrollWidth: root.scrollWidth,
+    };
+    await viewer.destroy();
+    await client.destroy();
+    container.remove();
+    return { initial, middle, final };
+  });
+
+  expect(result.initial.width).toBe(600);
+  expect(result.middle.width).toBe(900);
+  expect(result.final).toEqual(result.initial);
+  expect(result.initial.left).toBeGreaterThan(100);
+  expect(result.middle.left).toBeGreaterThanOrEqual(12);
+  expect(result.middle.scrollWidth).toBe(result.initial.scrollWidth);
+});
+
 test("drags and keyboard-extends spreadsheet cell selections", async ({
   page,
 }) => {
@@ -236,19 +323,42 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       render: async (
         _handle: unknown,
         target: HTMLCanvasElement,
-        viewport: { width: number; height: number; devicePixelRatio: number },
+        viewport: {
+          width: number;
+          height: number;
+          devicePixelRatio: number;
+          sheetRange: {
+            row: number;
+            column: number;
+            rowCount: number;
+            columnCount: number;
+          };
+        },
       ) => {
+        renderedRanges.push(viewport.sheetRange);
         target.width = viewport.width * viewport.devicePixelRatio;
         target.height = viewport.height * viewport.devicePixelRatio;
       },
       getTextMap: async () => cells,
       close: () => {},
     };
+    const renderedRanges: Array<{
+      row: number;
+      column: number;
+      rowCount: number;
+      columnCount: number;
+    }> = [];
     const container = document.createElement("div");
     Object.assign(container.style, { width: "800px", height: "600px" });
     document.body.append(container);
     const client = ViewerClient.create({ adapters: [adapter] });
     const viewer = client.createViewer({ container });
+    let shortcutCopies = 0;
+    const originalCopySelection = viewer.copySelection.bind(viewer);
+    viewer.copySelection = async () => {
+      shortcutCopies += 1;
+      return originalCopySelection();
+    };
     await viewer.load(new TextEncoder().encode("A,B\nC,D"), {
       fileName: "cells.csv",
     });
@@ -297,10 +407,24 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     );
     const keyboard = viewer.getSelection();
     const copied = await viewer.copySelection();
+    root.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "c",
+        ctrlKey: true,
+        bubbles: true,
+      }),
+    );
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
     await viewer.destroy();
     await client.destroy();
     container.remove();
-    return { dragged, keyboard, copied };
+    return {
+      dragged,
+      keyboard,
+      copied,
+      shortcutCopies,
+      renderedRange: renderedRanges.at(-1),
+    };
   });
 
   expect(result.dragged).toMatchObject({
@@ -316,6 +440,17 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
     endColumn: 2,
   });
   expect(result.copied).toBe("A\tB\nC\tD");
+  expect(result.shortcutCopies).toBe(2);
+  expect(
+    (result.renderedRange?.column ?? 0) +
+      (result.renderedRange?.columnCount ?? 0) -
+      1,
+  ).toBeGreaterThan(2);
+  expect(
+    (result.renderedRange?.row ?? 0) +
+      (result.renderedRange?.rowCount ?? 0) -
+      1,
+  ).toBeGreaterThan(2);
 });
 
 test("virtualizes the full spreadsheet used range at every supported zoom", async ({
@@ -1102,7 +1237,9 @@ test("converts legacy Office in the package worker and opens the result", async 
   }
 });
 
-test("returns a typed fidelity error for legacy DOC", async ({ page }) => {
+test("converts and renders Word 97 DOC through the package adapter", async ({
+  page,
+}) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
     const { ViewerClient } = await import("/main.js");
@@ -1110,31 +1247,115 @@ test("returns a typed fidelity error for legacy DOC", async ({ page }) => {
       assetBaseUrl: new URL("/", location.href),
     });
     const viewer = client.createViewer();
-    const response = await fetch("/corpus/word6.doc");
+    const response = await fetch("/corpus/word97-simple-table.doc");
     try {
       await viewer.load(new Uint8Array(await response.arrayBuffer()), {
-        fileName: "word6.doc",
+        fileName: "word97-simple-table.doc",
       });
-      return { code: "unexpected-success", details: undefined };
-    } catch (error) {
-      return typeof error === "object" && error !== null && "code" in error
-        ? {
-            code: String(error.code),
-            details: "details" in error ? error.details : undefined,
-          }
-        : { code: "untyped", details: undefined };
+      const canvas = document.createElement("canvas");
+      await viewer.renderPage(0, canvas, {
+        zoom: 1,
+        devicePixelRatio: 1,
+      });
+      const text = await viewer.getPageText(0);
+      const token = text.match(/[A-Za-z]{3,}/u)?.[0] ?? text.trim().slice(0, 3);
+      const tokenStart = text.indexOf(token);
+      const search = await viewer.search(token);
+      const selection = await viewer.selectText({
+        startPageIndex: 0,
+        startOffset: tokenStart,
+        endPageIndex: 0,
+        endOffset: tokenStart + token.length,
+      });
+      const copied = await viewer.copySelection();
+      viewer.setZoom(1.5);
+      viewer.panBy(24, 32);
+      return {
+        state: { ...viewer.state },
+        text,
+        token,
+        searchMatches: search.matches.length,
+        selection: selection.text,
+        copied,
+        canvas: { width: canvas.width, height: canvas.height },
+      };
     } finally {
       await viewer.destroy();
       await client.destroy();
     }
   });
 
-  expect(result.code).toBe("fidelity-unsupported");
-  expect(result.details).toMatchObject({
-    format: "doc",
-    capability: "structured-word-binary",
-    fallback: "extractLegacyPlainText",
+  expect(result.state.status).toBe("ready");
+  expect(result.state.format).toBe("doc");
+  expect(result.state.pageCount).toBeGreaterThan(0);
+  expect(result.state.zoom).toBe(1.5);
+  expect(result.state.panX).toBe(24);
+  expect(result.state.panY).toBe(32);
+  expect(result.text.trim().length).toBeGreaterThan(0);
+  expect(result.searchMatches).toBeGreaterThan(0);
+  expect(result.selection).toBe(result.token);
+  expect(result.copied).toBe(result.token);
+  expect(result.canvas.width).toBeGreaterThan(0);
+  expect(result.canvas.height).toBeGreaterThan(0);
+});
+
+test("cancels and bounds Word 97 DOC conversion in the package worker", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = await import("/main.js");
+    const response = await fetch("/corpus/word97-simple-table.doc");
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const viewer = client.createViewer();
+    const errorCode = (error: unknown): string =>
+      typeof error === "object" && error !== null && "code" in error
+        ? String(error.code)
+        : "unknown";
+    try {
+      const controller = new AbortController();
+      const pending = viewer.load(bytes.slice(), {
+        fileName: "word97-simple-table.doc",
+        signal: controller.signal,
+      });
+      controller.abort();
+      let abortCode = "completed";
+      try {
+        await pending;
+      } catch (error) {
+        abortCode = errorCode(error);
+      }
+
+      let limitCode = "completed";
+      try {
+        await viewer.load(bytes.slice(), {
+          fileName: "word97-simple-table.doc",
+          limits: { maxInputBytes: bytes.byteLength - 1 },
+        });
+      } catch (error) {
+        limitCode = errorCode(error);
+      }
+
+      await viewer.load(bytes.slice(), {
+        fileName: "word97-simple-table.doc",
+      });
+      return {
+        abortCode,
+        limitCode,
+        recovered: viewer.state.status,
+      };
+    } finally {
+      await viewer.destroy();
+      await client.destroy();
+    }
   });
+
+  expect(result.abortCode).toBe("aborted");
+  expect(result.limitCode).toBe("resource-limit");
+  expect(result.recovered).toBe("ready");
 });
 
 test("opens PDF, raster, TIFF, SVG, and delimited data through built-in adapters", async ({
@@ -1223,11 +1444,12 @@ test("opens PDF, raster, TIFF, SVG, and delimited data through built-in adapters
   }
 });
 
-test("refuses lossy legacy DOC conversion in browser WASM", async ({
+test("converts and renders Word 97 comments and numbering in browser WASM", async ({
   page,
 }) => {
   await page.goto("/");
   const result = await page.evaluate(async () => {
+    const { ViewerClient } = await import("/main.js");
     const loadModule = new Function("url", "return import(url)") as (
       url: string,
     ) => Promise<{
@@ -1236,21 +1458,88 @@ test("refuses lossy legacy DOC conversion in browser WASM", async ({
     }>;
     const [module, response] = await Promise.all([
       loadModule("/wasm/legacy/index.js"),
-      fetch("/corpus/word6.doc"),
+      fetch("/corpus/word97-comments.doc"),
     ]);
     await module.default();
+    const source = new Uint8Array(await response.arrayBuffer());
+    const output = module.convertLegacyToOoxml(source, "doc");
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const viewer = client.createViewer();
     try {
-      module.convertLegacyToOoxml(
-        new Uint8Array(await response.arrayBuffer()),
-        "doc",
-      );
-      return "unexpected-success";
-    } catch (error) {
-      return error instanceof Error ? error.message : String(error);
+      await viewer.load(source, { fileName: "word97-comments.doc" });
+      const canvas = document.createElement("canvas");
+      await viewer.renderPage(0, canvas, {
+        zoom: 1,
+        devicePixelRatio: 1,
+      });
+      const text = await viewer.getPageText(0);
+      return {
+        byteLength: output.byteLength,
+        signature: Array.from(output.subarray(0, 4)),
+        state: { ...viewer.state },
+        text,
+        canvas: { width: canvas.width, height: canvas.height },
+      };
+    } finally {
+      await viewer.destroy();
+      await client.destroy();
     }
   });
 
-  expect(result).toContain("fidelity-unsupported");
+  expect(result.byteLength).toBeGreaterThan(100);
+  expect(result.signature).toEqual([0x50, 0x4b, 0x03, 0x04]);
+  expect(result.state.status).toBe("ready");
+  expect(result.state.format).toBe("doc");
+  expect(result.state.pageCount).toBeGreaterThan(0);
+  expect(result.text).toContain("The Lifecycle of a Project");
+  expect(result.canvas.width).toBeGreaterThan(0);
+  expect(result.canvas.height).toBeGreaterThan(0);
+});
+
+test("converts and renders a Word 97 ranged-comment fixture in browser WASM", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = await import("/main.js");
+    const response = await fetch("/corpus/word97-ranged-comment.doc");
+    const source = new Uint8Array(await response.arrayBuffer());
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const viewer = client.createViewer();
+    try {
+      await viewer.load(source, { fileName: "word97-ranged-comment.doc" });
+      const canvas = document.createElement("canvas");
+      await viewer.renderPage(0, canvas, {
+        zoom: 1,
+        devicePixelRatio: 1,
+      });
+      const pages = await Promise.all(
+        Array.from({ length: viewer.state.pageCount }, (_, pageIndex) =>
+          viewer.getPageText(pageIndex),
+        ),
+      );
+      return {
+        state: { ...viewer.state },
+        text: pages.join("\n"),
+        canvas: { width: canvas.width, height: canvas.height },
+      };
+    } finally {
+      await viewer.destroy();
+      await client.destroy();
+    }
+  });
+
+  expect(result.state.status).toBe("ready");
+  expect(result.state.format).toBe("doc");
+  expect(result.state.pageCount).toBeGreaterThan(0);
+  expect(result.text).toContain("There is a comment");
+  expect(result.text).toContain("文京区と目黒区");
+  expect(result.canvas.width).toBeGreaterThan(0);
+  expect(result.canvas.height).toBeGreaterThan(0);
 });
 
 test("renders PDF and extracts its text map through self-hosted PDF.js", async ({

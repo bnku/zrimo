@@ -10,6 +10,8 @@ const DEFAULT_ROW_HEIGHT = 20;
 const DEFAULT_ROW_HEADER_WIDTH = 50;
 const DEFAULT_COLUMN_HEADER_HEIGHT = 22;
 const OVERSCAN = 2;
+const TRAILING_COLUMNS = 2;
+const TRAILING_ROWS = 2;
 
 interface PointerPosition {
   readonly x: number;
@@ -247,6 +249,7 @@ export class SpreadsheetViewport {
       const logicalX = (this.#root.scrollLeft + anchor.x) / this.#appliedZoom;
       const logicalY = (this.#root.scrollTop + anchor.y) / this.#appliedZoom;
       this.#appliedZoom = zoom;
+      this.#ensureViewportGeometry();
       this.#updateExtent();
       this.#root.scrollLeft = logicalX * zoom - anchor.x;
       this.#root.scrollTop = logicalY * zoom - anchor.y;
@@ -269,16 +272,19 @@ export class SpreadsheetViewport {
   }
 
   fitWidth(): number {
+    const usedColumns = this.#usedColumns();
     const naturalWidth =
-      this.#rowHeaderWidth() + Math.max(1, this.#columns.totalSize);
+      this.#rowHeaderWidth() + Math.max(1, usedColumns.totalSize);
     return clampZoom((this.#root.clientWidth - 2) / naturalWidth);
   }
 
   fitPage(): number {
+    const usedColumns = this.#usedColumns();
+    const usedRows = this.#usedRows();
     const naturalWidth =
-      this.#rowHeaderWidth() + Math.max(1, this.#columns.totalSize);
+      this.#rowHeaderWidth() + Math.max(1, usedColumns.totalSize);
     const naturalHeight =
-      this.#columnHeaderHeight() + Math.max(1, this.#rows.totalSize);
+      this.#columnHeaderHeight() + Math.max(1, usedRows.totalSize);
     return clampZoom(
       Math.min(
         (this.#root.clientWidth - 2) / naturalWidth,
@@ -331,6 +337,7 @@ export class SpreadsheetViewport {
       this.#root.clientHeight <= 0
     )
       return;
+    this.#ensureViewportGeometry();
     this.#updateExtent();
     const render = this.#visibleRange();
     const width = this.#root.clientWidth;
@@ -466,18 +473,62 @@ export class SpreadsheetViewport {
 
   #setSheetGeometry(): void {
     this.#sheet = this.#info?.sheets?.[this.#sheetIndex];
-    const sheet = this.#sheet;
-    this.#columns = new AxisGeometry(
-      Math.max(1, sheet?.maxColumn ?? 1),
-      sheet?.defaultColumnWidth ?? DEFAULT_COLUMN_WIDTH,
-      sheet?.columnWidths,
-    );
-    this.#rows = new AxisGeometry(
-      Math.max(1, sheet?.maxRow ?? 1),
-      sheet?.defaultRowHeight ?? DEFAULT_ROW_HEIGHT,
-      sheet?.rowHeights,
-    );
+    this.#ensureViewportGeometry();
     this.#updateExtent();
+  }
+
+  #ensureViewportGeometry(): void {
+    const sheet = this.#sheet;
+    const zoom = Math.max(0.1, this.#host.state.zoom);
+    const defaultColumnWidth =
+      sheet?.defaultColumnWidth ?? DEFAULT_COLUMN_WIDTH;
+    const defaultRowHeight = sheet?.defaultRowHeight ?? DEFAULT_ROW_HEIGHT;
+    const viewportColumns = Math.ceil(
+      Math.max(0, this.#root.clientWidth / zoom - this.#rowHeaderWidth()) /
+        Math.max(1, defaultColumnWidth),
+    );
+    const viewportRows = Math.ceil(
+      Math.max(0, this.#root.clientHeight / zoom - this.#columnHeaderHeight()) /
+        Math.max(1, defaultRowHeight),
+    );
+    const columnCount = Math.max(
+      1,
+      sheet?.maxColumn ?? 1,
+      viewportColumns + TRAILING_COLUMNS,
+    );
+    const rowCount = Math.max(
+      1,
+      sheet?.maxRow ?? 1,
+      viewportRows + TRAILING_ROWS,
+    );
+    if (this.#columns.count !== columnCount)
+      this.#columns = new AxisGeometry(
+        columnCount,
+        defaultColumnWidth,
+        sheet?.columnWidths,
+      );
+    if (this.#rows.count !== rowCount)
+      this.#rows = new AxisGeometry(
+        rowCount,
+        defaultRowHeight,
+        sheet?.rowHeights,
+      );
+  }
+
+  #usedColumns(): AxisGeometry {
+    return new AxisGeometry(
+      Math.max(1, this.#sheet?.maxColumn ?? 1),
+      this.#sheet?.defaultColumnWidth ?? DEFAULT_COLUMN_WIDTH,
+      this.#sheet?.columnWidths,
+    );
+  }
+
+  #usedRows(): AxisGeometry {
+    return new AxisGeometry(
+      Math.max(1, this.#sheet?.maxRow ?? 1),
+      this.#sheet?.defaultRowHeight ?? DEFAULT_ROW_HEIGHT,
+      this.#sheet?.rowHeights,
+    );
   }
 
   #updateExtent(): void {
@@ -568,6 +619,11 @@ export class SpreadsheetViewport {
   }
 
   #handleKeyDown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+      event.preventDefault();
+      this.#host.onCopySelection();
+      return;
+    }
     const delta = cellKeyDelta(event.key);
     if (delta && this.#cellFocus) {
       event.preventDefault();

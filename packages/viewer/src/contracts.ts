@@ -377,12 +377,21 @@ export interface SpreadsheetSheetInfo {
   readonly rightToLeft?: boolean;
 }
 
+export interface PageSize {
+  /** Natural page width in CSS pixels at zoom 1. */
+  readonly width: number;
+  /** Natural page height in CSS pixels at zoom 1. */
+  readonly height: number;
+}
+
 export interface DocumentInfo {
   readonly format: DocumentFormat;
   readonly unit: RenderUnit;
   readonly pageCount: number;
   readonly sheetNames?: readonly string[];
   readonly sheets?: readonly SpreadsheetSheetInfo[];
+  /** Natural page geometry, in document order, when exposed by the backend. */
+  readonly pageSizes?: readonly PageSize[];
   readonly warnings?: readonly ViewerWarning[];
   readonly capabilities?: DocumentCapabilities;
 }

@@ -1,6 +1,6 @@
 # Corrective roadmap: fidelity и viewport release blockers
 
-**Статус:** 🟠 Requalification завершена; project-owned DOC parser в работе
+**Статус:** 🟠 Requalification завершена; DOC 13a–13b готовы, core 13c готова, начат 13d
 
 ## Назначение документа
 
@@ -170,13 +170,18 @@ versioning и актуальный PDF.js 6 point-based API для link annotati
 
 ### Задача 13. Legacy DOC structured conversion
 
-**Статус:** 🟠 В работе: stock converter отклонён, новый parser утверждён
+**Статус:** 🟠 В работе: stages 13a–13b завершены, core 13c готова, начат этап 13d
 
-Придуманные headings удалены из runtime path: TypeScript и Rust fail closed с
-`fidelity-unsupported`. Spike подтвердил, что structured Word Binary pipeline
-требует нового parser scope. Реализация разбита на bounded foundation,
-formatting/sections, tables/media/serialization и browser qualification; до
-завершения этих этапов DOC остаётся blocker.
+Придуманные headings удалены из runtime path. Project-owned bounded parser
+квалифицирован на public Word 97/2000/2003 corpus и уже покрывает formatting,
+sections, headers/footers, heterogeneous tables, fields и notes. DOC включён в
+WASM worker/package adapter; Chromium и React smoke открывают и рендерят
+публичный table fixture. Point/ranged comments сохраняются в `comments.xml` с
+авторами и source-backed anchors, а `PlfLst`/`PlfLfo` проецируются в OOXML
+numbering. `NilPICFAndBinData` отделён от PICF image records; полный Chromium
+E2E и clean-pack gate проходят. Shapes/OLE, advanced media/table/list variants
+и точная visual qualification ещё не завершены, поэтому DOC остаётся release
+blocker.
 
 Подробности: [`./todo/13-legacy-doc-fidelity.md`](./todo/13-legacy-doc-fidelity.md)
 

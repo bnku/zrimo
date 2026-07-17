@@ -8,7 +8,7 @@ import type {
   ViewerState,
   SpreadsheetViewportRange,
 } from "./contracts.js";
-import { snapGraphemeOffset, visibleRange } from "./interaction.js";
+import { snapGraphemeOffset } from "./interaction.js";
 import { SpreadsheetViewport } from "./spreadsheet-viewport.js";
 
 import type { DocxHighlightMatch, DocxTextRunInfo } from "@silurus/ooxml/docx";
@@ -40,6 +40,7 @@ export interface ViewportHost {
   onZoom(zoom: number): void;
   onTextSelection(range: TextSelectionRange): void;
   onCellSelection(range: CellRange): void;
+  onCopySelection(): void;
 }
 
 interface ViewportStrategy {
@@ -129,6 +130,14 @@ interface PointerPosition {
   readonly y: number;
 }
 
+interface PageMetrics {
+  readonly widths: readonly number[];
+  readonly heights: readonly number[];
+  readonly offsets: readonly number[];
+  readonly totalHeight: number;
+  readonly maxWidth: number;
+}
+
 export class ViewerViewport {
   readonly #host: ViewportHost;
   readonly #container: HTMLElement;
@@ -204,6 +213,7 @@ export class ViewerViewport {
       background: "var(--docs-viewer-background, #e9edf2)",
       touchAction: "none",
       contain: "strict",
+      scrollbarGutter: "stable both-edges",
     });
     this.#spacer = document.createElement("div");
     Object.assign(this.#spacer.style, {
@@ -241,9 +251,13 @@ export class ViewerViewport {
       this.#layout === "continuous" &&
       zoom !== this.#appliedZoom
     ) {
-      const oldExtent = BASE_HEIGHT * this.#appliedZoom + PAGE_GAP;
-      const newExtent = BASE_HEIGHT * zoom + PAGE_GAP;
-      this.#root.scrollTop = (this.#root.scrollTop / oldExtent) * newExtent;
+      const oldMetrics = pageMetrics(this.#info, this.#appliedZoom);
+      const newMetrics = pageMetrics(this.#info, zoom);
+      const pageIndex = pageAtOffset(oldMetrics, this.#root.scrollTop);
+      const oldTop = oldMetrics.offsets[pageIndex] ?? 0;
+      const newTop = newMetrics.offsets[pageIndex] ?? 0;
+      this.#root.scrollTop =
+        newTop + ((this.#root.scrollTop - oldTop) * zoom) / this.#appliedZoom;
     }
     this.#appliedZoom = zoom;
     this.schedule();
@@ -258,26 +272,28 @@ export class ViewerViewport {
 
   goToPage(pageIndex: number): void {
     if (this.#layout === "continuous") {
-      const extent = BASE_HEIGHT * this.#host.state.zoom + PAGE_GAP;
-      this.#root.scrollTop = Math.max(0, pageIndex) * extent;
+      const metrics = pageMetrics(this.#info, this.#host.state.zoom);
+      this.#root.scrollTop = metrics.offsets[Math.max(0, pageIndex)] ?? 0;
     }
     this.schedule();
   }
 
   fitWidth(): number {
+    const size = naturalPageSize(this.#info, this.#host.state.pageIndex);
     return Math.max(
       0.1,
-      Math.min(8, (this.#root.clientWidth - 24) / BASE_WIDTH),
+      Math.min(8, (this.#root.clientWidth - 24) / size.width),
     );
   }
 
   fitPage(): number {
+    const size = naturalPageSize(this.#info, this.#host.state.pageIndex);
     return Math.max(
       0.1,
       Math.min(
         8,
-        (this.#root.clientWidth - 24) / BASE_WIDTH,
-        (this.#root.clientHeight - 24) / BASE_HEIGHT,
+        (this.#root.clientWidth - 24) / size.width,
+        (this.#root.clientHeight - 24) / size.height,
       ),
     );
   }
@@ -316,20 +332,18 @@ export class ViewerViewport {
       this.#clearSlots();
       return;
     }
-    const extent = BASE_HEIGHT * state.zoom + PAGE_GAP;
-    const width = BASE_WIDTH * state.zoom;
     const count = info.pageCount;
+    const metrics = pageMetrics(info, state.zoom);
     this.#spacer.style.height =
-      this.#layout === "single" ? "100%" : `${Math.max(1, count * extent)}px`;
-    this.#spacer.style.minWidth = `${width + 24}px`;
+      this.#layout === "single" ? "100%" : `${metrics.totalHeight}px`;
+    this.#spacer.style.minWidth = `${metrics.maxWidth + 24}px`;
     const range =
       this.#layout === "single"
         ? { start: state.pageIndex, end: state.pageIndex + 1 }
-        : visibleRange(
+        : visiblePageRange(
             this.#root.scrollTop,
             this.#root.clientHeight,
-            extent,
-            count,
+            metrics,
             this.#overscan,
           );
     for (const [pageIndex, slot] of this.#slots)
@@ -340,12 +354,19 @@ export class ViewerViewport {
       }
     for (let pageIndex = range.start; pageIndex < range.end; pageIndex += 1) {
       const slot = this.#slots.get(pageIndex) ?? this.#createSlot(pageIndex);
-      const top = this.#layout === "single" ? 12 : pageIndex * extent + 12;
+      const width = metrics.widths[pageIndex] ?? BASE_WIDTH * state.zoom;
+      const height = metrics.heights[pageIndex] ?? BASE_HEIGHT * state.zoom;
+      const top =
+        this.#layout === "single" ? 12 : (metrics.offsets[pageIndex] ?? 0) + 12;
+      const contentWidth = Math.max(
+        this.#root.clientWidth,
+        metrics.maxWidth + 24,
+      );
       slot.root.style.top = `${top}px`;
-      slot.root.style.left = "50%";
+      slot.root.style.left = `${Math.max(12, (contentWidth - width) / 2)}px`;
       slot.root.style.width = `${width}px`;
-      slot.root.style.minHeight = `${BASE_HEIGHT * state.zoom}px`;
-      slot.root.style.transform = "translateX(-50%)";
+      slot.root.style.minHeight = `${height}px`;
+      slot.root.style.transform = "none";
       const highlights = this.#host
         .getSearchMatches(pageIndex)
         .map((match) => `${match.start}:${match.end}`)
@@ -558,13 +579,10 @@ export class ViewerViewport {
   #handleScroll(): void {
     const state = this.#host.state;
     if (this.#layout === "continuous" && state.pageCount > 0) {
-      const extent = BASE_HEIGHT * state.zoom + PAGE_GAP;
-      const visible = Math.min(
-        state.pageCount - 1,
-        Math.max(
-          0,
-          Math.floor((this.#root.scrollTop + extent * 0.35) / extent),
-        ),
+      const metrics = pageMetrics(this.#info, state.zoom);
+      const visible = pageAtOffset(
+        metrics,
+        this.#root.scrollTop + this.#root.clientHeight * 0.35,
       );
       if (visible !== state.pageIndex) this.#host.onVisiblePage(visible);
     }
@@ -678,6 +696,11 @@ export class ViewerViewport {
   }
 
   #handleKeyDown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+      event.preventDefault();
+      this.#host.onCopySelection();
+      return;
+    }
     if (event.shiftKey && this.#cellAnchor && this.#cellFocus) {
       const delta = keyCellDelta(event.key);
       if (delta) {
@@ -849,6 +872,81 @@ export class ViewerViewport {
     }
     this.#slots.clear();
   }
+}
+
+function naturalPageSize(
+  info: DocumentInfo | undefined,
+  pageIndex: number,
+): { readonly width: number; readonly height: number } {
+  const candidate = info?.pageSizes?.[pageIndex];
+  return candidate &&
+    Number.isFinite(candidate.width) &&
+    candidate.width > 0 &&
+    Number.isFinite(candidate.height) &&
+    candidate.height > 0
+    ? candidate
+    : { width: BASE_WIDTH, height: BASE_HEIGHT };
+}
+
+function pageMetrics(
+  info: DocumentInfo | undefined,
+  zoom: number,
+): PageMetrics {
+  const count = info?.pageCount ?? 0;
+  const widths: number[] = [];
+  const heights: number[] = [];
+  const offsets: number[] = [];
+  let top = 0;
+  let maxWidth = 1;
+  for (let pageIndex = 0; pageIndex < count; pageIndex += 1) {
+    const size = naturalPageSize(info, pageIndex);
+    const width = size.width * zoom;
+    const height = size.height * zoom;
+    offsets.push(top);
+    widths.push(width);
+    heights.push(height);
+    maxWidth = Math.max(maxWidth, width);
+    top += height + PAGE_GAP;
+  }
+  return {
+    widths,
+    heights,
+    offsets,
+    totalHeight: Math.max(1, top),
+    maxWidth,
+  };
+}
+
+function pageAtOffset(metrics: PageMetrics, offset: number): number {
+  if (metrics.offsets.length === 0) return 0;
+  const target = Math.max(0, offset);
+  let low = 0;
+  let high = metrics.offsets.length - 1;
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (metrics.offsets[middle]! <= target) low = middle;
+    else high = middle - 1;
+  }
+  return low;
+}
+
+function visiblePageRange(
+  scrollOffset: number,
+  viewportHeight: number,
+  metrics: PageMetrics,
+  overscan: number,
+): { readonly start: number; readonly end: number } {
+  const count = metrics.offsets.length;
+  if (count === 0) return { start: 0, end: 0 };
+  const start = pageAtOffset(metrics, scrollOffset);
+  const end = pageAtOffset(
+    metrics,
+    Math.max(0, scrollOffset) + Math.max(0, viewportHeight),
+  );
+  return {
+    start: Math.max(0, start - overscan),
+    end: Math.min(count, end + overscan + 1),
+  };
 }
 
 function pointerDistance(

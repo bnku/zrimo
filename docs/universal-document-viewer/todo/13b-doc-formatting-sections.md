@@ -1,6 +1,6 @@
 # Задача 13b. DOC formatting и sections
 
-**Статус:** ⬜ Запланирована после 13a
+**Статус:** ✅ Завершена 2026-07-17
 
 ## Цель
 
@@ -49,3 +49,36 @@
 - Character/paragraph runs совпадают с source CP ranges.
 - Sections и page geometry проходят structural oracle.
 - Unsupported properties не создают fabricated OOXML.
+
+## Результат
+
+- Реализован bounded parser `PlcBteChpx`/`PlcBtePapx` и 512-byte
+  `ChpxFkp`/`PapxFkp`, включая обычную и extended форму `PapxInFkp`.
+- Direct formatting сохраняется как source-backed FC ranges, paragraph style
+  index и точные raw `grpprl`; лимиты введены отдельно для FKP pages и runs.
+- Generic Word 97+ SPRM framing декодирует `ispmd`/`fSpec`/`sgc`/`spra`, все
+  fixed operand sizes, обычные variable operands и двухбайтовую длину
+  `sprmTDefTable`, а также обычную и extended `sprmPChgTabs`. Неизвестные opcode
+  сохраняются, а не превращаются в догаданные свойства.
+- CLX `Prc` больше не отбрасываются: `Prm0` и `Prm1` применяются после FKP к
+  соответствующей property family. FC ranges точно split-ятся по piece и
+  paragraph boundaries в source CP ranges.
+- Типизированы подтверждённые character/paragraph properties: font slots,
+  size, emphasis, underline, colors, highlight, language, bidi, spacing,
+  alignment, indents, line/paragraph spacing, tabs, keep/page-break, outline,
+  lists и table-depth markers. Style-relative toggles не схлопываются до STSH.
+- Реализованы `STSH`/`STD`/`UPX`, Unicode style names, default fonts, base/next/
+  linked references и inheritance с kind/bounds/cycle protection. Итоговый
+  formatting order: STSH defaults → paragraph style → character style →
+  CHPX/PAPX → piece PRM.
+- `SttbfFfn` сохраняет source font name, alternate name, charset, weight,
+  PANOSE и Unicode/code-page signature для последующего font fallback.
+- `PLCFSED`/`SED`/`SEPX` восстанавливают source section CP ranges, page size,
+  orientation, margins, columns, header/footer distances и bidi geometry.
+- 33 unit tests и публичный Word 97/2000/2002/2003 corpus проверяют FKP, PRM,
+  STSH inheritance, font tables, semantic/style composition и sections.
+  `cargo clippy -D warnings`, dedicated fuzz build, полный `npm run check`,
+  qualification suite и release WASM build проходят.
+
+Runtime всё ещё обязан возвращать `fidelity-unsupported`: таблицы, связанные
+headers/footers, media и DOCX serialization относятся к 13c.

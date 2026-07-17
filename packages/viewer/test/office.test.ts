@@ -295,13 +295,29 @@ describe("OfficeDocumentAdapter", () => {
     assert.deepEqual(renderedOffsets, { x: 6.5, y: 4.25 });
   });
 
-  it("refuses the lossy legacy DOC projection before conversion", async () => {
+  it("converts structured legacy DOC before loading the DOCX backend", async () => {
     let converterCalled = false;
+    let loadedBytes: Uint8Array | undefined;
+    const converted = centralDirectory([16]);
     const adapter = new OfficeDocumentAdapter({
       legacy: {
-        convert: async () => {
+        convert: async (data, format) => {
           converterCalled = true;
-          return new Uint8Array();
+          assert.deepEqual(data, Uint8Array.of(0xd0, 0xcf, 1, 2));
+          assert.equal(format, "doc");
+          return converted;
+        },
+      },
+      engines: {
+        docx: async (data) => {
+          loadedBytes = new Uint8Array(data);
+          return {
+            pageCount: 1,
+            pageSize: () => ({ widthPt: 612, heightPt: 792 }),
+            renderPage: async () => {},
+            collectPageRuns: async () => [],
+            destroy: () => {},
+          };
         },
       },
     });
@@ -310,11 +326,16 @@ describe("OfficeDocumentAdapter", () => {
       ...defaultResourceLimits,
       maxInputBytes: 1024,
     };
-    await assert.rejects(
-      adapter.open(original, context("doc", limits)),
-      isCode("fidelity-unsupported"),
-    );
-    assert.equal(converterCalled, false);
+    const handle = await adapter.open(original, context("doc", limits));
+    assert.equal(converterCalled, true);
+    assert.deepEqual(loadedBytes, converted);
+    const info = await adapter.getInfo(handle);
+    assert.equal(info.format, "doc");
+    assert.equal(info.pageCount, 1);
+    assert.deepEqual(info.warnings?.[0]?.details, {
+      sourceFormat: "doc",
+      normalizedFormat: "docx",
+    });
   });
 
   it("maps encrypted backend errors and destroys a parsed handle on abort", async () => {
@@ -414,4 +435,15 @@ function context(
 
 function isCode(code: string): (error: unknown) => boolean {
   return (error) => error instanceof ViewerError && error.code === code;
+}
+
+function centralDirectory(sizes: readonly number[]): Uint8Array {
+  const bytes = new Uint8Array(sizes.length * 46);
+  const view = new DataView(bytes.buffer);
+  sizes.forEach((size, index) => {
+    const offset = index * 46;
+    view.setUint32(offset, 0x02014b50, true);
+    view.setUint32(offset + 24, size, true);
+  });
+  return bytes;
 }

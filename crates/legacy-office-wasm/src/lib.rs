@@ -1,9 +1,18 @@
 //! In-memory legacy Office to OOXML bridge.
 
+mod doc_comments;
+mod doc_numbering;
+mod doc_tables;
+
 use std::io::Cursor;
 
+use legacy_doc::{DocLimits, WordBinaryDocument};
 use office_oxide::{Document, DocumentFormat, create::create_from_ir_to_writer};
 use wasm_bindgen::prelude::*;
+
+use crate::doc_comments::add_comments_to_docx;
+use crate::doc_numbering::add_numbering_to_docx;
+use crate::doc_tables::add_table_layout_to_docx;
 
 fn formats(format: &str) -> Result<(DocumentFormat, DocumentFormat), String> {
     match format.to_ascii_lowercase().as_str() {
@@ -14,24 +23,39 @@ fn formats(format: &str) -> Result<(DocumentFormat, DocumentFormat), String> {
     }
 }
 
-fn ensure_faithful_conversion(format: &str) -> Result<(), String> {
-    if format.eq_ignore_ascii_case("doc") {
-        return Err(
-            "fidelity-unsupported: legacy DOC conversion is disabled because the parser exposes only plain text and cannot preserve source formatting, sections, or tables"
-                .to_string(),
-        );
-    }
-    Ok(())
-}
-
 /// Convert a legacy Office buffer to OOXML without touching the file system.
 ///
 /// # Errors
 ///
 /// Returns an error when the format is unsupported, parsing fails, or serialization fails.
 pub fn convert_legacy_bytes(data: &[u8], format: &str) -> Result<Vec<u8>, String> {
-    ensure_faithful_conversion(format)?;
     let (source_format, target_format) = formats(format)?;
+    if source_format == DocumentFormat::Doc {
+        let limits = DocLimits::default();
+        let document = WordBinaryDocument::from_bytes_with_limits(data, limits)
+            .map_err(|error| format!("DOC container parse failed: {error}"))?;
+        let comments = document
+            .comments(limits)
+            .map_err(|error| format!("DOC comment parse failed: {error}"))?;
+        let lists = document
+            .lists(limits)
+            .map_err(|error| format!("DOC list parse failed: {error}"))?;
+        let fonts = document
+            .fonts(limits)
+            .map_err(|error| format!("DOC font parse failed: {error}"))?;
+        let tables = document
+            .tables(limits)
+            .map_err(|error| format!("DOC table parse failed: {error}"))?;
+        let ir = document
+            .to_ooxml_ir(limits)
+            .map_err(|error| format!("DOC semantic projection failed: {error}"))?;
+        let mut output = Cursor::new(Vec::new());
+        create_from_ir_to_writer(&ir, DocumentFormat::Docx, &mut output)
+            .map_err(|error| error.to_string())?;
+        let output = add_comments_to_docx(output.into_inner(), &document, &comments)?;
+        let output = add_numbering_to_docx(output, &lists, &fonts)?;
+        return add_table_layout_to_docx(output, &document, &tables);
+    }
     let document = Document::from_reader(Cursor::new(data.to_vec()), source_format)
         .map_err(|error| error.to_string())?;
     let ir = document.to_ir();
@@ -65,7 +89,7 @@ pub fn extract_legacy_plain_text(data: &[u8], format: &str) -> Result<String, Js
 
 #[cfg(test)]
 mod tests {
-    use super::{ensure_faithful_conversion, formats};
+    use super::formats;
 
     #[test]
     fn maps_all_legacy_formats() {
@@ -73,12 +97,5 @@ mod tests {
         assert!(formats("xls").is_ok());
         assert!(formats("ppt").is_ok());
         assert!(formats("docx").is_err());
-    }
-
-    #[test]
-    fn refuses_lossy_doc_projection() {
-        assert!(ensure_faithful_conversion("DOC").is_err());
-        assert!(ensure_faithful_conversion("xls").is_ok());
-        assert!(ensure_faithful_conversion("ppt").is_ok());
     }
 }

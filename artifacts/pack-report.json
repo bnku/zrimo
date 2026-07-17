@@ -5,17 +5,17 @@
   "name": "@docs-viewer-wasm/viewer",
   "version": "0.1.0-alpha.1",
   "filename": "docs-viewer-wasm-viewer-0.1.0-alpha.1.tgz",
-  "size": 14080871,
-  "unpackedSize": 17526345,
-  "shasum": "ac71d254695780ebbcebaa622699288096c5475e",
-  "integrity": "sha512-1aK1zN9LQ40QxZSbiTUZQr8kgwRsxg+93lNsS3MbjXyHleJ2KWtTqOVn1yq1tiqkG0A+3tmMT2xPkf3fxVJiPQ==",
-  "sha256": "efff5f03168700ebb97070f23fde5e614a81f84da5f09e59bd680f0e492ca1d8",
+  "size": 14215690,
+  "unpackedSize": 17869347,
+  "shasum": "3caafcad34094cddfa99375688c9c1cc21cf22e6",
+  "integrity": "sha512-KWxbtaSdGnRXBasIDAd/HzjRxpDbq1EyVwnQJW0V731cixWDYjC4hmy3wfbQ2aIKenuELdiD99V/ErTKq6hfeg==",
+  "sha256": "7d6c278ade65be45509a6b2918f9ae857f7fec9f20171ee0423e3fd83390679e",
   "fileCount": 307,
   "requiredExportsPresent": true,
   "forbiddenFiles": [],
   "recursiveContentScan": {
     "entryCount": 307,
-    "expandedBytes": 35299401
+    "expandedBytes": 35985443
   },
   "privateSentinelExcluded": true,
   "consumers": [

@@ -416,6 +416,7 @@ name = "docs-viewer-fuzz"
 version = "0.0.0"
 dependencies = [
  "image-wasm",
+ "legacy-doc",
  "legacy-office-wasm",
  "libfuzzer-sys",
  "pdf_oxide",
@@ -746,9 +747,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "legacy-doc"
+version = "0.1.0"
+dependencies = [
+ "office_oxide",
+ "thiserror",
+]
+
+[[package]]
 name = "legacy-office-wasm"
 version = "0.1.0"
 dependencies = [
+ "legacy-doc",
  "office_oxide",
  "viewer-core",
  "wasm-bindgen",

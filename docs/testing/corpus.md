@@ -2,11 +2,11 @@
 
 The repository stores a machine-readable manifest at `tests/corpus/manifest.json`, not third-party binary fixtures. `npm run corpus:fetch` downloads exact blobs into ignored `.cache/corpus/`, verifies SHA-256 before use, and fails closed on an upstream or checksum mismatch.
 
-The initial seven-file qualification set contains DOC, XLS, PPT, DOCX, XLSX, PPTX, and PDF. Office files come from Apache POI commit `913c78891bd0cd20945b050c63abfb8c66c88009`; the PDF comes from Apache PDFBox commit `ddef86fcb1a5407035fdd1c8587832c3d1c761b9`. Both projects publish their test material under Apache-2.0. The manifest records repository, full commit, path, license, format, local name, and SHA-256 for every file.
+The qualification set contains Word 6/97/2000/2003 DOC cases (including tables, Unicode headers/footers, notes, lists and point/ranged comments), XLS, PPT, DOCX, XLSX, PPTX, PDF and additional renderer fixtures. Office files come from Apache POI commit `913c78891bd0cd20945b050c63abfb8c66c88009`; the PDF comes from Apache PDFBox commit `ddef86fcb1a5407035fdd1c8587832c3d1c761b9`. Both projects publish their test material under Apache-2.0. The manifest records repository, full commit, path, license, format, local name, and SHA-256 for every file.
 
 ## Expected outputs
 
-- DOC must fail closed with `fidelity-unsupported`; XLS/PPT must convert to a ZIP-signature OOXML buffer larger than 500 bytes and parse again as XLSX/PPTX.
+- Word 97/2000/2003 DOC must parse source-backed formatting/stories/tables/lists/fields/notes/comments, convert qualified cases to a ZIP-signature DOCX buffer and reparse. Comment/numbering qualification checks package parts, references, relationships and content types; a separate public ranged-comment fixture verifies annotation CP bookmarks, strict `NilPICFAndBinData` classification, native conversion and browser rendering. Word 6 remains a typed unsupported revision. XLS/PPT must likewise convert to ZIP-signature OOXML and reparse as XLSX/PPTX.
 - DOCX must produce at least one page and a non-empty 816×1056 canvas for the current sample; its Chromium screenshot is tracked as a visual baseline.
 - PDF must report one page, produce a valid PNG at 72 DPI, and return a positioned text map containing characters.
 - XLSX/PPTX are present for the production Office task; sheet/slide rendering assertions will be added there.

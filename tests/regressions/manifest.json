@@ -42,7 +42,7 @@
       "source": {
         "kind": "public-corpus",
         "manifest": "tests/corpus/manifest.json",
-        "entry": "word6.doc"
+        "entry": "word97-simple-table.doc"
       },
       "oracle": "tables-sections-and-source-styles-preserved",
       "status": "unsupported",

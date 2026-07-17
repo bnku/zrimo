@@ -74,7 +74,12 @@ interface ViewerState {
 }
 ```
 
-`viewer.state` is replaced, not mutated. `getDocumentInfo()` returns format, render unit, count, optional sheet geometry/warnings, and capabilities (`textSelection`, `cellSelection`, `search`, and `thumbnails`).
+`viewer.state` is replaced, not mutated. `getDocumentInfo()` returns format,
+render unit, count, optional sheet geometry/warnings, and capabilities
+(`textSelection`, `cellSelection`, `search`, and `thumbnails`). Page-oriented
+backends may also return `pageSizes`, an ordered `{ width, height }[]` in natural
+CSS pixels at zoom 1; the managed viewport uses it for mixed-size PDF and Office
+documents instead of coercing every page to A4.
 
 ## View and navigation
 
@@ -91,10 +96,12 @@ interface ViewerState {
 
 The managed viewport also supports pointer drag, Ctrl/Cmd+wheel, two-pointer
 pinch, Page Up/Down, and arrow-key pan. Spreadsheet documents automatically use
-a full-used-range virtual surface with variable/hidden row and column geometry,
-fixed headers/frozen panes, and one bounded canvas. Sheet `fitWidth` fits the
+a virtual surface with variable/hidden row and column geometry, fixed
+headers/frozen panes, one bounded canvas, and enough trailing blank bands to
+fill the viewport. Sheet `fitWidth` fits the
 used columns, `fitPage` fits both axes, and zoom preserves the pointer or center
-anchor. Spreadsheet cells support pointer drag and Shift+arrow range extension.
+anchor. Spreadsheet cells support pointer drag, Shift+arrow range extension,
+and Ctrl/Cmd+C copying of the current range.
 
 The optional controls, shortcuts, localization, and CSS variables are documented in [Basic UI](../ui.md). Font policies and resolver types are documented in [Fonts](../fonts.md).
 
@@ -158,6 +165,6 @@ with code `aborted`. See [headless rendering](./headless.md).
 
 ## Errors and warnings
 
-Catch `ViewerError` and branch on its stable `code`: `unsupported-format`, `fidelity-unsupported`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, or `internal`. `fidelity-unsupported` means that the input format was recognized but the available browser backend cannot render it without inventing or losing material document structure; legacy DOC currently uses this outcome.
+Catch `ViewerError` and branch on its stable `code`: `unsupported-format`, `fidelity-unsupported`, `invalid-file`, `encrypted-document`, `resource-limit`, `network-error`, `aborted`, `font-unavailable`, `render-failed`, `worker-crashed`, `lifecycle-error`, or `internal`. `fidelity-unsupported` remains available for a recognized format/revision that no qualified backend can render without inventing or losing material structure. Qualified Word 97–2003 DOC uses the structured conversion path; older or malformed revisions fail typed conversion instead of falling back to plain text.
 
 Warnings use `format-hint-mismatch`, `unsupported-feature`, `font-substitution`, `external-resource-blocked`, or `fidelity-degraded`. Warnings report explicit degradation and do not silently enable active content.

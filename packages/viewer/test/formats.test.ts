@@ -136,6 +136,7 @@ describe("PDF adapter", () => {
     let closes = 0;
     const backend: PdfBackend = {
       pageCount: 1,
+      pageSize: async () => ({ width: 640, height: 900 }),
       renderPage: async (target) => {
         renders += 1;
         target.width = 2;
@@ -154,6 +155,9 @@ describe("PDF adapter", () => {
       new TextEncoder().encode("%PDF-1.7"),
       context("pdf"),
     );
+    assert.deepEqual((await adapter.getInfo(handle)).pageSizes, [
+      { width: 640, height: 900 },
+    ]);
     const canvas = fakeCanvas();
     await adapter.render(handle, canvas, {
       pageIndex: 0,

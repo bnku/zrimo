@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const targets = [
   "format_detection",
+  "legacy_doc",
   "legacy_office",
   "pdf_parser",
   "tiff_parser",

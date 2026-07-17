@@ -124,6 +124,7 @@ export class DocumentViewer implements ViewerApi {
           onZoom: (zoom) => this.setZoom(zoom),
           onTextSelection: (range) => void this.selectText(range),
           onCellSelection: (range) => this.selectCells(range),
+          onCopySelection: () => void this.copySelection(),
         },
         options,
       );

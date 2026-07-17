@@ -40,7 +40,7 @@ rasterization, annotations, and text geometry. Rust functions return owned
 buffers or serializable maps; they do not retain DOM objects or perform network
 access.
 
-`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy XLS/PPT use `office_oxide::Document::to_ir` and the public `create_from_ir_to_writer` API to return OOXML bytes from memory, then enter the same modern Office path. DOC is stopped at a capability gate because the pinned parser exposes only extracted text/images; the Rust binding independently refuses DOC so direct WASM use cannot reach the heuristic IR projection.
+`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy XLS/PPT use `office_oxide::Document::to_ir`; Word 97–2003 DOC uses the project-owned bounded `legacy-doc` parser and source-backed IR projection. All three use the public `create_from_ir_to_writer` API to return OOXML bytes from memory, then enter the same modern Office path. The stock heuristic DOC projection is never called.
 
 ## Internal adapter draft
 
@@ -59,7 +59,7 @@ All input is untrusted. The runtime will enforce source size, decompression, ent
 ## Consequences
 
 - A single npm package can expose one API while keeping startup and transfer costs format-specific.
-- Qualified legacy conversion reuses permissive code and does not require LibreOffice, OnlyOffice, a server process, or copyleft runtime code; unsupported DOC fidelity is explicit.
+- Qualified legacy conversion reuses permissive code and does not require LibreOffice, OnlyOffice, a server process, or copyleft runtime code; unsupported Word Binary features remain explicit release gaps.
 - The TypeScript/Rust boundary stays coarse-grained; page buffers and text maps cross it, not individual glyph calls.
 - Upstream upgrades require corpus, browser, size, license, and API qualification before changing a pin.
 - Initial alpha names such as `createViewer` may change to the roadmap's `ViewerClient.create` surface during task 05; no 1.0 compatibility promise applies yet.

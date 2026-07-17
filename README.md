@@ -1,12 +1,12 @@
 # docs-viewer-wasm
 
-Framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
+Framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified Word 97–2003 DOC and legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
 
 ## Supported formats
 
 - DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX
+- Word 97–2003 DOC through the project-owned bounded Word Binary parser and in-memory DOCX serialization
 - XLS and PPT through in-memory legacy → OOXML normalization
-- DOC is detected but returns `fidelity-unsupported` until a structured Word Binary backend is available
 - PDF
 - PNG, JPEG, WebP, GIF, BMP and multi-page TIFF
 - SVG, CSV and TSV

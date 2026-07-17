@@ -72,7 +72,7 @@ export class ImageDocumentAdapter implements DocumentAdapter<ImageHandle> {
             this.#options.moduleUrl
               ? new URL(this.#options.moduleUrl, context.assetBaseUrl)
               : context.assetBaseUrl
-                ? new URL("wasm/image/index.js", context.assetBaseUrl)
+                ? new URL("assets/image/index.js", context.assetBaseUrl)
                 : new URL("../assets/image/index.js", import.meta.url),
             context.limits.maxDecodedPixels,
             context.signal,
