@@ -45,8 +45,8 @@
         "entry": "word97-simple-table.doc"
       },
       "oracle": "tables-sections-and-source-styles-preserved",
-      "status": "unsupported",
-      "blockedBy": "13"
+      "status": "pass",
+      "runner": "tests/e2e/doc.spec.ts"
     }
   ]
 }

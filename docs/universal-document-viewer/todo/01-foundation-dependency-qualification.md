@@ -60,7 +60,7 @@
 ### Docs
 
 - Создать `docs/architecture.md` с modular runtime diagram и ownership границами.
-- Создать `docs/dependencies.md` с pinned versions/commits, license, upstream URL, включёнными features и qualification result.
+- Зафиксировать shipped-зависимости, их лицензии и назначение в `THIRD_PARTY_NOTICES.md`; формируемый SPDX SBOM является источником точных pinned versions.
 - Создать `docs/testing/corpus.md` с provenance, expected outputs и правилами добавления fixtures.
 - Обновить roadmap фактически выбранными versions и размерными baseline.
 
@@ -92,6 +92,6 @@
 ### Docs
 
 - Архитектура: [`../../architecture.md`](../../architecture.md).
-- Pins и license decisions: [`../../dependencies.md`](../../dependencies.md).
+- Shipped dependencies и license decisions: [`../../../THIRD_PARTY_NOTICES.md`](../../../THIRD_PARTY_NOTICES.md), точные версии — в формируемом SPDX SBOM.
 - Corpus policy: [`../../testing/corpus.md`](../../testing/corpus.md).
 - Qualification и size report: [`../../testing/qualification-2026-07-16.md`](../../testing/qualification-2026-07-16.md).

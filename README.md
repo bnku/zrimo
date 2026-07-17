@@ -17,26 +17,18 @@ The viewer supports Latin/Cyrillic, CJK, Arabic-script and the agreed Indic scri
 
 ## Install and quick start
 
-The pre-Zrimo `@docs-viewer-wasm/viewer@0.1.0-alpha.0` artifact is quarantined
-after fidelity regressions were found in DOCX selection, PDF fonts, legacy DOC
-layout, and XLSX scrolling. It must not be promoted or treated as a qualified
-release. For historical local diagnosis only, its original immutable artifact remains at:
-
-```bash
-npm install ./artifacts/docs-viewer-wasm-viewer-0.1.0-alpha.0.tgz
-```
-
-After publication, the registry command will be:
-
 ```bash
 npm install @zrimo/viewer
+npx zrimo-copy-assets public/vendor/zrimo
 ```
 
 ```ts
 import { ViewerClient } from "@zrimo/viewer";
 import "@zrimo/viewer/styles.css";
 
-const client = ViewerClient.create();
+const client = ViewerClient.create({
+  assetBaseUrl: new URL("/vendor/zrimo/", location.href),
+});
 const viewer = client.createViewer({
   container: document.querySelector("#viewer")!,
   ui: true,
@@ -49,7 +41,7 @@ await viewer.destroy();
 await client.destroy();
 ```
 
-Use `@zrimo/viewer/headless` for UI-free integration and `@zrimo/viewer/worker` for custom adapter infrastructure. `assetBaseUrl` supports explicit CDN/self-host layouts when a bundler does not emit package assets automatically.
+Use `@zrimo/viewer/headless` for UI-free integration and `@zrimo/viewer/worker` for custom adapter infrastructure. The [getting-started guide](docs/getting-started.md) covers CDN/self-host layouts and MIME requirements.
 
 ## Browser and privacy baseline
 
@@ -59,7 +51,7 @@ Documents remain in the browser. There is no telemetry, server conversion or imp
 
 ## Develop and verify
 
-Prerequisites are Node.js 22+, npm 11, Rust 1.94.1 with `wasm32-unknown-unknown`, Chromium, and Rust nightly/cargo-fuzz only for the fuzz gate.
+Prerequisites are Node.js 22.13+ or 24+, npm 11, Rust 1.94.1 with `wasm32-unknown-unknown`, Chromium, and Rust nightly/cargo-fuzz only for the fuzz gate.
 
 ```bash
 npm ci
@@ -80,13 +72,23 @@ npm run dev --workspace @zrimo/example-vanilla
 npm run dev --workspace @zrimo/example-react
 ```
 
+Build and inspect the complete site — landing, documentation and the production
+React demo — locally:
+
+```bash
+npm run pages:build
+npm run pages:preview
+# open http://127.0.0.1:4174
+```
+
 ## Documentation
 
 - [API reference](docs/api/reference.md) and [headless guide](docs/api/headless.md)
 - [UI](docs/ui.md), [fonts/self-hosting](docs/fonts.md), and [framework integrations](docs/integrations.md)
 - [formats/browser compatibility](docs/compatibility.md) and [troubleshooting](docs/troubleshooting.md)
-- [security model](docs/security.md), [performance budgets](docs/performance.md), and [release checklist](docs/release-checklist.md)
-- [architecture](docs/architecture.md) and [implementation roadmap](docs/universal-document-viewer/00-roadmap.md)
+- [security model](docs/security.md) and [performance guidance](docs/performance.md)
+- [architecture](docs/architecture.md)
+- [contribution guide](CONTRIBUTING.md)
 
 ## Built on open source
 
@@ -105,6 +107,7 @@ maintainer and contributor who made these building blocks available.
 | [Serde](https://github.com/serde-rs/serde), [`serde_json`](https://github.com/serde-rs/json) and [`thiserror`](https://github.com/dtolnay/thiserror) | MIT OR Apache-2.0         | Typed serialization and structured errors in the Rust core and worker boundary.                                                                         |
 | [`core-js`](https://github.com/zloirock/core-js)                                                                                                     | MIT                       | Compatibility modules embedded in the PDF.js legacy browser build used by the supported browser matrix.                                                 |
 | [Noto Sans](https://github.com/notofonts/noto-fonts) and [Noto Sans CJK](https://github.com/notofonts/noto-cjk)                                      | SIL Open Font License 1.1 | Self-hosted, lazy WOFF2 fallback packs for Latin/Cyrillic, Arabic, Indic, CJK, Japanese and Korean text.                                                |
+| [Heroicons](https://github.com/tailwindlabs/heroicons)                                                                                               | MIT                       | Consistent outline icons on the project landing page.                                                                                                   |
 
 Third-party components retain their own licenses. See
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for distribution notices and

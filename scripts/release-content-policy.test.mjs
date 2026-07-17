@@ -15,6 +15,7 @@ test("accepts the package allowlist", () => {
       { path: "README.md" },
       { path: "LICENSE-MIT" },
       { path: "LICENSE-APACHE" },
+      { path: "bin/copy-assets.mjs" },
     ]),
   );
 });

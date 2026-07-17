@@ -4,10 +4,22 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const npmTree = JSON.parse(
-  execFileSync("npm", ["ls", "--all", "--omit=dev", "--json"], {
-    cwd: root,
-    encoding: "utf8",
-  }),
+  execFileSync(
+    "npm",
+    [
+      "ls",
+      "--all",
+      "--omit=dev",
+      "--workspace",
+      "@zrimo/viewer",
+      "--include-workspace-root=false",
+      "--json",
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+    },
+  ),
 );
 const cargo = JSON.parse(
   execFileSync("cargo", ["metadata", "--format-version", "1", "--locked"], {

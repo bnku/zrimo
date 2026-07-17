@@ -7,6 +7,11 @@ test.describe.configure({ mode: "serial" });
 
 const cases = [
   { family: "modern-office", fileName: "sample.docx", threshold: 0.94 },
+  {
+    family: "legacy-doc",
+    fileName: "word97-simple-table.doc",
+    threshold: 0.94,
+  },
   { family: "pdf", fileName: "hello.pdf", threshold: 0.97 },
   { family: "image", fileName: "pixel.png", threshold: 0.97 },
 ] as const;

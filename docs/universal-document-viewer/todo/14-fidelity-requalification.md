@@ -1,11 +1,11 @@
-# Задача 14. Cross-format requalification и новый alpha
+# Задача 14. Cross-format requalification и стабильный 0.1.0
 
-**Статус:** 🟠 Requalification выполнена 2026-07-17; alpha promotion заблокирован задачей 13
+**Статус:** ✅ Завершена 2026-07-17; `0.1.0` готов локально, публикация не выполнялась
 
 ## Цель
 
 Повторно квалифицировать исправленный viewer на содержательных oracles и только
-после этого собрать новый clean alpha artifact.
+после этого собрать clean stable artifact `0.1.0`.
 
 ## Источники требований
 
@@ -21,7 +21,7 @@
 
 - Полный cross-format fidelity/browser/security/performance rerun.
 - Clean pack, SBOM/notices/size reports и examples.
-- Новый alpha version; beta/1.0 остаются отдельным promotion decision.
+- Stable `0.1.0`; последующие minor/1.0 остаются отдельным promotion decision.
 
 ## Что НЕ делаем в этой задаче
 
@@ -60,20 +60,20 @@
 - Все corrective gates зелёные на clean checkout и packed consumers.
 - Reports не содержат private filenames, hashes, text или images.
 - Package содержит только allowlisted runtime/docs/license assets.
-- Новый alpha готов локально; publish/tag не выполнялись.
+- Stable `0.1.0` готов локально; publish/tag не выполнялись.
 
 ## Результат
 
-Локальная сборка `0.1.0-alpha.1` прошла TypeScript/Rust checks, 68 unit tests,
-qualification DOC-refusal + XLS/PPT conversion, Chromium E2E, browser matrix
-(31 pass, один заранее объявленный DPR2 skip), PDF font corpus, DOCX selection,
-large-sheet virtualization, JS/Rust fuzz, license и vulnerability gates.
-Base package занимает 3.51 MiB Brotli; со всеми optional fonts — 13.96 MiB.
-Временный pack содержит 307 allowlisted files, проходит recursive content scan
-и шесть clean consumer builds. Vanilla и React production builds проходят.
+Локальная сборка `0.1.0` прошла TypeScript/Rust checks, 69 viewer и 68 Rust unit
+tests, 7 public corpus qualification tests, 35 Chromium E2E и browser matrix
+40/40 без skip на Chromium, Chromium DPR2, Firefox и WebKit. Fidelity matrix
+включает modern Office, legacy DOC, PDF и image goldens. PDF font corpus, DOCX
+selection, large-sheet virtualization, JS fuzz и пять Rust fuzz targets также
+проходят.
 
-Однако corrective matrix намеренно оставляет `legacy-doc-structured-layout` в
-`unsupported`: spike задачи 13 дал `no-go`, а отдельного product decision снять
-DOC из promised scope не было. Поэтому `release-status.json` остаётся `blocked`,
-pack report помечен `releaseCandidate: false`, а publish/tag не выполнялись.
-Sanitized сводка: [`../../testing/qualification-2026-07-17.md`](../../testing/qualification-2026-07-17.md).
+Base runtime занимает 3,799,154 bytes Brotli; со всеми optional fonts —
+14,759,868 bytes. Tarball содержит 308 allowlisted files, проходит recursive
+content scan, asset-copy CLI, npm publish dry-run и шесть clean consumer builds.
+`release-status.json` имеет состояние `ready`, pack report помечен
+`releaseCandidate: true`. Publish, Git tag и GitHub Release не выполнялись.
+Sanitized сводка: [`../../testing/qualification-0.1.0.md`](../../testing/qualification-0.1.0.md).

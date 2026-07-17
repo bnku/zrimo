@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T02:03:01.702Z",
+  "generatedAt": "2026-07-17T18:14:26.930Z",
   "thresholds": {
     "targetBrotliBytes": 20971520,
     "releaseBlockBrotliBytes": 26214400,
@@ -9,19 +9,19 @@
   "status": "pass",
   "totals": {
     "base": {
-      "raw": 9904737,
-      "gzip": 4509900,
-      "brotli": 3694635
+      "raw": 10259527,
+      "gzip": 4646885,
+      "brotli": 3799154
     },
     "optionalFonts": {
-      "raw": 10965526,
-      "gzip": 10964077,
-      "brotli": 10960700
+      "raw": 10965514,
+      "gzip": 10964069,
+      "brotli": 10960714
     },
     "deliveredWithAllFonts": {
-      "raw": 20870263,
-      "gzip": 15473977,
-      "brotli": 14655335
+      "raw": 21225041,
+      "gzip": 15610954,
+      "brotli": 14759868
     }
   },
   "assets": [
@@ -49,30 +49,30 @@
     {
       "name": "code/adapters/csv.js",
       "group": "code",
-      "raw": 9000,
-      "gzip": 2522,
-      "brotli": 2229
+      "raw": 9299,
+      "gzip": 2576,
+      "brotli": 2279
     },
     {
       "name": "code/adapters/image.js",
       "group": "code",
-      "raw": 7631,
-      "gzip": 2150,
-      "brotli": 1888
+      "raw": 7633,
+      "gzip": 2148,
+      "brotli": 1884
     },
     {
       "name": "code/adapters/office.js",
       "group": "code",
-      "raw": 26054,
-      "gzip": 6005,
-      "brotli": 5249
+      "raw": 26841,
+      "gzip": 6047,
+      "brotli": 5298
     },
     {
       "name": "code/adapters/pdf.js",
       "group": "code",
-      "raw": 16580,
-      "gzip": 4503,
-      "brotli": 3866
+      "raw": 17368,
+      "gzip": 4719,
+      "brotli": 4065
     },
     {
       "name": "code/adapters/svg.js",
@@ -133,16 +133,16 @@
     {
       "name": "code/font-manifest.js",
       "group": "code",
-      "raw": 1897,
-      "gzip": 760,
-      "brotli": 655
+      "raw": 1891,
+      "gzip": 756,
+      "brotli": 657
     },
     {
       "name": "code/fonts.js",
       "group": "code",
-      "raw": 9954,
-      "gzip": 2811,
-      "brotli": 2463
+      "raw": 9948,
+      "gzip": 2807,
+      "brotli": 2459
     },
     {
       "name": "code/format.js",
@@ -182,9 +182,9 @@
     {
       "name": "code/interaction.js",
       "group": "code",
-      "raw": 5204,
-      "gzip": 1576,
-      "brotli": 1437
+      "raw": 6816,
+      "gzip": 1952,
+      "brotli": 1745
     },
     {
       "name": "code/legacy-converter-worker.js",
@@ -224,44 +224,44 @@
     {
       "name": "code/spreadsheet-viewport.js",
       "group": "code",
-      "raw": 24351,
-      "gzip": 5201,
-      "brotli": 4519
+      "raw": 34406,
+      "gzip": 7024,
+      "brotli": 6164
     },
     {
       "name": "code/styles.css",
       "group": "code",
-      "raw": 4329,
-      "gzip": 1130,
-      "brotli": 930
+      "raw": 3891,
+      "gzip": 1112,
+      "brotli": 910
     },
     {
       "name": "code/ui-styles.js",
       "group": "code",
-      "raw": 4359,
-      "gzip": 1148,
-      "brotli": 955
+      "raw": 3921,
+      "gzip": 1132,
+      "brotli": 933
     },
     {
       "name": "code/ui.js",
       "group": "code",
-      "raw": 17586,
-      "gzip": 3681,
-      "brotli": 3191
+      "raw": 17566,
+      "gzip": 3754,
+      "brotli": 3253
     },
     {
       "name": "code/viewer.js",
       "group": "code",
-      "raw": 33137,
-      "gzip": 6521,
-      "brotli": 5786
+      "raw": 35221,
+      "gzip": 6838,
+      "brotli": 6038
     },
     {
       "name": "code/viewport.js",
       "group": "code",
-      "raw": 32700,
-      "gzip": 6588,
-      "brotli": 5801
+      "raw": 35891,
+      "gzip": 7315,
+      "brotli": 6451
     },
     {
       "name": "code/worker-adapter.js",
@@ -1757,9 +1757,9 @@
     {
       "name": "wasm/legacy-office",
       "group": "wasm",
-      "raw": 1131544,
-      "gzip": 545690,
-      "brotli": 429234
+      "raw": 1468424,
+      "gzip": 679091,
+      "brotli": 530586
     },
     {
       "name": "wasm/tiff-image",
@@ -1778,16 +1778,16 @@
     {
       "name": "font/THIRD_PARTY_NOTICES.md",
       "group": "font",
-      "raw": 567,
-      "gzip": 381,
-      "brotli": 304
+      "raw": 561,
+      "gzip": 377,
+      "brotli": 314
     },
     {
       "name": "font/manifest.json",
       "group": "font",
-      "raw": 2672,
-      "gzip": 1061,
-      "brotli": 943
+      "raw": 2666,
+      "gzip": 1057,
+      "brotli": 947
     },
     {
       "name": "font/noto-sans-arabic.woff2",

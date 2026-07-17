@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "packageVersion": "0.1.0-alpha.1",
-  "state": "blocked",
-  "reason": "legacy-doc-structured-fidelity",
-  "blockedChannels": ["alpha", "beta", "latest"],
-  "requiredTasks": ["13"]
+  "packageVersion": "0.1.0",
+  "state": "ready",
+  "reason": "qualified-0.1.0-candidate",
+  "blockedChannels": [],
+  "requiredTasks": []
 }

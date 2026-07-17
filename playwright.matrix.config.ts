@@ -7,7 +7,12 @@ const chromiumPath =
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  testMatch: ["compat.spec.ts", "selection.spec.ts", "pdf.spec.ts"],
+  testMatch: [
+    "compat.spec.ts",
+    "selection.spec.ts",
+    "pdf.spec.ts",
+    "doc.spec.ts",
+  ],
   fullyParallel: true,
   projects: [
     {

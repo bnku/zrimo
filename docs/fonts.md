@@ -54,7 +54,7 @@ The npm artifact contains local WOFF2 packs for Latin/Cyrillic, Han, Japanese ka
 
 Copy the complete `dist` assets to the URL represented by `assetBaseUrl`; workers, WASM, and fonts share that root. Serve `.woff2` as `font/woff2` and allow it in `font-src` CSP. No request is made to Google Fonts or another CDN.
 
-The files are subsets from pinned official Noto commits, licensed under OFL-1.1. [The manifest](../packages/viewer/fonts/manifest.json) records byte sizes and SHA-256 hashes; [third-party notices](../packages/viewer/fonts/THIRD_PARTY_NOTICES.md) and the license ship beside the fonts. Font packs are lazy assets and excluded from the base JS+WASM transfer budget.
+The files are subsets from pinned official Noto commits, licensed under OFL-1.1. [The manifest](https://github.com/bnku/zimo/blob/main/packages/viewer/fonts/manifest.json) records byte sizes and SHA-256 hashes; [third-party notices](https://github.com/bnku/zimo/blob/main/packages/viewer/fonts/THIRD_PARTY_NOTICES.md) and the license ship beside the fonts. Font packs are lazy assets and excluded from the base JS+WASM transfer budget.
 
 ## Troubleshooting
 

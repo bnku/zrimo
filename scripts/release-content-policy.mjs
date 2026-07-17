@@ -243,6 +243,7 @@ function isAllowedPackagePath(path) {
     path === "LICENSE-MIT" ||
     path === "LICENSE-APACHE" ||
     path === "THIRD_PARTY_NOTICES.md" ||
+    path === "bin/copy-assets.mjs" ||
     path.startsWith("dist/")
   );
 }

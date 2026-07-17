@@ -42,7 +42,7 @@ Both libraries use zero-based page indices and provide pan/zoom, fit, search, pa
 ## Behavioral differences
 
 - This package has no telemetry, permit verification, license-key check, attribution enforcement, or implicit third-party font request. URL fetches are limited to a source explicitly supplied by the host and package assets under `assetBaseUrl`.
-- The runtime and shipped dependencies are selected through a permissive-license gate intended for closed commercial applications. Consult [dependencies](./dependencies.md) for the audited inventory.
+- Runtime and shipped dependencies use licenses compatible with closed commercial applications. Consult the [third-party notices](https://github.com/bnku/zimo/blob/main/THIRD_PARTY_NOTICES.md) and repository SPDX SBOM for the pinned inventory.
 - DOC/XLS/PPT legacy binaries use in-browser legacy-to-OOXML normalization. Word 97–2003 DOC is handled by the project-owned bounded parser; unsupported Word Binary features do not fall back to invented plain-text layout. The exact original bytes remain available for download.
 - Macro-enabled OOXML is rendered without executing VBA. Spreadsheet formulas use stored cached values and are not calculated.
 - Password-protected documents return `encrypted-document`; password authentication is outside v1.

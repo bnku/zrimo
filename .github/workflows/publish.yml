@@ -1,0 +1,47 @@
+name: Publish release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    if: ${{ !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.94.1
+          components: clippy,rustfmt
+          targets: wasm32-unknown-unknown
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: cargo install cargo-audit --locked
+      - run: npm run release:verify -- --tag "${{ github.event.release.tag_name }}"
+      - name: Stage verified release assets
+        run: |
+          mkdir -p artifacts/release
+          cp .cache/pack-test/zrimo-viewer-*.tgz artifacts/release/
+          cp .cache/pack-test/SHA256SUMS artifacts/release/
+          cp artifacts/sbom.spdx.json artifacts/pack-report.json artifacts/release/
+          cp THIRD_PARTY_NOTICES.md artifacts/release/
+      - name: Publish the verified tarball to npm
+        run: npm publish artifacts/release/zrimo-viewer-*.tgz --access public
+      - name: Attach verified artifacts to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" artifacts/release/* --clobber

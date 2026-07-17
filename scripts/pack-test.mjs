@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 
@@ -13,6 +14,9 @@ const artifacts = resolve(root, "artifacts");
 const packOutput = resolve(root, ".cache/pack-test");
 const sentinelRoot = resolve(root, ".tmp/release-pack-sentinel");
 const sentinel = `release-private-sentinel-${randomUUID()}`;
+const releaseStatus = JSON.parse(
+  await readFile(resolve(root, "release-status.json"), "utf8"),
+);
 await mkdir(artifacts, { recursive: true });
 await rm(packOutput, { recursive: true, force: true });
 await mkdir(packOutput, { recursive: true });
@@ -53,6 +57,7 @@ try {
 }
 const names = new Set(packed.files.map((file) => file.path));
 const required = [
+  "bin/copy-assets.mjs",
   "dist/index.js",
   "dist/index.d.ts",
   "dist/headless.js",
@@ -97,8 +102,8 @@ await writeFile(
 );
 const report = {
   schemaVersion: 1,
-  releaseCandidate: false,
-  quarantineState: "blocked",
+  releaseCandidate: releaseStatus.state === "ready",
+  quarantineState: releaseStatus.state,
   name: packed.name,
   version: packed.version,
   filename: packed.filename,
@@ -126,6 +131,21 @@ execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", tarball], {
   cwd: consumer,
   stdio: "inherit",
 });
+execFileSync(
+  resolve(consumer, "node_modules/.bin/zrimo-copy-assets"),
+  ["public/zrimo"],
+  { cwd: consumer, stdio: "inherit" },
+);
+for (const asset of [
+  "public/zrimo/assets/legacy/index_bg.wasm",
+  "public/zrimo/assets/image/index_bg.wasm",
+  "public/zrimo/workers/pdf.worker.min.mjs",
+  "public/zrimo/fonts/manifest.json",
+]) {
+  if (!existsSync(resolve(consumer, asset))) {
+    throw new Error(`Asset installer omitted ${asset}.`);
+  }
+}
 await writeFile(
   resolve(consumer, "consumer.mjs"),
   [

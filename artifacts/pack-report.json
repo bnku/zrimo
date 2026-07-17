@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "releaseCandidate": false,
-  "quarantineState": "blocked",
+  "releaseCandidate": true,
+  "quarantineState": "ready",
   "name": "@zrimo/viewer",
-  "version": "0.1.0-alpha.1",
-  "filename": "zrimo-viewer-0.1.0-alpha.1.tgz",
-  "size": 14220487,
-  "unpackedSize": 17887853,
-  "shasum": "6a593d2dd5e267607bf603636ba3c9f8c60ce48c",
-  "integrity": "sha512-7lzY76d0pGDGZ34k2K0m5WYQo9KtW2FY07242oc9ag57fQCQ1n5vewWwbKsrSFj8+8IRYKCZ8U7xzYonBKpIew==",
-  "sha256": "16747380ea65d969028146090ef18f659e1ee87a1e780710b599a3190c25a727",
-  "fileCount": 307,
+  "version": "0.1.0",
+  "filename": "zrimo-viewer-0.1.0.tgz",
+  "size": 14221194,
+  "unpackedSize": 17888977,
+  "shasum": "90e255a886be877664ed5f7eec9e832a864763d1",
+  "integrity": "sha512-4FSG4wYEpETzeCkzSJzE/rRKZS2fp55eykF+hDNoymbo+ZFGW9F8iVKFsZszjTHnlSBmoQThc5Etkz5xf+dDZw==",
+  "sha256": "77cd31f100409d3e3f44547523f56919667e3b86af5f4d7afa240f272ebb3e21",
+  "fileCount": 308,
   "requiredExportsPresent": true,
   "forbiddenFiles": [],
   "recursiveContentScan": {
-    "entryCount": 307,
-    "expandedBytes": 36022381
+    "entryCount": 308,
+    "expandedBytes": 36025553
   },
   "privateSentinelExcluded": true,
   "consumers": [

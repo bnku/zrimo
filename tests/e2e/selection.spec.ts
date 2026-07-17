@@ -249,11 +249,7 @@ test("native cross-run selection preserves logical text and grapheme boundaries"
 
 test("pointer drag works forward/backward and double-click selects a word", async ({
   page,
-}, testInfo) => {
-  test.skip(
-    testInfo.project.name === "chromium-dpr2",
-    "DPR 2 is covered by geometry/copy; pointer coordinates are browser-project invariant.",
-  );
+}) => {
   const spans = page.locator("[data-start]");
   const first = await spans.nth(0).boundingBox();
   const last = await spans.nth(4).boundingBox();

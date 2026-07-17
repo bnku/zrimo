@@ -17,5 +17,4 @@ The release artifact contains or depends on the following principal components. 
 - [`zip`](https://github.com/zip-rs/zip2) — MIT; bounded in-memory ZIP/OOXML package manipulation.
 - [Serde](https://github.com/serde-rs/serde), [`serde_json`](https://github.com/serde-rs/json) and [`thiserror`](https://github.com/dtolnay/thiserror) — MIT OR Apache-2.0; serialization and structured Rust errors.
 - [Noto Sans](https://github.com/notofonts/noto-fonts) and [Noto Sans CJK](https://github.com/notofonts/noto-cjk) subset fonts — SIL Open Font License 1.1. The font manifest, complete OFL text, pinned source commits and SHA-256 hashes are included in `dist/fonts/`.
-
-No Microsoft proprietary font or copyleft runtime component is bundled. Transitive notices and license expressions are verified by `npm run licenses`.
+  No Microsoft proprietary font or copyleft runtime component is bundled. Transitive notices and license expressions are verified by `npm run licenses`.

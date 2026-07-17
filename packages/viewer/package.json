@@ -1,6 +1,6 @@
 {
   "name": "@zrimo/viewer",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0",
   "description": "Zrimo — embeddable browser-only document viewer with Rust/WASM adapters",
   "keywords": [
     "document-viewer",
@@ -12,14 +12,32 @@
   ],
   "license": "MIT OR Apache-2.0",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/styles.css"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnku/zimo.git",
+    "directory": "packages/viewer"
+  },
+  "homepage": "https://bnku.github.io/zimo/",
+  "bugs": {
+    "url": "https://github.com/bnku/zimo/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
+    "bin",
     "dist",
     "README.md",
     "LICENSE-MIT",
     "LICENSE-APACHE",
     "THIRD_PARTY_NOTICES.md"
   ],
+  "bin": {
+    "zrimo-copy-assets": "./bin/copy-assets.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,7 +60,7 @@
   "module": "./dist/index.js",
   "browser": "./dist/index.js",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0 || >=24"
   },
   "scripts": {
     "build": "node ../../scripts/build-viewer.mjs",

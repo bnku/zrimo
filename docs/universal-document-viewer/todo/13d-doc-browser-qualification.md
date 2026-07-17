@@ -1,6 +1,6 @@
 # Задача 13d. DOC browser integration и qualification
 
-**Статус:** 🟠 В работе с 2026-07-17; browser/pack gates проходят, visual matrix не завершён
+**Статус:** ✅ Завершена 2026-07-17; browser, visual и pack gates проходят
 
 ## Цель
 
@@ -70,5 +70,10 @@ security, performance и packaging gates.
 - Native и Chromium corpus дополнены Apache-2.0 ranged-comment fixture:
   annotation bookmark проходит полный browser WASM path, а содержащиеся в DOC
   `NilPICFAndBinData` записи строго отделяются от PICF-картинок по `sprmCFData`.
-- Ещё нужны cross-browser DOC matrix, visual oracle/golden и повторная задача
-  14.
+- DOC включён в Chromium, Chromium DPR2, Firefox и WebKit matrix без skip: весь
+  matrix завершён с результатом 40/40.
+- Golden для `word97-simple-table.doc` включён в общий fidelity gate и проходит
+  с SSIM 1.0 при пороге 0.94. Structural assertions продолжают отдельно
+  проверять таблицу, текстовый слой и отсутствие fabricated content.
+- Clean tarball содержит legacy DOC WASM path, проходит executable asset-copy
+  CLI и шесть consumer builds. Повторная задача 14 завершена для `0.1.0`.

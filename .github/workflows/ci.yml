@@ -31,6 +31,7 @@ jobs:
       - run: npm run report:size
       - run: npm run report:sbom
       - run: npm run test:pack
+      - run: npm run pages:build
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -53,6 +54,7 @@ jobs:
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e
       - run: npm run test:e2e:matrix
+      - run: npm run test:pages
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -9,6 +9,12 @@
       "ssim": 1
     },
     {
+      "family": "legacy-doc",
+      "fileName": "word97-simple-table.doc",
+      "threshold": 0.94,
+      "ssim": 1
+    },
+    {
       "family": "pdf",
       "fileName": "hello.pdf",
       "threshold": 0.97,

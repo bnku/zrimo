@@ -62,4 +62,4 @@ All input is untrusted. The runtime will enforce source size, decompression, ent
 - Qualified legacy conversion reuses permissive code and does not require LibreOffice, OnlyOffice, a server process, or copyleft runtime code; unsupported Word Binary features remain explicit release gaps.
 - The TypeScript/Rust boundary stays coarse-grained; page buffers and text maps cross it, not individual glyph calls.
 - Upstream upgrades require corpus, browser, size, license, and API qualification before changing a pin.
-- Initial alpha names such as `createViewer` may change to the roadmap's `ViewerClient.create` surface during task 05; no 1.0 compatibility promise applies yet.
+- The public entry point is `ViewerClient.create`; one client owns shared policy and one or more independently disposable viewer instances.

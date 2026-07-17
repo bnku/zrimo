@@ -1,0 +1,93 @@
+:root {
+  --vp-c-brand-1: #3e63dd;
+  --vp-c-brand-2: #3155c6;
+  --vp-c-brand-3: #2545a7;
+  --vp-c-brand-soft: rgb(62 99 221 / 14%);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(
+    120deg,
+    #3256c8 12%,
+    #6b4de6 55%,
+    #008f82
+  );
+  --vp-home-hero-image-background-image: radial-gradient(
+    circle at 50% 50%,
+    rgb(88 109 230 / 28%),
+    transparent 68%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+.VPHomeHero .name {
+  max-width: 760px;
+  letter-spacing: -0.045em;
+}
+
+.VPHomeHero .text {
+  max-width: 800px;
+  letter-spacing: -0.035em;
+}
+
+.VPHomeHero .tagline {
+  max-width: 650px;
+  line-height: 1.65;
+}
+
+.VPFeature {
+  border-color: rgb(82 99 140 / 18%);
+  background: linear-gradient(
+    145deg,
+    rgb(255 255 255 / 92%),
+    rgb(245 247 255 / 86%)
+  );
+}
+
+.dark .VPFeature {
+  background: linear-gradient(145deg, rgb(31 37 54 / 92%), rgb(24 28 42 / 86%));
+}
+
+.VPFeature .icon {
+  background: var(--vp-c-brand-soft);
+}
+
+.VPFeature img {
+  width: 24px;
+  height: 24px;
+}
+
+.zrimo-proof {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 40px 0 16px;
+}
+
+.zrimo-proof > div {
+  padding: 22px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  background: var(--vp-c-bg-soft);
+}
+
+.zrimo-proof strong,
+.zrimo-proof span {
+  display: block;
+}
+
+.zrimo-proof strong {
+  margin-bottom: 5px;
+  color: var(--vp-c-brand-1);
+  font-size: 24px;
+}
+
+.zrimo-proof span {
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .zrimo-proof {
+    grid-template-columns: 1fr;
+  }
+}

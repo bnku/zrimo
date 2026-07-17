@@ -6,18 +6,18 @@ Document bytes, filenames, MIME headers, URLs, archive metadata, embedded fonts/
 
 ## Default limits
 
-| Limit | Default | Enforcement point |
-|---|---:|---|
-| Input bytes | 100 MiB | Blob/Content-Length before read; streamed byte count during fetch |
-| Expanded Office package | 512 MiB | ZIP central directory before parser open |
-| Single ZIP entry | 64 MiB | ZIP central directory before parser open |
-| Decoded raster pixels | 100 million | PNG/GIF/JPEG/WebP/BMP/TIFF headers before browser/Rust decode |
-| SVG source | 16 MiB | Before DOM parsing/sanitization |
-| CSV/TSV cells | 1 million | During bounded parsing |
-| Cached text maps | 64 MiB | Before retaining positioned text |
-| Pages/slides/sheets/images | 100,000 | Before publishing ready state |
-| Concurrent renders | 2 | Shared priority scheduler |
-| Worker operation | 30 seconds | Timer terminates the worker and returns `resource-limit` |
+| Limit                      |     Default | Enforcement point                                                 |
+| -------------------------- | ----------: | ----------------------------------------------------------------- |
+| Input bytes                |     100 MiB | Blob/Content-Length before read; streamed byte count during fetch |
+| Expanded Office package    |     512 MiB | ZIP central directory before parser open                          |
+| Single ZIP entry           |      64 MiB | ZIP central directory before parser open                          |
+| Decoded raster pixels      | 100 million | PNG/GIF/JPEG/WebP/BMP/TIFF headers before browser/Rust decode     |
+| SVG source                 |      16 MiB | Before DOM parsing/sanitization                                   |
+| CSV/TSV cells              |   1 million | During bounded parsing                                            |
+| Cached text maps           |      64 MiB | Before retaining positioned text                                  |
+| Pages/slides/sheets/images |     100,000 | Before publishing ready state                                     |
+| Concurrent renders         |           2 | Shared priority scheduler                                         |
+| Worker operation           |  30 seconds | Timer terminates the worker and returns `resource-limit`          |
 
 Limits are positive safe integers and can be tightened or explicitly raised per client or load. ZIP64 entries are rejected until the production archive inspector supports their 64-bit metadata without ambiguity. The central-directory checks are a first barrier; adapters must also enforce limits while inflating because archive metadata can lie.
 
@@ -41,6 +41,12 @@ Original bytes are held only until close/destroy. Logging hooks receive stable c
 
 ## Verification
 
-The generated adversarial inventory is `tests/corpus/adversarial-manifest.json`. `npm run fuzz:js` mutates detection/ZIP/CFB, SVG and delimited-data inputs; `npm run fuzz:rust` exercises format detection, legacy conversion, PDF and TIFF parsers under libFuzzer. Unit/E2E gates cover encrypted/truncated/oversized inputs, worker timeout/termination and fallback paths.
+The parsers are exercised with malformed, truncated, encrypted, oversized and
+adversarial inputs, mutation fuzzing and worker lifecycle tests. Dependency and
+license audits complement those tests. This is engineering evidence, not a
+security certification; hosts must still apply their own threat model, CSP,
+URL authorization and resource limits.
 
-`npm run licenses` audits npm/Cargo license expressions and verifies every font byte length/SHA-256. `npm run audit:vulnerabilities` runs npm production audit and RustSec, publishing `artifacts/vulnerability-report.json`. The 2026-07-16 run found zero npm or Cargo vulnerabilities. RustSec reports informational unmaintained notices for transitive `rustybuzz`/`ttf-parser`; they are pinned through the PDF stack, have no vulnerability advisory, and must be re-evaluated on each dependency update.
+Please report suspected vulnerabilities through the repository's
+[security policy](https://github.com/bnku/zimo/security/policy) instead of a
+public issue.

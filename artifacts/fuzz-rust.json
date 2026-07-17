@@ -1,26 +1,31 @@
 {
   "schemaVersion": 1,
-  "budgetSecondsPerTarget": 10,
+  "budgetSecondsPerTarget": 2,
   "crashes": 0,
   "results": [
     {
       "target": "format_detection",
-      "elapsedMs": 24027.473416,
+      "elapsedMs": 31741.346935999998,
+      "status": 0
+    },
+    {
+      "target": "legacy_doc",
+      "elapsedMs": 4283.028967000002,
       "status": 0
     },
     {
       "target": "legacy_office",
-      "elapsedMs": 16720.739474,
+      "elapsedMs": 3696.251381000002,
       "status": 0
     },
     {
       "target": "pdf_parser",
-      "elapsedMs": 26351.282532999998,
+      "elapsedMs": 8636.681526,
       "status": 0
     },
     {
       "target": "tiff_parser",
-      "elapsedMs": 12093.447407999993,
+      "elapsedMs": 3624.9084369999982,
       "status": 0
     }
   ]

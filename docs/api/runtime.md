@@ -1,6 +1,6 @@
 # Runtime API
 
-The alpha runtime exposes one shared `ViewerClient` and one or more `DocumentViewer` instances. Imports are SSR-safe: construction does not touch the DOM, start workers, initialize WASM, or make network requests.
+The runtime exposes one shared `ViewerClient` and one or more `DocumentViewer` instances. Imports are SSR-safe: construction does not touch the DOM, start workers, initialize WASM, or make network requests.
 
 ```ts
 import { ViewerClient } from "@zrimo/viewer";

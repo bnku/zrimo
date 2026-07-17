@@ -1,20 +1,14 @@
 # Performance and resource budgets
 
-## Reference host
+Zrimo keeps work close to the visible viewport. Page documents render a small
+window of pages and spreadsheets render a canvas-sized cell range instead of a
+full sheet. Format engines, workers and optional font packs are loaded only
+when the opened document requires them.
 
-The 2026-07-16 release-candidate baseline was recorded on Linux 6.12 x86_64, AMD Ryzen 9 5950X, 94 GiB RAM, Node 24.18.0, Rust 1.94.1 and system Chromium 145. This is a regression host, not a promise that every end-user device has identical latency.
-
-## Automated scenario
-
-`npm run test:e2e` loads a generated 10 MiB PDF-shaped source through the public API, waits for the first visible render, then performs 40 frame-separated pan/zoom operations on a virtualized 1,000-page document. The gate requires:
-
-- first visible render at or below 2,500 ms;
-- no observed interaction long task above 50 ms;
-- no more than five live page canvases;
-- repeated load/close plus final destroy to release every handle;
-- a timed-out worker operation to terminate its Worker.
-
-The final local result is 5.6 ms to first render, 0 ms maximum observed long task and two live canvases. The machine-readable output is `artifacts/performance-chromium.json`. Production parsers are additionally exercised by the format qualification flows; the synthetic fixture isolates viewer/runtime overhead from document complexity.
+Actual first-render time depends on document structure, compressed size,
+embedded media, selected fonts, device performance and browser canvas/WASM
+implementations. Applications with a strict latency target should benchmark
+representative documents on their own device matrix.
 
 ## Rendering and memory controls
 
@@ -25,14 +19,25 @@ The final local result is 5.6 ms to first render, 0 ms maximum observed long tas
 
 Applications can lower or explicitly raise limits through `ViewerClient.create({ limits })`. Raising them increases peak-memory and denial-of-service exposure; it should be based on a host-specific benchmark.
 
-## Bundle budget
+## Delivery size
 
-Run `npm run build && npm run report:size`. The report includes raw, gzip and Brotli bytes per JS/CSS/worker/WASM asset and records fonts separately.
+The npm package contains all supported format modules and optional fallback
+fonts, but a normal document does not download all of them. Configure
+`assetBaseUrl` so workers, the required WASM adapter and only the encountered
+script-specific font packs can be fetched independently and cached by the
+browser.
 
-| Delivery set | Raw | Gzip | Brotli |
-|---|---:|---:|---:|
-| Base code + all lazy WASM modules | 9.97 MiB | 4.30 MiB | 3.26 MiB |
-| Optional Noto font packs | 10.46 MiB | 10.46 MiB | 10.45 MiB |
-| Package assets with every font | 20.43 MiB | 14.76 MiB | 13.71 MiB |
+Avoid copying runtime assets into JavaScript bundles or importing every worker
+eagerly. The provided `zrimo-copy-assets` command preserves the directory
+layout expected by the lazy loader.
 
-The release target is 20 MiB Brotli for base code, excluding optional script-specific fonts; 20–25 MiB requires an explanation and above 25 MiB blocks release. Fonts and format WASM are lazy assets, so normal document loads transfer only the required subset.
+## Integration guidance
+
+- Keep the viewer container size stable while a document is open; repeated
+  layout changes can invalidate visible canvases.
+- Call `destroy()` when unmounting so workers, object URLs, canvases and caches
+  are released promptly.
+- Lower limits for untrusted public uploads and raise them only after measuring
+  memory use on the weakest supported device.
+- Serve `.wasm`, `.mjs` and font files with correct MIME types and long-lived,
+  versioned cache headers.

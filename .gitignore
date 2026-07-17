@@ -10,4 +10,8 @@ test-results/
 *.log
 .DS_Store
 .tmp/
-fuzz/coprus/*
+docs/.vitepress/cache/
+artifacts/*.tgz
+artifacts/*.png
+artifacts/SHA256SUMS
+artifacts/release/

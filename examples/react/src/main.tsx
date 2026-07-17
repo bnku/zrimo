@@ -87,7 +87,7 @@ function useViewerSession({
     if (host && !container) return;
 
     const client = ViewerClient.create({
-      assetBaseUrl: new URL("/", location.href),
+      assetBaseUrl: new URL(import.meta.env.BASE_URL, location.href),
     });
     const instance = client.createViewer({
       ...(container ? { container } : {}),

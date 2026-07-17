@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are applied to the latest published prerelease/stable line. Until 1.0, consumers should pin the exact alpha/beta version and review release notes before upgrading.
+Security fixes are applied to the latest published stable line. Before 1.0, consumers should pin the exact `0.x` version and review release notes before upgrading because minor releases may still refine public contracts.
 
 ## Reporting a vulnerability
 
@@ -13,4 +13,3 @@ The project should acknowledge a complete report within three business days, pro
 ## Security model
 
 See `docs/security.md` for trust boundaries, active-content policy, resource limits, fuzzing and audit commands. Password-protected files, document scripts/macros, external relationships and server-side uploads are not supported paths.
-

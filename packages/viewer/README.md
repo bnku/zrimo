@@ -6,6 +6,7 @@ Zrimo is an embeddable browser document viewer with an SSR-safe TypeScript facad
 
 ```bash
 npm install @zrimo/viewer
+npx zrimo-copy-assets public/zrimo
 ```
 
 ```ts
@@ -13,7 +14,6 @@ import { ViewerClient } from "@zrimo/viewer";
 import "@zrimo/viewer/styles.css";
 
 const client = ViewerClient.create({
-  // Optional when your bundler handles package asset URLs normally:
   assetBaseUrl: new URL("/zrimo/", location.href),
   limits: { maxInputBytes: 50 * 1024 * 1024 },
 });
@@ -26,7 +26,7 @@ const viewer = client.createViewer({
 await viewer.load(file, { fileName: file.name });
 ```
 
-Supported render formats are DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX, Word 97–2003 DOC, legacy XLS/PPT, PDF, PNG/JPEG/WebP/GIF/BMP/TIFF, SVG and CSV/TSV. DOC is parsed by a bounded project-owned Rust backend, serialized in memory to DOCX, and then uses the same page renderer and selectable text layer as DOCX. Source comment authors, bodies and point anchors are preserved; range anchors are still fidelity-degraded. Other advanced Word Binary features such as Word 6, OLE objects, complex floating shapes, complete list semantics and some image/table variants remain unsupported or fidelity-degraded. Search, selection, pan/zoom, page/sheet navigation, thumbnails and original download are available through the same API. Images do not include OCR; encrypted documents and formula/macro execution are outside v1.
+Supported render formats are DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX, Word 97–2003 DOC, legacy XLS/PPT, PDF, PNG/JPEG/WebP/GIF/BMP/TIFF, SVG and CSV/TSV. DOC is parsed by a bounded project-owned Rust backend, serialized in memory to DOCX, and then uses the same page renderer and selectable text layer as DOCX. Source comment authors, bodies, point anchors and qualified range anchors are preserved. Other advanced Word Binary features such as Word 6, OLE objects, complex floating shapes and some image/table variants remain unsupported or fidelity-degraded. Search, selection, pan/zoom, page/sheet navigation, thumbnails and original download are available through the same API. Images do not include OCR; encrypted documents and formula/macro execution are outside v1.
 
 Sheets use a dedicated virtual spreadsheet surface: the scrollbar covers the
 complete used range and the visible trailing blank rows/columns, while only one
