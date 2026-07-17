@@ -46,4 +46,32 @@ Subpath exports:
 - `@zrimo/viewer/worker` — custom worker adapter/RPC contracts;
 - `@zrimo/viewer/styles.css`, `/fonts/*`, `/workers/*`, `/assets/*` — explicit assets.
 
-The browser baseline is Safari 16.4+ and the latest two stable Chrome, Edge, Firefox and Safari releases. The package is MIT OR Apache-2.0; packaged Noto font subsets are OFL-1.1. See the repository documentation for API, compatibility, security, self-hosting and release artifacts.
+The browser baseline is Safari 16.4+ and the latest two stable Chrome, Edge, Firefox and Safari releases. See the repository documentation for API, compatibility, security, self-hosting and release artifacts.
+
+## Built on open source
+
+Zrimo stands on the work of excellent open-source projects. Thank you to every
+maintainer and contributor who made these building blocks available.
+
+| Project                                                                                                                                              | License                   | How Zrimo uses it                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Office Open XML Viewer (`@silurus/ooxml`)](https://github.com/yukiyokotani/office-open-xml-viewer)                                                  | MIT                       | Rust/WASM parsing and Canvas rendering for DOCX, XLSX and PPTX.                                                                                         |
+| [`office_oxide`](https://github.com/yfedoseev/office_oxide)                                                                                          | MIT OR Apache-2.0         | Compound-file handling, shared Office IR/writer utilities and browser-side legacy XLS/PPT conversion. Zrimo's Word Binary parser remains project-owned. |
+| [Mozilla PDF.js](https://github.com/mozilla/pdf.js)                                                                                                  | Apache-2.0                | PDF parsing, font/CMap handling, Canvas rendering, links and selectable text.                                                                           |
+| [`@napi-rs/canvas`](https://github.com/Brooooooklyn/canvas)                                                                                          | MIT                       | Optional Node canvas backend pulled by PDF.js; it is not used or bundled by Zrimo's browser runtime.                                                    |
+| [`image`](https://github.com/image-rs/image) and [`tiff`](https://github.com/image-rs/image-tiff)                                                    | MIT OR Apache-2.0 / MIT   | Multi-page TIFF decoding and PNG output inside the image WASM adapter.                                                                                  |
+| [`wasm-bindgen`](https://github.com/wasm-bindgen/wasm-bindgen)                                                                                       | MIT OR Apache-2.0         | TypeScript/JavaScript bindings for Zrimo's Rust/WASM modules.                                                                                           |
+| [`zip`](https://github.com/zip-rs/zip2)                                                                                                              | MIT                       | Bounded in-memory ZIP/OOXML package manipulation during legacy Office conversion.                                                                       |
+| [Serde](https://github.com/serde-rs/serde), [`serde_json`](https://github.com/serde-rs/json) and [`thiserror`](https://github.com/dtolnay/thiserror) | MIT OR Apache-2.0         | Typed serialization and structured errors in the Rust core and worker boundary.                                                                         |
+| [`core-js`](https://github.com/zloirock/core-js)                                                                                                     | MIT                       | Compatibility modules embedded in the PDF.js legacy browser build used by the supported browser matrix.                                                 |
+| [Noto Sans](https://github.com/notofonts/noto-fonts) and [Noto Sans CJK](https://github.com/notofonts/noto-cjk)                                      | SIL Open Font License 1.1 | Self-hosted, lazy WOFF2 fallback packs for Latin/Cyrillic, Arabic, Indic, CJK, Japanese and Korean text.                                                |
+
+Third-party components retain their own licenses. The package includes
+`THIRD_PARTY_NOTICES.md`, its complete font notices and a generated SPDX SBOM
+in the Zrimo repository.
+
+## License
+
+Zrimo's original source code and documentation are dual-licensed, at your
+option, under the [MIT License](LICENSE-MIT) or the
+[Apache License 2.0](LICENSE-APACHE). Copyright (c) 2026 Zrimo contributors.

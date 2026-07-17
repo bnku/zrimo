@@ -14,6 +14,7 @@ test("accepts the package allowlist", () => {
       { path: "dist/index.js" },
       { path: "README.md" },
       { path: "LICENSE-MIT" },
+      { path: "LICENSE-APACHE" },
     ]),
   );
 });

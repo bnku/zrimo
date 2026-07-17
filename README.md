@@ -88,4 +88,35 @@ npm run dev --workspace @zrimo/example-react
 - [security model](docs/security.md), [performance budgets](docs/performance.md), and [release checklist](docs/release-checklist.md)
 - [architecture](docs/architecture.md) and [implementation roadmap](docs/universal-document-viewer/00-roadmap.md)
 
-The project is dual-licensed MIT OR Apache-2.0. Third-party components remain under their listed permissive/OFL licenses; see `THIRD_PARTY_NOTICES.md` and the generated SPDX SBOM.
+## Built on open source
+
+Zrimo stands on the work of excellent open-source projects. Thank you to every
+maintainer and contributor who made these building blocks available.
+
+| Project                                                                                                                                              | License                   | How Zrimo uses it                                                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Office Open XML Viewer (`@silurus/ooxml`)](https://github.com/yukiyokotani/office-open-xml-viewer)                                                  | MIT                       | Rust/WASM parsing and Canvas rendering for DOCX, XLSX and PPTX.                                                                                         |
+| [`office_oxide`](https://github.com/yfedoseev/office_oxide)                                                                                          | MIT OR Apache-2.0         | Compound-file handling, shared Office IR/writer utilities and browser-side legacy XLS/PPT conversion. Zrimo's Word Binary parser remains project-owned. |
+| [Mozilla PDF.js](https://github.com/mozilla/pdf.js)                                                                                                  | Apache-2.0                | PDF parsing, font/CMap handling, Canvas rendering, links and selectable text.                                                                           |
+| [`@napi-rs/canvas`](https://github.com/Brooooooklyn/canvas)                                                                                          | MIT                       | Optional Node canvas backend pulled by PDF.js; it is not used or bundled by Zrimo's browser runtime.                                                    |
+| [`image`](https://github.com/image-rs/image) and [`tiff`](https://github.com/image-rs/image-tiff)                                                    | MIT OR Apache-2.0 / MIT   | Multi-page TIFF decoding and PNG output inside the image WASM adapter.                                                                                  |
+| [`wasm-bindgen`](https://github.com/wasm-bindgen/wasm-bindgen)                                                                                       | MIT OR Apache-2.0         | TypeScript/JavaScript bindings for Zrimo's Rust/WASM modules.                                                                                           |
+| [`zip`](https://github.com/zip-rs/zip2)                                                                                                              | MIT                       | Bounded in-memory ZIP/OOXML package manipulation during legacy Office conversion.                                                                       |
+| [Serde](https://github.com/serde-rs/serde), [`serde_json`](https://github.com/serde-rs/json) and [`thiserror`](https://github.com/dtolnay/thiserror) | MIT OR Apache-2.0         | Typed serialization and structured errors in the Rust core and worker boundary.                                                                         |
+| [`core-js`](https://github.com/zloirock/core-js)                                                                                                     | MIT                       | Compatibility modules embedded in the PDF.js legacy browser build used by the supported browser matrix.                                                 |
+| [Noto Sans](https://github.com/notofonts/noto-fonts) and [Noto Sans CJK](https://github.com/notofonts/noto-cjk)                                      | SIL Open Font License 1.1 | Self-hosted, lazy WOFF2 fallback packs for Latin/Cyrillic, Arabic, Indic, CJK, Japanese and Korean text.                                                |
+
+Third-party components retain their own licenses. See
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for distribution notices and
+the generated [`artifacts/sbom.spdx.json`](artifacts/sbom.spdx.json) for the
+complete pinned transitive inventory.
+
+## License
+
+Zrimo's original source code and documentation are dual-licensed, at your
+option, under the [MIT License](LICENSE-MIT) or the
+[Apache License 2.0](LICENSE-APACHE). Copyright (c) 2026 Zrimo contributors.
+
+Unless explicitly stated otherwise, any contribution intentionally submitted
+for inclusion in Zrimo is provided under the same `MIT OR Apache-2.0` terms,
+without additional restrictions.

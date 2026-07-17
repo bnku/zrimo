@@ -5,17 +5,17 @@
   "name": "@zrimo/viewer",
   "version": "0.1.0-alpha.1",
   "filename": "zrimo-viewer-0.1.0-alpha.1.tgz",
-  "size": 14215640,
-  "unpackedSize": 17867779,
-  "shasum": "50c364d8b6062d0904530cd8b742f3dbb03e49a9",
-  "integrity": "sha512-7Xee2rpKOjxM1LLTHEW3fXrFJy448ctr6i8+RuJA6IYB/qubRMeKsQsIBG2qC3Xzav6LXgoz8dtAhERcd2hyFA==",
-  "sha256": "e83af4c90ca8dc20d6b1ba5a8be9d8d9f3b8042e4e1f230b3a9398912400e4a6",
+  "size": 14220487,
+  "unpackedSize": 17887853,
+  "shasum": "6a593d2dd5e267607bf603636ba3c9f8c60ce48c",
+  "integrity": "sha512-7lzY76d0pGDGZ34k2K0m5WYQo9KtW2FY07242oc9ag57fQCQ1n5vewWwbKsrSFj8+8IRYKCZ8U7xzYonBKpIew==",
+  "sha256": "16747380ea65d969028146090ef18f659e1ee87a1e780710b599a3190c25a727",
   "fileCount": 307,
   "requiredExportsPresent": true,
   "forbiddenFiles": [],
   "recursiveContentScan": {
     "entryCount": 307,
-    "expandedBytes": 35982339
+    "expandedBytes": 36022381
   },
   "privateSentinelExcluded": true,
   "consumers": [

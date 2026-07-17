@@ -199,7 +199,7 @@ Macro-enabled Office отображается как обычный OOXML-кон
 
 Цель: подготовить переносимый npm artifact, integration examples и контролируемый выпуск 1.0.
 
-Результат: подготовлен clean `0.1.0-alpha.0` tarball со стабильными exports, assets, licenses/notices, SPDX SBOM и integrity hashes. Он проходит six-consumer pack gate (plain ESM/SSR, strict TS, esbuild, Vite, webpack, Next.js), Vanilla/React builds и полный release checklist. Публикация/tag/1.0 остаются внешним авторизованным действием после real-browser smoke и alpha/beta feedback.
+Результат: подготовлен clean `0.1.0-alpha.0` tarball со стабильными exports, assets, dual MIT/Apache-2.0 licenses/notices, SPDX SBOM и integrity hashes. Он проходит six-consumer pack gate (plain ESM/SSR, strict TS, esbuild, Vite, webpack, Next.js), Vanilla/React builds и полный release checklist. Публикация/tag/1.0 остаются внешним авторизованным действием после real-browser smoke и alpha/beta feedback.
 
 Подробности: [`./todo/08-packaging-release.md`](./todo/08-packaging-release.md)
 
