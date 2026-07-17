@@ -10,12 +10,15 @@ test("meets first-page and interaction responsiveness budgets", async ({
   const metrics = await page.evaluate(async () => {
     const { ViewerClient } = await import("/main.js");
     const longTasks: number[] = [];
+    let interactionStartedAt = Number.POSITIVE_INFINITY;
     const observer =
       typeof PerformanceObserver === "undefined"
         ? null
         : new PerformanceObserver((list) => {
-            for (const entry of list.getEntries())
-              longTasks.push(entry.duration);
+            for (const entry of list.getEntries()) {
+              if (entry.startTime >= interactionStartedAt)
+                longTasks.push(entry.duration);
+            }
           });
     try {
       observer?.observe({ type: "longtask", buffered: true });
@@ -59,7 +62,7 @@ test("meets first-page and interaction responsiveness budgets", async ({
         requestAnimationFrame(() => resolve(null)),
       );
     const firstVisibleMs = firstRender - started;
-    longTasks.length = 0;
+    interactionStartedAt = performance.now();
     for (let index = 0; index < 40; index += 1) {
       viewer.panBy(0, index % 2 === 0 ? 80 : -80);
       if (index % 4 === 0) viewer.setZoom(1 + (index % 8) * 0.05);

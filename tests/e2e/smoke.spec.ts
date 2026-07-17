@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { installDeterministicOfficeFonts } from "./deterministic-fonts.js";
+
 test("loads the ESM package in Chromium", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByText("Viewer status: idle")).toBeVisible();
@@ -1164,6 +1166,7 @@ test("parses and renders DOCX with the qualified OOXML engine", async ({
   page,
 }) => {
   await page.goto("/");
+  await installDeterministicOfficeFonts(page);
   const result = await page.evaluate(async () => {
     const startedAt = performance.now();
     const loadModule = new Function("url", "return import(url)") as (

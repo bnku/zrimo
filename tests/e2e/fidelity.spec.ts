@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 
 import { expect, test } from "@playwright/test";
 
+import { installDeterministicOfficeFonts } from "./deterministic-fonts.js";
+
 test.describe.configure({ mode: "serial" });
 
 const cases = [
@@ -25,6 +27,7 @@ const results: Array<{
 for (const fixture of cases) {
   test(`SSIM gate: ${fixture.family}`, async ({ page }, testInfo) => {
     await page.goto("/");
+    await installDeterministicOfficeFonts(page);
     await page.evaluate(async ({ fileName }) => {
       const { ViewerClient } = await import("/main.js");
       let source: Uint8Array;
