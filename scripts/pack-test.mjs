@@ -96,6 +96,16 @@ const tarball = resolve(packOutput, packed.filename);
 const bytes = await readFile(tarball);
 const contentScan = assertPackedTarballSafe(bytes, { sentinel });
 const sha256 = createHash("sha256").update(bytes).digest("hex");
+const files = await Promise.all(
+  packed.files.map(async ({ path, size }) => {
+    const contents = await readFile(resolve(root, "packages/viewer", path));
+    return {
+      path,
+      size,
+      sha256: createHash("sha256").update(contents).digest("hex"),
+    };
+  }),
+);
 await writeFile(
   resolve(packOutput, "SHA256SUMS"),
   `${sha256}  ${basename(tarball)}\n`,
@@ -113,6 +123,7 @@ const report = {
   integrity: packed.integrity,
   sha256,
   fileCount: packed.entryCount,
+  files,
   requiredExportsPresent: true,
   forbiddenFiles: [],
   recursiveContentScan: contentScan,
