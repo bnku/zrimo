@@ -21,6 +21,7 @@ if (requestedTag && requestedTag !== expectedTag) {
 }
 
 for (const [command, args] of [
+  ["npm", ["run", "build"]],
   ["npm", ["run", "check"]],
   ["npm", ["run", "test:qualification"]],
   ["npm", ["run", "test:e2e"]],
