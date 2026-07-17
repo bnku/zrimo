@@ -9,3 +9,5 @@ test-results/
 .tools/
 *.log
 .DS_Store
+.tmp/
+fuzz/coprus/*
