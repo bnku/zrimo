@@ -4,7 +4,15 @@ All recipes use the same framework-agnostic runtime. `npm run test:pack` install
 
 ## Vite and React
 
-Import package CSS once and create/destroy the client inside the component lifecycle. The complete runnable version is in `examples/react`.
+Import package CSS once and create/destroy the client inside the component
+lifecycle. The complete runnable version in `examples/react` contains three
+tabs showing distinct integration levels:
+
+- `ui: true` for the complete built-in interface;
+- `ui: false` for a managed viewport with navigation, search, copy, download,
+  state, and events rendered by React;
+- no `container` for headless page/sheet canvases, thumbnails, metadata, and
+  text extraction owned entirely by React.
 
 ```tsx
 import { useEffect, useRef } from "react";
@@ -87,4 +95,3 @@ const client = ViewerClient.create({
 ```
 
 Copy `assets/`, `workers/`, and `fonts/` from package `dist/` below that URL. Serve `.wasm` as `application/wasm`, `.js` as JavaScript modules, `.woff2` as `font/woff2`, and enable Brotli/gzip with immutable hashed deployment URLs. Workers are ESM and CSP-compatible without `eval`; allow the self-host origin in `worker-src`, `script-src`, `font-src` and `connect-src` as applicable.
-
