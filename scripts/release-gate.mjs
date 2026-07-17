@@ -13,7 +13,14 @@ if (
   status.schemaVersion !== 1 ||
   !Array.isArray(status.blockedChannels) ||
   !Array.isArray(regressions.cases) ||
-  status.packageVersion !== packageManifest.version
+  status.packageVersion !== packageManifest.version ||
+  (status.publishedArtifact &&
+    (status.publishedArtifact.version !== packageManifest.version ||
+      !/^sha512-[A-Za-z0-9+/]+={0,2}$/.test(
+        status.publishedArtifact.integrity,
+      ) ||
+      !/^[a-f0-9]{40}$/.test(status.publishedArtifact.shasum) ||
+      !/^[a-f0-9]{64}$/.test(status.publishedArtifact.sha256)))
 ) {
   throw new Error("Release status is invalid; refusing promotion.");
 }

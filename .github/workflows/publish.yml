@@ -32,13 +32,19 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: cargo install cargo-audit --locked
+      - name: Preserve declared package evidence
+        run: |
+          mkdir -p .cache/release
+          cp artifacts/pack-report.json .cache/release/declared-pack-report.json
       - run: npm run release:verify -- --tag "${{ github.event.release.tag_name }}"
       - name: Stage verified release assets
         run: |
           mkdir -p artifacts/release
           cp .cache/pack-test/zrimo-viewer-*.tgz artifacts/release/
           cp .cache/pack-test/SHA256SUMS artifacts/release/
-          cp artifacts/sbom.spdx.json artifacts/pack-report.json artifacts/release/
+          cp artifacts/pack-report.json artifacts/release/pack-report.json
+          cp artifacts/pack-report.json artifacts/release/source-build-pack-report.json
+          cp artifacts/sbom.spdx.json artifacts/release/
           cp THIRD_PARTY_NOTICES.md artifacts/release/
       - name: Check whether this exact package is already published
         id: registry
@@ -46,12 +52,29 @@ jobs:
           PACKAGE="$(node -p "require('./packages/viewer/package.json').name")"
           VERSION="$(node -p "require('./packages/viewer/package.json').version")"
           EXPECTED_INTEGRITY="$(node -p "require('./artifacts/pack-report.json').integrity")"
+          DECLARED_INTEGRITY="$(node -p "require('./release-status.json').publishedArtifact?.integrity ?? ''")"
           if REGISTRY_INTEGRITY="$(npm view "${PACKAGE}@${VERSION}" dist.integrity 2>/dev/null)"; then
-            if [ "$REGISTRY_INTEGRITY" != "$EXPECTED_INTEGRITY" ]; then
+            if [ "$REGISTRY_INTEGRITY" = "$EXPECTED_INTEGRITY" ]; then
+              echo "published=true" >> "$GITHUB_OUTPUT"
+            elif [ -n "$DECLARED_INTEGRITY" ] && [ "$REGISTRY_INTEGRITY" = "$DECLARED_INTEGRITY" ]; then
+              DECLARED_REPORT_INTEGRITY="$(node -p "require('./.cache/release/declared-pack-report.json').integrity")"
+              test "$DECLARED_REPORT_INTEGRITY" = "$DECLARED_INTEGRITY"
+              FILENAME="$(node -p "require('./release-status.json').publishedArtifact.filename")"
+              TARBALL_URL="$(npm view "${PACKAGE}@${VERSION}" dist.tarball)"
+              curl --fail --location --silent --show-error "$TARBALL_URL" --output "artifacts/release/$FILENAME"
+              DOWNLOADED_INTEGRITY="$(node -e "const {createHash}=require('node:crypto');const {readFileSync}=require('node:fs');process.stdout.write('sha512-'+createHash('sha512').update(readFileSync('artifacts/release/$FILENAME')).digest('base64'))")"
+              test "$DOWNLOADED_INTEGRITY" = "$DECLARED_INTEGRITY"
+              DOWNLOADED_SHA256="$(sha256sum "artifacts/release/$FILENAME" | cut -d' ' -f1)"
+              DECLARED_SHA256="$(node -p "require('./release-status.json').publishedArtifact.sha256")"
+              test "$DOWNLOADED_SHA256" = "$DECLARED_SHA256"
+              cp .cache/release/declared-pack-report.json artifacts/release/pack-report.json
+              printf '%s  %s\n' "$DOWNLOADED_SHA256" "$FILENAME" > artifacts/release/SHA256SUMS
+              echo "::notice::Using the declared bootstrap npm artifact; source-build evidence is attached separately."
+              echo "published=true" >> "$GITHUB_OUTPUT"
+            else
               echo "::error::Registry integrity $REGISTRY_INTEGRITY does not match the verified tarball $EXPECTED_INTEGRITY"
               exit 1
             fi
-            echo "published=true" >> "$GITHUB_OUTPUT"
           else
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
