@@ -1,5 +1,5 @@
 {
-  "name": "docs-viewer-wasm-workspace",
+  "name": "zrimo-workspace",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -34,7 +34,7 @@
     "test:e2e": "node scripts/e2e.mjs",
     "test:e2e:matrix": "node scripts/e2e.mjs --config=playwright.matrix.config.ts",
     "test:qualification": "node scripts/qualification.mjs",
-    "fuzz:js": "npm run build --workspace @docs-viewer-wasm/viewer && node scripts/fuzz-js.mjs",
+    "fuzz:js": "npm run build --workspace @zrimo/viewer && node scripts/fuzz-js.mjs",
     "fuzz:rust": "node scripts/fuzz-rust.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },

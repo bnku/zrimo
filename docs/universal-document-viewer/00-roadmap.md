@@ -1,4 +1,4 @@
-# Roadmap: `docs-viewer-wasm` v1
+# Roadmap: Zrimo v1
 
 > **Release correction, 2026-07-17:** alpha qualification выявила четыре
 > блокирующих класса fidelity-дефектов в DOCX selection, PDF fonts, legacy DOC
@@ -22,7 +22,7 @@
 
 ## Цель v1
 
-Поставить ESM npm-пакет `docs-viewer-wasm`, который:
+Поставить ESM npm-пакет `@zrimo/viewer`, который:
 
 - работает в браузере без серверной конвертации и не отправляет документы во внешние сервисы;
 - отображает PDF, Office, legacy Office, CSV/TSV, SVG и популярные raster images;

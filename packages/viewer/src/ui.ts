@@ -46,15 +46,15 @@ export class BasicViewerUi {
     this.#viewer = viewer;
     this.#translations = translations;
     this.root = document.createElement("div");
-    this.root.className = "docs-viewer-ui";
-    this.root.dataset.docsViewerUi = "root";
+    this.root.className = "zrimo-ui";
+    this.root.dataset.zrimoUi = "root";
     this.root.setAttribute("lang", "");
     const style = document.createElement("style");
-    style.dataset.docsViewerStyles = "";
+    style.dataset.zrimoStyles = "";
     style.textContent = viewerCss;
 
     this.#toolbar = document.createElement("div");
-    this.#toolbar.className = "docs-viewer-ui__toolbar";
+    this.#toolbar.className = "zrimo-ui__toolbar";
     this.#toolbar.setAttribute("role", "toolbar");
     this.#toolbar.append(
       this.#button("thumbnails", "▦", translations.thumbnails, () =>
@@ -70,7 +70,7 @@ export class BasicViewerUi {
     const pageGroup = group();
     pageGroup.dataset.control = "page";
     this.#pageInput = document.createElement("input");
-    this.#pageInput.className = "docs-viewer-ui__page-input";
+    this.#pageInput.className = "zrimo-ui__page-input";
     this.#pageInput.type = "number";
     this.#pageInput.min = "1";
     this.#pageInput.setAttribute("aria-label", translations.page);
@@ -124,7 +124,7 @@ export class BasicViewerUi {
     );
 
     this.#searchPanel = document.createElement("div");
-    this.#searchPanel.className = "docs-viewer-ui__search";
+    this.#searchPanel.className = "zrimo-ui__search";
     this.#searchPanel.hidden = true;
     this.#searchInput = document.createElement("input");
     this.#searchInput.type = "search";
@@ -139,7 +139,7 @@ export class BasicViewerUi {
       }
     });
     this.#searchStatus = document.createElement("span");
-    this.#searchStatus.className = "docs-viewer-ui__search-status";
+    this.#searchStatus.className = "zrimo-ui__search-status";
     this.#searchPanel.append(
       this.#searchInput,
       this.#button("search-previous", "‹", translations.previous, () =>
@@ -155,22 +155,22 @@ export class BasicViewerUi {
     );
 
     const body = document.createElement("div");
-    body.className = "docs-viewer-ui__body";
+    body.className = "zrimo-ui__body";
     this.#thumbnailPanel = document.createElement("aside");
-    this.#thumbnailPanel.className = "docs-viewer-ui__panel";
+    this.#thumbnailPanel.className = "zrimo-ui__panel";
     this.#thumbnailPanel.dataset.panel = "thumbnails";
     this.#thumbnailPanel.hidden = true;
     this.#thumbnailPanel.setAttribute("aria-label", translations.thumbnails);
     this.viewportContainer = document.createElement("div");
-    this.viewportContainer.className = "docs-viewer-ui__viewport";
+    this.viewportContainer.className = "zrimo-ui__viewport";
     body.append(this.#thumbnailPanel, this.viewportContainer);
 
     this.#sheetTabs = document.createElement("div");
-    this.#sheetTabs.className = "docs-viewer-ui__sheets";
+    this.#sheetTabs.className = "zrimo-ui__sheets";
     this.#sheetTabs.hidden = true;
     this.#sheetTabs.setAttribute("aria-label", translations.sheets);
     this.#status = document.createElement("div");
-    this.#status.className = "docs-viewer-ui__status";
+    this.#status.className = "zrimo-ui__status";
     this.#status.hidden = true;
     this.#status.setAttribute("role", "status");
     this.root.append(
@@ -241,7 +241,7 @@ export class BasicViewerUi {
   ): HTMLButtonElement {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "docs-viewer-ui__button";
+    button.className = "zrimo-ui__button";
     button.dataset.action = id;
     button.textContent = text;
     button.title = label;
@@ -359,7 +359,7 @@ export class BasicViewerUi {
       if (controller.signal.aborted) return;
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "docs-viewer-ui__thumbnail";
+      button.className = "zrimo-ui__thumbnail";
       button.dataset.pageIndex = String(pageIndex);
       button.setAttribute(
         "aria-label",
@@ -409,7 +409,7 @@ export class BasicViewerUi {
     });
     if (this.#selection && "sheetIndex" in this.#selection) {
       const range = document.createElement("span");
-      range.className = "docs-viewer-ui__label";
+      range.className = "zrimo-ui__label";
       range.textContent = `${this.#translations.selectedRange}: R${this.#selection.startRow}C${this.#selection.startColumn}:R${this.#selection.endRow}C${this.#selection.endColumn}`;
       this.#sheetTabs.append(range);
     }
@@ -435,7 +435,7 @@ export class BasicViewerUi {
 
   #setFallbackFullscreen(active: boolean): void {
     this.#fallbackFullscreen = active;
-    this.root.classList.toggle("docs-viewer-ui--fullscreen-fallback", active);
+    this.root.classList.toggle("zrimo-ui--fullscreen-fallback", active);
     this.#syncFullscreen();
   }
 
@@ -496,13 +496,13 @@ export class BasicViewerUi {
 
 function group(...children: HTMLElement[]): HTMLSpanElement {
   const element = document.createElement("span");
-  element.className = "docs-viewer-ui__group";
+  element.className = "zrimo-ui__group";
   element.append(...children);
   return element;
 }
 
 function spacer(): HTMLSpanElement {
   const element = document.createElement("span");
-  element.className = "docs-viewer-ui__spacer";
+  element.className = "zrimo-ui__spacer";
   return element;
 }

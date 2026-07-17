@@ -1,5 +1,5 @@
 {
-  "name": "@docs-viewer-wasm/example-react",
+  "name": "@zrimo/example-react",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@docs-viewer-wasm/viewer": "0.1.0-alpha.1",
+    "@zrimo/viewer": "0.1.0-alpha.1",
     "@vitejs/plugin-react": "6.0.3",
     "vite": "8.1.5",
     "react": "19.2.7",

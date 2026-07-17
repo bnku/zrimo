@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "family": "Docs Viewer Noto",
+  "family": "Zrimo Noto",
   "generated": "2026-07-16",
   "tooling": "fonttools pyftsubset with all layout features, then woff2_compress",
   "license": "OFL-1.1",

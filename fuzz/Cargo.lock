@@ -412,18 +412,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "docs-viewer-fuzz"
-version = "0.0.0"
-dependencies = [
- "image-wasm",
- "legacy-doc",
- "legacy-office-wasm",
- "libfuzzer-sys",
- "pdf_oxide",
- "viewer-core",
-]
-
-[[package]]
 name = "either"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -760,8 +748,9 @@ version = "0.1.0"
 dependencies = [
  "legacy-doc",
  "office_oxide",
- "viewer-core",
  "wasm-bindgen",
+ "zip",
+ "zrimo-core",
 ]
 
 [[package]]
@@ -1381,14 +1370,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
-name = "viewer-core"
-version = "0.1.0"
-dependencies = [
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "wasm-bindgen"
 version = "0.2.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1582,6 +1563,26 @@ dependencies = [
  "crc32fast",
  "log",
  "simd-adler32",
+]
+
+[[package]]
+name = "zrimo-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "zrimo-fuzz"
+version = "0.0.0"
+dependencies = [
+ "image-wasm",
+ "legacy-doc",
+ "legacy-office-wasm",
+ "libfuzzer-sys",
+ "pdf_oxide",
+ "zrimo-core",
 ]
 
 [[package]]

@@ -16,8 +16,8 @@ tabs showing distinct integration levels:
 
 ```tsx
 import { useEffect, useRef } from "react";
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
-import "@docs-viewer-wasm/viewer/styles.css";
+import { ViewerClient } from "@zrimo/viewer";
+import "@zrimo/viewer/styles.css";
 
 export function DocumentViewer({ file }: { file?: File }) {
   const host = useRef<HTMLDivElement>(null);
@@ -39,8 +39,8 @@ The root import is SSR-safe. Create the viewer only in a client component/effect
 ```tsx
 "use client";
 import { useEffect, useRef } from "react";
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
-import "@docs-viewer-wasm/viewer/styles.css";
+import { ViewerClient } from "@zrimo/viewer";
+import "@zrimo/viewer/styles.css";
 
 export default function Viewer() {
   const host = useRef<HTMLDivElement>(null);
@@ -87,10 +87,10 @@ Add the package stylesheet to `angular.json` or import it from the application s
 Serve the package from a CDN/import map, or let a bundler resolve it. For an explicit self-host directory:
 
 ```js
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
+import { ViewerClient } from "@zrimo/viewer";
 
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/static/docs-viewer/", location.href),
+  assetBaseUrl: new URL("/static/zrimo/", location.href),
 });
 ```
 

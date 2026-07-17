@@ -37,11 +37,11 @@ const document = {
   spdxVersion: "SPDX-2.3",
   dataLicense: "CC0-1.0",
   SPDXID: "SPDXRef-DOCUMENT",
-  name: "docs-viewer-wasm-release-sbom",
-  documentNamespace: `https://docs-viewer-wasm.invalid/spdx/${Date.now()}`,
+  name: "zrimo-release-sbom",
+  documentNamespace: `https://zrimo.dev/spdx/${Date.now()}`,
   creationInfo: {
     created: new Date().toISOString(),
-    creators: ["Tool: docs-viewer-wasm/scripts/generate-sbom.mjs"],
+    creators: ["Tool: zrimo/scripts/generate-sbom.mjs"],
   },
   packages,
 };

@@ -4,7 +4,7 @@ The basic UI is enabled with `ui: true` and a real container. Omitting `ui`, or 
 
 ```ts
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
 });
 const viewer = client.createViewer({
   container: document.querySelector<HTMLElement>("#viewer")!,
@@ -15,7 +15,7 @@ const viewer = client.createViewer({
 await viewer.load(file, { fileName: file.name });
 ```
 
-Give the container a defined height. The UI fills it and owns only children under `.docs-viewer-ui`. It injects scoped critical CSS for a no-setup default; the same stylesheet is exported as `@docs-viewer-wasm/viewer/styles.css` for CSP/build pipelines that prefer an explicit asset.
+Give the container a defined height. The UI fills it and owns only children under `.zrimo-ui`. It injects scoped critical CSS for a no-setup default; the same stylesheet is exported as `@zrimo/viewer/styles.css` for CSP/build pipelines that prefer an explicit asset.
 
 ## Controls
 
@@ -69,30 +69,30 @@ const viewer = client.createViewer({
 
 ## CSS variables
 
-Override variables on the host or `.docs-viewer-ui` root:
+Override variables on the host or `.zrimo-ui` root:
 
 ```css
 #viewer {
-  --docs-viewer-background: #111827;
-  --docs-viewer-surface: #1f2937;
-  --docs-viewer-text: #f9fafb;
-  --docs-viewer-muted: #9ca3af;
-  --docs-viewer-border: #374151;
-  --docs-viewer-primary: #7c3aed;
-  --docs-viewer-primary-contrast: #fff;
-  --docs-viewer-highlight: rgb(250 204 21 / 45%);
-  --docs-viewer-radius: 8px;
-  --docs-viewer-toolbar-height: 46px;
+  --zrimo-background: #111827;
+  --zrimo-surface: #1f2937;
+  --zrimo-text: #f9fafb;
+  --zrimo-muted: #9ca3af;
+  --zrimo-border: #374151;
+  --zrimo-primary: #7c3aed;
+  --zrimo-primary-contrast: #fff;
+  --zrimo-highlight: rgb(250 204 21 / 45%);
+  --zrimo-radius: 8px;
+  --zrimo-toolbar-height: 46px;
 }
 ```
 
-All component selectors start with `.docs-viewer-ui`; no generic `button`, `canvas`, or host selectors escape that scope. `destroy()` removes the viewport, toolbar, injected style, panels, timers, listeners, and pending thumbnail renders.
+All component selectors start with `.zrimo-ui`; no generic `button`, `canvas`, or host selectors escape that scope. `destroy()` removes the viewport, toolbar, injected style, panels, timers, listeners, and pending thumbnail renders.
 
 ## React integration snippet
 
 ```tsx
 import { useEffect, useRef } from "react";
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
+import { ViewerClient } from "@zrimo/viewer";
 
 export function DocumentPreview({ file }: { file: File }) {
   const container = useRef<HTMLDivElement>(null);
@@ -100,7 +100,7 @@ export function DocumentPreview({ file }: { file: File }) {
   useEffect(() => {
     if (!container.current) return;
     const client = ViewerClient.create({
-      assetBaseUrl: new URL("/document-viewer/", location.href),
+      assetBaseUrl: new URL("/zrimo/", location.href),
     });
     const viewer = client.createViewer({
       container: container.current,

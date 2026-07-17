@@ -2,29 +2,20 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "docs-viewer-wasm-release-sbom",
-  "documentNamespace": "https://docs-viewer-wasm.invalid/spdx/1784247079290",
+  "name": "zrimo-release-sbom",
+  "documentNamespace": "https://zrimo.dev/spdx/1784299959277",
   "creationInfo": {
-    "created": "2026-07-17T00:11:19.290Z",
+    "created": "2026-07-17T14:52:39.277Z",
     "creators": [
-      "Tool: docs-viewer-wasm/scripts/generate-sbom.mjs"
+      "Tool: zrimo/scripts/generate-sbom.mjs"
     ]
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-npm--docs-viewer-wasm-example-react-0.0.0",
-      "name": "@docs-viewer-wasm/example-react",
+      "SPDXID": "SPDXRef-npm--zrimo-example-react-0.0.0",
+      "name": "@zrimo/example-react",
       "versionInfo": "0.0.0",
-      "downloadLocation": "https://registry.npmjs.org/@docs-viewer-wasm/example-react",
-      "licenseConcluded": "NOASSERTION",
-      "licenseDeclared": "NOASSERTION",
-      "supplier": "NOASSERTION"
-    },
-    {
-      "SPDXID": "SPDXRef-npm--docs-viewer-wasm-viewer-0.1.0-alpha.1",
-      "name": "@docs-viewer-wasm/viewer",
-      "versionInfo": "0.1.0-alpha.1",
-      "downloadLocation": "https://registry.npmjs.org/@docs-viewer-wasm/viewer",
+      "downloadLocation": "https://registry.npmjs.org/@zrimo/example-react",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "supplier": "NOASSERTION"
@@ -70,6 +61,15 @@
       "name": "vite",
       "versionInfo": "8.1.5",
       "downloadLocation": "https://registry.npmjs.org/vite",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "supplier": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-npm--zrimo-viewer-0.1.0-alpha.1",
+      "name": "@zrimo/viewer",
+      "versionInfo": "0.1.0-alpha.1",
+      "downloadLocation": "https://registry.npmjs.org/@zrimo/viewer",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "supplier": "NOASSERTION"
@@ -885,10 +885,10 @@
       "supplier": "NOASSERTION"
     },
     {
-      "SPDXID": "SPDXRef-npm--docs-viewer-wasm-example-vanilla-0.0.0",
-      "name": "@docs-viewer-wasm/example-vanilla",
+      "SPDXID": "SPDXRef-npm--zrimo-example-vanilla-0.0.0",
+      "name": "@zrimo/example-vanilla",
       "versionInfo": "0.0.0",
-      "downloadLocation": "https://registry.npmjs.org/@docs-viewer-wasm/example-vanilla",
+      "downloadLocation": "https://registry.npmjs.org/@zrimo/example-vanilla",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "supplier": "NOASSERTION"

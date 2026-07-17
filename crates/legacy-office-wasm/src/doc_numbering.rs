@@ -24,8 +24,8 @@ const DOCUMENT_XML: &str = "word/document.xml";
 const DOCUMENT_RELS: &str = "word/_rels/document.xml.rels";
 const CONTENT_TYPES: &str = "[Content_Types].xml";
 const NUMBERING_XML: &str = "word/numbering.xml";
-const NUMBERING_REL_ID: &str = "rIdDocsViewerWasmNumbering";
-const MARKER_PREFIX: &str = "\u{F0000}DOCS_VIEWER_WASM_LIST_";
+const NUMBERING_REL_ID: &str = "rIdZrimoNumbering";
+const MARKER_PREFIX: &str = "\u{F0000}ZRIMO_LIST_";
 const MARKER_SUFFIX: char = '\u{F0001}';
 
 pub(crate) fn add_numbering_to_docx(
@@ -668,7 +668,7 @@ mod tests {
 
     #[test]
     fn parses_projection_markers_and_maps_common_number_formats() {
-        let marker = "<w:p><w:r><w:t>\u{F0000}DOCS_VIEWER_WASM_LIST_0000000A_00000002_03\u{F0001}item</w:t></w:r></w:p>";
+        let marker = "<w:p><w:r><w:t>\u{F0000}ZRIMO_LIST_0000000A_00000002_03\u{F0001}item</w:t></w:r></w:p>";
         let parsed = parse_markers(marker).unwrap();
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].num_id, 2);

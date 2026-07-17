@@ -1,6 +1,8 @@
-# docs-viewer-wasm
+# Zrimo
 
-Framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified Word 97–2003 DOC and legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
+**Any document. One canvas.**
+
+Zrimo is a framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified Word 97–2003 DOC and legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
 
 ## Supported formats
 
@@ -15,10 +17,10 @@ The viewer supports Latin/Cyrillic, CJK, Arabic-script and the agreed Indic scri
 
 ## Install and quick start
 
-The existing `@docs-viewer-wasm/viewer@0.1.0-alpha.0` artifact is quarantined
+The pre-Zrimo `@docs-viewer-wasm/viewer@0.1.0-alpha.0` artifact is quarantined
 after fidelity regressions were found in DOCX selection, PDF fonts, legacy DOC
 layout, and XLSX scrolling. It must not be promoted or treated as a qualified
-release. For historical local diagnosis only, the artifact remains at:
+release. For historical local diagnosis only, its original immutable artifact remains at:
 
 ```bash
 npm install ./artifacts/docs-viewer-wasm-viewer-0.1.0-alpha.0.tgz
@@ -27,12 +29,12 @@ npm install ./artifacts/docs-viewer-wasm-viewer-0.1.0-alpha.0.tgz
 After publication, the registry command will be:
 
 ```bash
-npm install @docs-viewer-wasm/viewer
+npm install @zrimo/viewer
 ```
 
 ```ts
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
-import "@docs-viewer-wasm/viewer/styles.css";
+import { ViewerClient } from "@zrimo/viewer";
+import "@zrimo/viewer/styles.css";
 
 const client = ViewerClient.create();
 const viewer = client.createViewer({
@@ -47,7 +49,7 @@ await viewer.destroy();
 await client.destroy();
 ```
 
-Use `@docs-viewer-wasm/viewer/headless` for UI-free integration and `@docs-viewer-wasm/viewer/worker` for custom adapter infrastructure. `assetBaseUrl` supports explicit CDN/self-host layouts when a bundler does not emit package assets automatically.
+Use `@zrimo/viewer/headless` for UI-free integration and `@zrimo/viewer/worker` for custom adapter infrastructure. `assetBaseUrl` supports explicit CDN/self-host layouts when a bundler does not emit package assets automatically.
 
 ## Browser and privacy baseline
 
@@ -74,8 +76,8 @@ Release/security gates additionally include `npm run fuzz:js`, `npm run fuzz:rus
 Run either development example from the workspace root:
 
 ```bash
-npm run dev --workspace @docs-viewer-wasm/example-vanilla
-npm run dev --workspace @docs-viewer-wasm/example-react
+npm run dev --workspace @zrimo/example-vanilla
+npm run dev --workspace @zrimo/example-react
 ```
 
 ## Documentation

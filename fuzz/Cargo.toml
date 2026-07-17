@@ -1,5 +1,5 @@
 [package]
-name = "docs-viewer-fuzz"
+name = "zrimo-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2024"
@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "=0.4.13"
-viewer-core = { path = "../crates/viewer-core" }
+zrimo-core = { path = "../crates/zrimo-core" }
 legacy-office-wasm = { path = "../crates/legacy-office-wasm" }
 legacy-doc = { path = "../crates/legacy-doc" }
 image-wasm = { path = "../crates/image-wasm" }

@@ -145,7 +145,7 @@ export class SpreadsheetViewport {
     this.#host = host;
     this.#appliedZoom = host.state.zoom;
     this.#root = document.createElement("div");
-    this.#root.dataset.docsViewer = "spreadsheet-viewport";
+    this.#root.dataset.zrimo = "spreadsheet-viewport";
     this.#root.tabIndex = 0;
     this.#root.setAttribute("role", "application");
     this.#root.setAttribute("aria-label", "Spreadsheet viewport");
@@ -155,7 +155,7 @@ export class SpreadsheetViewport {
       width: "100%",
       height: "100%",
       minHeight: "160px",
-      background: "var(--docs-viewer-background, #e9edf2)",
+      background: "var(--zrimo-background, #e9edf2)",
       touchAction: "none",
       contain: "strict",
     });
@@ -166,7 +166,7 @@ export class SpreadsheetViewport {
       height: "1px",
     });
     this.#canvas = document.createElement("canvas");
-    this.#canvas.dataset.docsViewerLayer = "spreadsheet-canvas";
+    this.#canvas.dataset.zrimoLayer = "spreadsheet-canvas";
     Object.assign(this.#canvas.style, {
       position: "absolute",
       left: "0",
@@ -176,7 +176,7 @@ export class SpreadsheetViewport {
       background: "white",
     });
     this.#selectionLayer = document.createElement("div");
-    this.#selectionLayer.dataset.docsViewerLayer = "cell-selection";
+    this.#selectionLayer.dataset.zrimoLayer = "cell-selection";
     Object.assign(this.#selectionLayer.style, {
       position: "sticky",
       left: "0",
@@ -192,7 +192,7 @@ export class SpreadsheetViewport {
       position: "absolute",
       display: "none",
       boxSizing: "border-box",
-      border: "2px solid var(--docs-viewer-selection, #2563eb)",
+      border: "2px solid var(--zrimo-selection, #2563eb)",
       background: "rgb(37 99 235 / 10%)",
       pointerEvents: "none",
     });

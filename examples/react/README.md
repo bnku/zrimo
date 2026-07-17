@@ -18,7 +18,7 @@ the source bytes, legacy conversion, and document parsing are in progress.
 Run from the repository root:
 
 ```bash
-npm run dev --workspace @docs-viewer-wasm/example-react
+npm run dev --workspace @zrimo/example-react
 ```
 
 `vite.config.ts` serves the built package assets at `/`, matching the

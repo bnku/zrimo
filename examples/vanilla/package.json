@@ -1,5 +1,5 @@
 {
-  "name": "@docs-viewer-wasm/example-vanilla",
+  "name": "@zrimo/example-vanilla",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@docs-viewer-wasm/viewer": "*"
+    "@zrimo/viewer": "*"
   },
   "devDependencies": {
     "esbuild": "0.28.1",

@@ -1,7 +1,7 @@
 # Fidelity requalification — 2026-07-17
 
 This report is a sanitized local engineering result for
-`@docs-viewer-wasm/viewer@0.1.0-alpha.1`. It contains no private input names,
+`@zrimo/viewer@0.1.0-alpha.1`. It contains no private input names,
 hashes, text, screenshots, or derived documents.
 
 ## Result

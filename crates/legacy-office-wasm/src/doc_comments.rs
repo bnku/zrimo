@@ -20,7 +20,7 @@ const DOCUMENT_XML: &str = "word/document.xml";
 const DOCUMENT_RELS: &str = "word/_rels/document.xml.rels";
 const CONTENT_TYPES: &str = "[Content_Types].xml";
 const COMMENTS_XML: &str = "word/comments.xml";
-const COMMENT_REL_ID: &str = "rIdDocsViewerWasmComments";
+const COMMENT_REL_ID: &str = "rIdZrimoComments";
 
 pub(crate) fn add_comments_to_docx(
     docx: Vec<u8>,
@@ -179,7 +179,7 @@ fn patch_document_xml(data: &[u8], comments: &[ProjectedComment]) -> Result<Vec<
             "reference",
         )?;
     }
-    if xml.contains("DOCS_VIEWER_WASM_COMMENT") {
+    if xml.contains("ZRIMO_COMMENT") {
         return Err("a DOC comment projection marker remained in document.xml".into());
     }
     Ok(xml.into_bytes())
@@ -375,9 +375,9 @@ mod tests {
 
     #[test]
     fn replaces_ranged_comment_markers_with_ooxml_elements() {
-        let start = "\u{F0000}DOCS_VIEWER_WASM_COMMENT_RANGE_START_00000007\u{F0001}";
-        let end = "\u{F0000}DOCS_VIEWER_WASM_COMMENT_RANGE_END_00000007\u{F0001}";
-        let reference = "\u{F0000}DOCS_VIEWER_WASM_COMMENT_00000007\u{F0001}";
+        let start = "\u{F0000}ZRIMO_COMMENT_RANGE_START_00000007\u{F0001}";
+        let end = "\u{F0000}ZRIMO_COMMENT_RANGE_END_00000007\u{F0001}";
+        let reference = "\u{F0000}ZRIMO_COMMENT_00000007\u{F0001}";
         let document = format!(
             "<w:document><w:body><w:p><w:r><w:t>{start}text{end}{reference}</w:t></w:r></w:p></w:body></w:document>"
         );
@@ -395,6 +395,6 @@ mod tests {
         assert!(patched.contains("<w:commentRangeStart w:id=\"7\"/>"));
         assert!(patched.contains("<w:commentRangeEnd w:id=\"7\"/>"));
         assert!(patched.contains("<w:commentReference w:id=\"7\"/>"));
-        assert!(!patched.contains("DOCS_VIEWER_WASM_COMMENT"));
+        assert!(!patched.contains("ZRIMO_COMMENT"));
     }
 }

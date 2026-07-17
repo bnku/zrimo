@@ -74,7 +74,7 @@ fn assert_docx_ranged_comment(docx: &[u8], expected_text: &str) {
     assert_eq!(document.matches("<w:commentRangeStart ").count(), 1);
     assert_eq!(document.matches("<w:commentRangeEnd ").count(), 1);
     assert_eq!(document.matches("<w:commentReference ").count(), 1);
-    assert!(!document.contains("DOCS_VIEWER_WASM_COMMENT"));
+    assert!(!document.contains("ZRIMO_COMMENT"));
     assert_eq!(comments.matches("<w:comment ").count(), 1);
     assert!(comments.contains(expected_text));
 }
@@ -87,7 +87,7 @@ fn assert_docx_numbering(docx: &[u8], expected_paragraphs: usize, expected_insta
     let content_types = read_zip_text(&mut archive, "[Content_Types].xml");
 
     assert_eq!(document.matches("<w:numPr>").count(), expected_paragraphs);
-    assert!(!document.contains("DOCS_VIEWER_WASM_LIST"));
+    assert!(!document.contains("ZRIMO_LIST"));
     assert_eq!(
         numbering.matches("<w:abstractNum ").count(),
         expected_instances
@@ -109,7 +109,7 @@ fn assert_docx_comments(docx: &[u8], expected: usize, expected_text: &str) {
     let relationships = read_zip_text(&mut archive, "word/_rels/document.xml.rels");
     let content_types = read_zip_text(&mut archive, "[Content_Types].xml");
     assert_eq!(document.matches("<w:commentReference ").count(), expected);
-    assert!(!document.contains("DOCS_VIEWER_WASM_COMMENT"));
+    assert!(!document.contains("ZRIMO_COMMENT"));
     assert_eq!(comments.matches("<w:comment ").count(), expected);
     assert!(comments.contains(expected_text));
     assert!(relationships.contains("relationships/comments"));

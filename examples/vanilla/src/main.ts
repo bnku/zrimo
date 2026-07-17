@@ -1,4 +1,4 @@
-import { ViewerClient, WorkerRpcClient } from "@docs-viewer-wasm/viewer";
+import { ViewerClient, WorkerRpcClient } from "@zrimo/viewer";
 
 export { ViewerClient, WorkerRpcClient };
 

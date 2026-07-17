@@ -128,13 +128,11 @@ test("DOCX overlay tracks glyph geometry and zoom without giant rectangles", asy
         }
       ).__selectionViewer.setZoom(value);
     }, zoom);
-    await expect(
-      page.locator('[data-docs-viewer-layer="text"]'),
-    ).toBeAttached();
+    await expect(page.locator('[data-zrimo-layer="text"]')).toBeAttached();
     await page.waitForFunction(
       (value) =>
-        document.querySelector<HTMLElement>('[data-docs-viewer-layer="text"]')
-          ?.style.transform === `scale(${value})`,
+        document.querySelector<HTMLElement>('[data-zrimo-layer="text"]')?.style
+          .transform === `scale(${value})`,
       zoom,
     );
     const result = await page.evaluate(() => {
@@ -203,7 +201,7 @@ test("DOCX overlay tracks glyph geometry and zoom without giant rectangles", asy
     (host as HTMLElement).style.width = "520px";
   });
   await expect(page.locator("[data-start]")).toHaveCount(6);
-  await expect(page.locator('[data-docs-viewer-layer="text"]')).toHaveCSS(
+  await expect(page.locator('[data-zrimo-layer="text"]')).toHaveCSS(
     "transform",
     /matrix\(2, 0, 0, 2/,
   );
@@ -300,7 +298,7 @@ test("search highlight is inert and separate from selectable spans", async ({
     ).__selectionViewer.search("Привет");
   });
   await expect(
-    page.locator('[data-docs-viewer-layer="highlight"] > div'),
+    page.locator('[data-zrimo-layer="highlight"] > div'),
   ).toHaveCount(1);
   const styles = await page.locator("[data-start]").evaluateAll((spans) =>
     spans.map((span) => ({

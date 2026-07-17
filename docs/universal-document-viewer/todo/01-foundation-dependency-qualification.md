@@ -22,7 +22,7 @@
 ## Что входит в задачу
 
 - Cargo workspace и npm workspace для Rust crates, TypeScript package, examples и test tooling.
-- ESM-first package skeleton `docs-viewer-wasm` с TypeScript declarations и SSR-safe imports.
+- ESM-first package skeleton `@zrimo/viewer` с TypeScript declarations и SSR-safe imports.
 - Exact-version/commit qualification для `@silurus/ooxml`, `office_oxide` и `pdf_oxide`.
 - License allowlist и автоматический transitive dependency audit.
 - Начальный golden/security/language corpus с правилами хранения provenance.
@@ -77,7 +77,7 @@
 
 ### Feature
 
-- Созданы Cargo/npm workspaces, Rust crates `viewer-core`, `legacy-office-wasm`, `pdf-wasm`, ESM npm facade и vanilla example.
+- Созданы Cargo/npm workspaces, Rust crates `zrimo-core`, `legacy-office-wasm`, `pdf-wasm`, ESM npm facade и vanilla example.
 - Добавлены SSR-safe controller draft, `DocumentAdapter` и общие format/render/text/cell contracts.
 - Реализованы in-memory legacy bytes-out binding и viewer-oriented PDF binding; matching `wasm-bindgen-cli` устанавливается локально, Binaryen закреплён в npm lockfile.
 - Добавлены воспроизводимый corpus fetcher, SPDX allowlist, package/Cargo inventory и локальные browser binding scripts.

@@ -11,7 +11,7 @@ import type {
 } from "./contracts.js";
 import { fallbackFontPacks, type FallbackFontPack } from "./font-manifest.js";
 
-const FALLBACK_FAMILY = "Docs Viewer Noto";
+const FALLBACK_FAMILY = "Zrimo Noto";
 
 export interface FontEnvironment {
   readonly FontFace?: typeof FontFace;

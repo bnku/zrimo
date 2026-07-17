@@ -6,7 +6,7 @@
 
 Добавлен shared `FontManager` с порядком adapter-embedded → app-registered → CSS/system → packaged fallback, политиками `auto`/`offline`/`custom`, host resolver, cache reuse, управляемым `FontFace` lifecycle и non-fatal `font-unavailable`. В npm assets включены 14 локальных OFL-1.1 WOFF2 packs из pinned Noto commits с Unicode ranges, manifest/SHA-256 и third-party notices; скрытых CDN-запросов нет.
 
-Реализованы `en`/`ru` dictionaries и typed overrides. Опциональный `.docs-viewer-ui` содержит toolbar, page/zoom/fit controls, search, bounded thumbnails, sheet tabs/range, fullscreen fallback и exact-original download; controls следуют capabilities и синхронизируются только через public state/events. Pointer/keyboard workflows и scoped CSS variables документированы.
+Реализованы `en`/`ru` dictionaries и typed overrides. Опциональный `.zrimo-ui` содержит toolbar, page/zoom/fit controls, search, bounded thumbnails, sheet tabs/range, fullscreen fallback и exact-original download; controls следуют capabilities и синхронизируются только через public state/events. Pointer/keyboard workflows и scoped CSS variables документированы.
 
 Проверки: 59 TypeScript tests и 13 Chromium E2E проходят. Browser corpus покрывает Latin/Cyrillic, zh-Hans/zh-Hant, Japanese, Korean, Arabic/Persian/Urdu и девять Indic scripts без missing font packs; отдельные tests фиксируют offline/no-fetch, custom/registered/system resolution, 404/corrupt fonts, cache, UI localization, CSS isolation, sheets, search, thumbnails, fullscreen и download.
 

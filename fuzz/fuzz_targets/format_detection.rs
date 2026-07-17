@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use viewer_core::DocumentFormat;
+use zrimo_core::DocumentFormat;
 
 fuzz_target!(|data: &[u8]| {
     if data.len() > 1_048_576 {

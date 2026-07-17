@@ -200,7 +200,7 @@ export class ViewerViewport {
     this.#layout = options.layout ?? "continuous";
     this.#appliedZoom = host.state.zoom;
     this.#root = document.createElement("div");
-    this.#root.dataset.docsViewer = "viewport";
+    this.#root.dataset.zrimo = "viewport";
     this.#root.tabIndex = 0;
     this.#root.setAttribute("role", "application");
     this.#root.setAttribute("aria-label", "Document viewport");
@@ -210,7 +210,7 @@ export class ViewerViewport {
       width: "100%",
       height: "100%",
       minHeight: "160px",
-      background: "var(--docs-viewer-background, #e9edf2)",
+      background: "var(--zrimo-background, #e9edf2)",
       touchAction: "none",
       contain: "strict",
       scrollbarGutter: "stable both-edges",
@@ -400,8 +400,8 @@ export class ViewerViewport {
     });
     const textLayer = document.createElement("div");
     const highlightLayer = document.createElement("div");
-    textLayer.dataset.docsViewerLayer = "text";
-    highlightLayer.dataset.docsViewerLayer = "highlight";
+    textLayer.dataset.zrimoLayer = "text";
+    highlightLayer.dataset.zrimoLayer = "highlight";
     for (const layer of [highlightLayer, textLayer])
       Object.assign(layer.style, {
         position: "absolute",
@@ -567,7 +567,7 @@ export class ViewerViewport {
           top: `${run.y * zoom}px`,
           width: `${Math.max(1, run.width * zoom)}px`,
           height: `${Math.max(1, run.height * zoom)}px`,
-          background: "var(--docs-viewer-highlight, rgb(255 215 0 / 45%))",
+          background: "var(--zrimo-highlight, rgb(255 215 0 / 45%))",
           pointerEvents: "none",
         });
         highlightLayer.append(highlight);
@@ -1067,7 +1067,7 @@ function buildPdfTextLayers(
         top: `${run.y}px`,
         width: `${Math.max(1, run.width)}px`,
         height: `${Math.max(1, run.height)}px`,
-        background: "var(--docs-viewer-highlight, rgb(255 215 0 / 45%))",
+        background: "var(--zrimo-highlight, rgb(255 215 0 / 45%))",
         pointerEvents: "none",
         transform: run.transform,
         transformOrigin: run.transform ? "top left" : undefined,

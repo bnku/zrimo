@@ -1,18 +1,20 @@
-# @docs-viewer-wasm/viewer
+# @zrimo/viewer
 
-Embeddable browser document viewer with an SSR-safe TypeScript facade and lazy Rust/WASM format adapters. No server conversion or telemetry is used.
+**Any document. One canvas.**
+
+Zrimo is an embeddable browser document viewer with an SSR-safe TypeScript facade and lazy Rust/WASM format adapters. No server conversion or telemetry is used.
 
 ```bash
-npm install @docs-viewer-wasm/viewer
+npm install @zrimo/viewer
 ```
 
 ```ts
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
-import "@docs-viewer-wasm/viewer/styles.css";
+import { ViewerClient } from "@zrimo/viewer";
+import "@zrimo/viewer/styles.css";
 
 const client = ViewerClient.create({
   // Optional when your bundler handles package asset URLs normally:
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
   limits: { maxInputBytes: 50 * 1024 * 1024 },
 });
 const viewer = client.createViewer({
@@ -36,9 +38,9 @@ horizontal and vertical scrolling without shipping a fixture.
 
 Subpath exports:
 
-- `@docs-viewer-wasm/viewer` — complete public API and optional UI;
-- `@docs-viewer-wasm/viewer/headless` — UI-free runtime/adapters;
-- `@docs-viewer-wasm/viewer/worker` — custom worker adapter/RPC contracts;
-- `@docs-viewer-wasm/viewer/styles.css`, `/fonts/*`, `/workers/*`, `/assets/*` — explicit assets.
+- `@zrimo/viewer` — complete public API and optional UI;
+- `@zrimo/viewer/headless` — UI-free runtime/adapters;
+- `@zrimo/viewer/worker` — custom worker adapter/RPC contracts;
+- `@zrimo/viewer/styles.css`, `/fonts/*`, `/workers/*`, `/assets/*` — explicit assets.
 
 The browser baseline is Safari 16.4+ and the latest two stable Chrome, Edge, Firefox and Safari releases. The package is MIT OR Apache-2.0; packaged Noto font subsets are OFL-1.1. See the repository documentation for API, compatibility, security, self-hosting and release artifacts.

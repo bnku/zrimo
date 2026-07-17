@@ -60,7 +60,7 @@ DOC never enters the heuristic `office_oxide` DOC converter. The project-owned p
 ## Programmatic adapter configuration
 
 ```ts
-import { OfficeDocumentAdapter, ViewerClient } from "@docs-viewer-wasm/viewer";
+import { OfficeDocumentAdapter, ViewerClient } from "@zrimo/viewer";
 
 const office = new OfficeDocumentAdapter({
   legacy: {

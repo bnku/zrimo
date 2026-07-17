@@ -144,7 +144,7 @@ impl ResolvedListParagraph {
     #[must_use]
     pub fn projection_marker(self) -> String {
         format!(
-            "\u{F0000}DOCS_VIEWER_WASM_LIST_{:08X}_{:08X}_{:02X}\u{F0001}",
+            "\u{F0000}ZRIMO_LIST_{:08X}_{:08X}_{:02X}\u{F0001}",
             self.cp, self.num_id, self.level
         )
     }

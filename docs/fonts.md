@@ -6,7 +6,7 @@ The viewer never requires proprietary Microsoft fonts or a third-party font CDN.
 
 ```ts
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
   fontPolicy: { mode: "auto" },
   fonts: [
     {

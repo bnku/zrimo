@@ -1,4 +1,4 @@
-//! Format-neutral contracts shared by the WASM adapters.
+//! Format-neutral contracts shared by the Zrimo WASM adapters.
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 legacy-doc = { path = "../legacy-doc" }
 office_oxide.workspace = true
-viewer-core = { path = "../viewer-core" }
+zrimo-core = { path = "../zrimo-core" }
 wasm-bindgen.workspace = true
 zip.workspace = true
 

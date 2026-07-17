@@ -47,10 +47,7 @@ impl SourceComment {
     #[doc(hidden)]
     #[must_use]
     pub fn projection_marker(&self) -> String {
-        format!(
-            "\u{F0000}DOCS_VIEWER_WASM_COMMENT_{:08X}\u{F0001}",
-            self.comment_id
-        )
+        format!("\u{F0000}ZRIMO_COMMENT_{:08X}\u{F0001}", self.comment_id)
     }
 
     /// Private marker replaced with `w:commentRangeStart` by the bridge.
@@ -58,7 +55,7 @@ impl SourceComment {
     #[must_use]
     pub fn range_start_projection_marker(&self) -> String {
         format!(
-            "\u{F0000}DOCS_VIEWER_WASM_COMMENT_RANGE_START_{:08X}\u{F0001}",
+            "\u{F0000}ZRIMO_COMMENT_RANGE_START_{:08X}\u{F0001}",
             self.comment_id
         )
     }
@@ -68,7 +65,7 @@ impl SourceComment {
     #[must_use]
     pub fn range_end_projection_marker(&self) -> String {
         format!(
-            "\u{F0000}DOCS_VIEWER_WASM_COMMENT_RANGE_END_{:08X}\u{F0001}",
+            "\u{F0000}ZRIMO_COMMENT_RANGE_END_{:08X}\u{F0001}",
             self.comment_id
         )
     }

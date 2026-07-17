@@ -5,10 +5,10 @@ A headless `DocumentViewer` has the same parser, render, search, selection, canc
 ## Render into a canvas
 
 ```ts
-import { ViewerClient, ViewerError } from "@docs-viewer-wasm/viewer";
+import { ViewerClient, ViewerError } from "@zrimo/viewer";
 
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
 });
 const viewer = client.createViewer();
 

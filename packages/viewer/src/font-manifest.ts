@@ -73,7 +73,7 @@ function pack(
     scripts: Object.freeze([...scripts]),
     file,
     unicodeRange,
-    family: "Docs Viewer Noto",
+    family: "Zrimo Noto",
     license: "OFL-1.1",
     source:
       id === "cjk" || id === "japanese" || id === "korean"

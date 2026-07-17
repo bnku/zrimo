@@ -18,8 +18,8 @@ import {
   type ViewerApi,
   type ViewerProgress,
   type ViewerState,
-} from "@docs-viewer-wasm/viewer";
-import "@docs-viewer-wasm/viewer/styles.css";
+} from "@zrimo/viewer";
+import "@zrimo/viewer/styles.css";
 import "./styles.css";
 
 type ExampleTab = "built-in" | "react-ui" | "headless";
@@ -201,10 +201,10 @@ function App() {
       <header className="app-header">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">
-            D
+            Z
           </span>
           <div>
-            <strong>Docs Viewer WASM</strong>
+            <strong>Zrimo</strong>
             <span>React integration playground</span>
           </div>
         </div>

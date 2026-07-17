@@ -3,7 +3,7 @@
 The alpha runtime exposes one shared `ViewerClient` and one or more `DocumentViewer` instances. Imports are SSR-safe: construction does not touch the DOM, start workers, initialize WASM, or make network requests.
 
 ```ts
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
+import { ViewerClient } from "@zrimo/viewer";
 
 const client = ViewerClient.create({
   assetBaseUrl: new URL("/viewer-assets/", location.href),

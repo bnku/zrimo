@@ -23,13 +23,7 @@ try {
   const dryRun = JSON.parse(
     execFileSync(
       "npm",
-      [
-        "pack",
-        "--workspace",
-        "@docs-viewer-wasm/viewer",
-        "--dry-run",
-        "--json",
-      ],
+      ["pack", "--workspace", "@zrimo/viewer", "--dry-run", "--json"],
       { cwd: root, encoding: "utf8" },
     ),
   )[0];
@@ -40,7 +34,7 @@ try {
       [
         "pack",
         "--workspace",
-        "@docs-viewer-wasm/viewer",
+        "@zrimo/viewer",
         "--json",
         "--pack-destination",
         packOutput,
@@ -135,9 +129,9 @@ execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", tarball], {
 await writeFile(
   resolve(consumer, "consumer.mjs"),
   [
-    'import { ViewerClient } from "@docs-viewer-wasm/viewer";',
-    'import { ViewerError } from "@docs-viewer-wasm/viewer/headless";',
-    'import { WorkerRpcClient } from "@docs-viewer-wasm/viewer/worker";',
+    'import { ViewerClient } from "@zrimo/viewer";',
+    'import { ViewerError } from "@zrimo/viewer/headless";',
+    'import { WorkerRpcClient } from "@zrimo/viewer/worker";',
     "const client = ViewerClient.create();",
     "await client.destroy();",
     "if (!ViewerError || !WorkerRpcClient) throw new Error('missing export');",
@@ -149,8 +143,8 @@ report.consumers.push("plain-esm-ssr");
 await writeFile(
   resolve(consumer, "browser.ts"),
   [
-    'import { ViewerClient } from "@docs-viewer-wasm/viewer";',
-    'import "@docs-viewer-wasm/viewer/styles.css";',
+    'import { ViewerClient } from "@zrimo/viewer";',
+    'import "@zrimo/viewer/styles.css";',
     "const client = ViewerClient.create({ assetBaseUrl: new URL('/', location.href) });",
     "globalThis.viewerClient = client;",
   ].join("\n"),
@@ -158,8 +152,8 @@ await writeFile(
 await writeFile(
   resolve(consumer, "consumer.ts"),
   [
-    'import { ViewerClient, type ViewerApi } from "@docs-viewer-wasm/viewer";',
-    'import type { WorkerRequestOptions } from "@docs-viewer-wasm/viewer/worker";',
+    'import { ViewerClient, type ViewerApi } from "@zrimo/viewer";',
+    'import type { WorkerRequestOptions } from "@zrimo/viewer/worker";',
     "const client = ViewerClient.create();",
     "const viewer: ViewerApi = client.createViewer();",
     "const request: WorkerRequestOptions = { timeoutMs: 1000 };",
@@ -223,7 +217,7 @@ report.consumers.push("vite");
 
 await writeFile(
   resolve(consumer, "webpack-entry.js"),
-  'import { ViewerClient } from "@docs-viewer-wasm/viewer"; export default ViewerClient;\n',
+  'import { ViewerClient } from "@zrimo/viewer"; export default ViewerClient;\n',
 );
 await writeFile(
   resolve(consumer, "webpack.config.cjs"),
@@ -252,7 +246,7 @@ await writeFile(
 );
 await writeFile(
   resolve(nextApp, "app/page.js"),
-  'import { ViewerClient } from "@docs-viewer-wasm/viewer"; export default function Page() { return <main data-viewer={typeof ViewerClient}>SSR-safe viewer</main>; }\n',
+  'import { ViewerClient } from "@zrimo/viewer"; export default function Page() { return <main data-viewer={typeof ViewerClient}>SSR-safe viewer</main>; }\n',
 );
 execFileSync(
   "node",

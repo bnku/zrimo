@@ -40,14 +40,7 @@ const lock = JSON.parse(
 const npmProductionTree = JSON.parse(
   execFileSync(
     "npm",
-    [
-      "ls",
-      "--workspace",
-      "@docs-viewer-wasm/viewer",
-      "--omit=dev",
-      "--all",
-      "--json",
-    ],
+    ["ls", "--workspace", "@zrimo/viewer", "--omit=dev", "--all", "--json"],
     { encoding: "utf8" },
   ),
 );

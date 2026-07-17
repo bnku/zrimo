@@ -78,7 +78,7 @@
 > [`../01-fidelity-corrective-roadmap.md`](../01-fidelity-corrective-roadmap.md).
 
 - Production ESM package экспортирует `.`, `/headless`, `/worker`, `/styles.css`, `/fonts/*`, `/workers/*` и `/assets/*`; declarations, workers, WASM, CSS и fonts входят в clean reproducible `dist` без source maps/corpus/source files.
-- `npm pack` создал `@docs-viewer-wasm/viewer@0.1.0-alpha.0`: 111 файлов, 14 350 554 bytes compressed / 18 923 751 bytes unpacked. SHA-1/npm integrity и SHA-256 `b1832fc60ff93ad36ac1e7805db38ce960f24e6388b204de4343a21bc1596acf` сохранены рядом с tarball; forbidden-content scan прошёл.
+- До переименования `npm pack` создал исторический artifact `@docs-viewer-wasm/viewer@0.1.0-alpha.0`: 111 файлов, 14 350 554 bytes compressed / 18 923 751 bytes unpacked. SHA-1/npm integrity и SHA-256 `b1832fc60ff93ad36ac1e7805db38ce960f24e6388b204de4343a21bc1596acf` сохранены рядом с tarball; forbidden-content scan прошёл. Этот immutable pre-Zrimo artifact не переименовывается и не публикуется под scope `@zrimo`.
 - Tarball установлен в clean consumer и прошёл plain ESM/SSR import, strict TypeScript declaration resolution, Angular-style esbuild, Vite, webpack 5 и Next.js webpack production builds.
 - Добавлены runnable Vanilla basic UI и React 19/Vite examples с корректным async destroy; root/package README, integrations, troubleshooting, compatibility, performance, security, fonts/UI/API docs и changelog согласованы.
 - Добавлены dual MIT/Apache-2.0 licenses, third-party notices, проверяемый font OFL manifest, SPDX 2.3 SBOM на 288 third-party package records, `SHA256SUMS` и machine-readable pack/size/audit/browser/fidelity/performance/fuzz reports.

@@ -12,7 +12,7 @@ test("vanilla example stretches the viewer through the available height", async 
   await page.goto("/?demo=1");
 
   const layout = await page.locator("#viewer").evaluate((host) => {
-    const root = host.querySelector<HTMLElement>(".docs-viewer-ui");
+    const root = host.querySelector<HTMLElement>(".zrimo-ui");
     const hostRect = host.getBoundingClientRect();
     const rootRect = root?.getBoundingClientRect();
     return {
@@ -94,7 +94,7 @@ test("virtualizes a long document and exposes viewport interactions", async ({
     await nextFrame();
     await nextFrame();
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer="viewport"]',
+      '[data-zrimo="viewport"]',
     )!;
     const initialSlotCount = root.querySelectorAll("canvas").length;
     const initialText = root.querySelector("[data-start]")?.textContent ?? "";
@@ -144,9 +144,7 @@ test("virtualizes a long document and exposes viewport interactions", async ({
     const finalPage = viewer.state.pageIndex;
     const panY = viewer.state.panY;
     await viewer.destroy();
-    const viewportRemoved = !container.querySelector(
-      '[data-docs-viewer="viewport"]',
-    );
+    const viewportRemoved = !container.querySelector('[data-zrimo="viewport"]');
     await client.destroy();
     container.remove();
     return {
@@ -224,7 +222,7 @@ test("keeps heterogeneous PDF page geometry stable and centered", async ({
       );
     await settle();
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer="viewport"]',
+      '[data-zrimo="viewport"]',
     )!;
     const first = root.querySelector<HTMLElement>('[data-page-index="0"]')!;
     const initial = {
@@ -366,10 +364,10 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer="spreadsheet-viewport"]',
+      '[data-zrimo="spreadsheet-viewport"]',
     )!;
     const surface = root.querySelector<HTMLElement>(
-      '[data-docs-viewer-layer="cell-selection"]',
+      '[data-zrimo-layer="cell-selection"]',
     )!;
     const bounds = root.getBoundingClientRect();
     const start = { x: bounds.x + 55, y: bounds.y + 27 };
@@ -564,7 +562,7 @@ test("virtualizes the full spreadsheet used range at every supported zoom", asyn
       fileName: "sparse.csv",
     });
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer="spreadsheet-viewport"]',
+      '[data-zrimo="spreadsheet-viewport"]',
     )!;
     const settle = async (delay = 0) => {
       await new Promise<void>((resolve) =>
@@ -599,13 +597,13 @@ test("virtualizes the full spreadsheet used range at every supported zoom", asyn
     root.scrollTo({ left: root.scrollWidth, top: root.scrollHeight });
     await settle(100);
     const canvas = root.querySelector<HTMLCanvasElement>(
-      '[data-docs-viewer-layer="spreadsheet-canvas"]',
+      '[data-zrimo-layer="spreadsheet-canvas"]',
     )!;
     const pixel = Array.from(
       canvas.getContext("2d")!.getImageData(0, 0, 1, 1).data,
     );
     const surface = root.querySelector<HTMLElement>(
-      '[data-docs-viewer-layer="cell-selection"]',
+      '[data-zrimo-layer="cell-selection"]',
     )!;
     const bounds = root.getBoundingClientRect();
     const pointer = (type: string, x: number, y: number, buttons: number) =>
@@ -743,7 +741,7 @@ test("runs the localized basic UI workflow without leaking styles", async ({
     ).__stage6 = { viewer, client };
   });
 
-  const ui = page.locator('[data-docs-viewer-ui="root"]');
+  const ui = page.locator('[data-zrimo-ui="root"]');
   await expect(ui).toBeVisible();
   await expect(
     ui.getByRole("button", { name: "Сохранить исходник" }),
@@ -781,14 +779,14 @@ test("runs the localized basic UI workflow without leaking styles", async ({
   await ui.getByRole("button", { name: "Поиск" }).click();
   const search = ui.getByRole("searchbox", { name: "Поиск" });
   await search.fill("привет");
-  await expect(ui.locator(".docs-viewer-ui__search-status")).toHaveText("1/3");
+  await expect(ui.locator(".zrimo-ui__search-status")).toHaveText("1/3");
   await ui.getByRole("button", { name: "Миниатюры" }).click();
   await expect(ui.locator('[data-panel="thumbnails"] canvas')).toHaveCount(3);
 
   await ui.getByRole("button", { name: "На весь экран" }).click();
   const fullscreenActive = await ui.evaluate(
     (element) =>
-      element.classList.contains("docs-viewer-ui--fullscreen-fallback") ||
+      element.classList.contains("zrimo-ui--fullscreen-fallback") ||
       document.fullscreenElement === element,
   );
   expect(fullscreenActive).toBe(true);
@@ -956,7 +954,7 @@ test("shows capability-driven sheet tabs and selected range", async ({
       fileName: "sheets.csv",
     });
     const root = container.querySelector<HTMLElement>(
-      '[data-docs-viewer-ui="root"]',
+      '[data-zrimo-ui="root"]',
     )!;
     const summary = root.querySelector<HTMLButtonElement>(
       '[data-action="sheet-1"]',
@@ -975,7 +973,7 @@ test("shows capability-driven sheet tabs and selected range", async ({
         root.querySelectorAll<HTMLButtonElement>('[data-action^="sheet-"]'),
         (button) => button.textContent,
       ),
-      range: root.querySelector(".docs-viewer-ui__sheets")?.textContent ?? "",
+      range: root.querySelector(".zrimo-ui__sheets")?.textContent ?? "",
       thumbnailsHidden:
         root.querySelector<HTMLButtonElement>('[data-action="thumbnails"]')
           ?.hidden ?? false,
@@ -1585,7 +1583,7 @@ test("renders PDF and extracts its text map through self-hosted PDF.js", async (
     );
     const spans = Array.from(
       container.querySelectorAll<HTMLElement>(
-        '[data-docs-viewer-layer="text"] [data-start]',
+        '[data-zrimo-layer="text"] [data-start]',
       ),
     );
     const attachedCanvas = container.querySelector("canvas")!;

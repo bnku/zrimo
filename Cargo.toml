@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/viewer-core",
+    "crates/zrimo-core",
     "crates/legacy-doc",
     "crates/legacy-office-wasm",
     "crates/image-wasm",

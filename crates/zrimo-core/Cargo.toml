@@ -1,5 +1,5 @@
 [package]
-name = "viewer-core"
+name = "zrimo-core"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -11,4 +11,3 @@ thiserror.workspace = true
 
 [lints]
 workspace = true
-

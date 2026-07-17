@@ -1,16 +1,16 @@
 # Public API reference
 
-`@docs-viewer-wasm/viewer` is an ESM, browser-side document viewer. Importing the package and creating a headless viewer are SSR-safe; a DOM is required only when `container` is supplied or `downloadOriginal()` initiates a browser download.
+`@zrimo/viewer` is an ESM, browser-side document viewer. Importing the package and creating a headless viewer are SSR-safe; a DOM is required only when `container` is supplied or `downloadOriginal()` initiates a browser download.
 
 All page, slide, image, and sheet indices are zero-based. API snapshots and result arrays are immutable.
 
 ## Create a runtime and viewer
 
 ```ts
-import { ViewerClient } from "@docs-viewer-wasm/viewer";
+import { ViewerClient } from "@zrimo/viewer";
 
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
   limits: { maxInputBytes: 50 * 1024 * 1024 },
 });
 

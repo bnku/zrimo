@@ -12,9 +12,9 @@ await viewer.load(source);
 ```
 
 ```ts
-// @docs-viewer-wasm/viewer
+// @zrimo/viewer
 const client = ViewerClient.create({
-  assetBaseUrl: new URL("/document-viewer/", location.href),
+  assetBaseUrl: new URL("/zrimo/", location.href),
 });
 const viewer = client.createViewer({
   container: document.querySelector<HTMLElement>("#viewer")!,
