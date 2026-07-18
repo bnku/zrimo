@@ -54,6 +54,14 @@ test("landing, documentation, and React demo ship as one Pages site", async ({
     ),
   ).toBe(true);
 
+  await page.getByRole("link", { name: /Open React demo/i }).click();
+  await expect(page).not.toHaveTitle(/404|Page not found/i);
+  await expect(page.getByText("React integration playground")).toBeVisible();
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: /Any document/i }),
+  ).toBeVisible();
+
   await page.locator('a[href$="/performance"]').first().click();
   await expect(
     page.getByRole("heading", { name: "Rendering and memory controls" }),
@@ -65,8 +73,10 @@ test("landing, documentation, and React demo ship as one Pages site", async ({
     page.getByRole("heading", { name: "Getting started" }),
   ).toBeVisible();
   await expect(page.getByText("npm install @zrimo/viewer")).toBeVisible();
-
-  await page.goto("demo/");
+  await page
+    .getByLabel("Main Navigation")
+    .getByRole("link", { name: "React demo", exact: true })
+    .click();
   await expect(page).not.toHaveTitle(/404|Page not found/i);
   await expect(page.getByText("React integration playground")).toBeVisible();
   await expect(page.getByRole("tab", { name: /Built-in UI/i })).toBeVisible();
@@ -74,5 +84,9 @@ test("landing, documentation, and React demo ship as one Pages site", async ({
     page.getByRole("tab", { name: /React controls/i }),
   ).toBeVisible();
   await expect(page.getByRole("tab", { name: /Headless API/i })).toBeVisible();
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: "Getting started" }),
+  ).toBeVisible();
   expect(failures).toEqual([]);
 });

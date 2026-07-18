@@ -12,6 +12,7 @@ hero:
     - theme: brand
       text: Open React demo
       link: /demo/
+      target: _self
     - theme: alt
       text: Get started
       link: /getting-started
@@ -100,4 +101,4 @@ const viewer = client.createViewer({
 await viewer.load(file, { fileName: file.name });
 ```
 
-The [React demo](./demo/) runs the real package and shows all three integration modes. Nothing is uploaded when you open a document.
+The <a href="./demo/" target="_self">React demo</a> runs the real package and shows all three integration modes. Nothing is uploaded when you open a document.

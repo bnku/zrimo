@@ -32,7 +32,7 @@ export default defineConfig({
       { text: "Guide", link: "/getting-started" },
       { text: "API", link: "/api/reference" },
       { text: "Formats", link: "/compatibility" },
-      { text: "React demo", link: "/demo/" },
+      { text: "React demo", link: "/demo/", target: "_self" },
     ],
     sidebar: [
       {
@@ -40,10 +40,6 @@ export default defineConfig({
         items: [
           { text: "Getting started", link: "/getting-started" },
           { text: "Framework integrations", link: "/integrations" },
-          {
-            text: "Migration from udoc-viewer",
-            link: "/migration-from-udoc-viewer",
-          },
         ],
       },
       {

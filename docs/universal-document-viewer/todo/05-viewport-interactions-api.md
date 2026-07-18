@@ -74,7 +74,6 @@
 - Создать `docs/api/reference.md` с public classes, types, methods, events и error catalog.
 - Создать `docs/api/headless.md` с render/search/selection examples.
 - Создать `docs/architecture/viewport.md` с coordinate spaces, virtualization и cache policy.
-- Добавить migration note, объясняющий сходство и отличия от `@docmentis/udoc-viewer`.
 
 ## Критерии готовности
 

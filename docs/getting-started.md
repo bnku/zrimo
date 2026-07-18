@@ -57,7 +57,7 @@ workers/
 
 The URL must end with `/`. Keep the directory structure unchanged and serve `.wasm` as `application/wasm` and `.mjs` as JavaScript. The package does not load fonts or format modules until they are needed.
 
-Run the command after dependency installation and before your application build. The bundled [React demo](./demo/) uses the package distribution itself as its public asset root.
+Run the command after dependency installation and before your application build. The bundled <a href="./demo/" target="_self">React demo</a> uses the package distribution itself as its public asset root.
 
 ## Clean up
 
