@@ -2,8 +2,10 @@ import type {
   CellRange,
   CellSelection,
   DocumentInfo,
+  SearchMatch,
   SpreadsheetSheetInfo,
   SpreadsheetViewportRange,
+  TextRun,
 } from "./contracts.js";
 import { normalizeCellRange } from "./interaction.js";
 import type { ViewportHost } from "./viewport.js";
@@ -27,6 +29,10 @@ interface PointerPosition {
 interface CellAddress {
   readonly row: number;
   readonly column: number;
+}
+
+export interface SpreadsheetSearchCell extends CellAddress {
+  readonly active: boolean;
 }
 
 interface ColumnResizeTarget {
@@ -126,6 +132,8 @@ export class SpreadsheetViewport {
   readonly #spacer: HTMLDivElement;
   readonly #canvas: HTMLCanvasElement;
   readonly #selectionLayer: HTMLDivElement;
+  readonly #searchLayer: HTMLDivElement;
+  readonly #searchBoxes: HTMLDivElement[] = [];
   readonly #selectionBoxes: HTMLDivElement[] = [];
   readonly #onScroll = (): void => this.#handleScroll();
   readonly #onWheel = (event: WheelEvent): void => this.#handleWheel(event);
@@ -159,6 +167,9 @@ export class SpreadsheetViewport {
   #cellFocus: { readonly row: number; readonly column: number } | undefined;
   #cellBaseRanges: CellRange[] = [];
   #columnResizeDrag: ColumnResizeDrag | undefined;
+  #searchCells: readonly SpreadsheetSearchCell[] = [];
+  #searchKey = "";
+  #searchGeneration = 0;
 
   constructor(container: HTMLElement, host: ViewportHost) {
     this.#container = container;
@@ -207,7 +218,16 @@ export class SpreadsheetViewport {
       userSelect: "none",
       overflow: "hidden",
     });
-    this.#selectionLayer.append(this.#canvas);
+    this.#searchLayer = document.createElement("div");
+    this.#searchLayer.dataset.zrimoLayer = "spreadsheet-search";
+    Object.assign(this.#searchLayer.style, {
+      position: "absolute",
+      left: "0",
+      top: "0",
+      pointerEvents: "none",
+      overflow: "hidden",
+    });
+    this.#selectionLayer.append(this.#canvas, this.#searchLayer);
     this.#selectionBoxes.push(this.#createSelectionBox());
     this.#spacer.append(this.#selectionLayer);
     this.#root.append(this.#spacer);
@@ -233,6 +253,7 @@ export class SpreadsheetViewport {
     this.#sheetScroll.clear();
     this.#columnWidthOverrides.clear();
     this.#columnResizeDrag = undefined;
+    this.#resetSearchHighlights();
     this.#resetCellSelection();
     this.#sheetIndex = this.#host.state.pageIndex;
     this.#appliedZoom = this.#host.state.zoom;
@@ -322,6 +343,7 @@ export class SpreadsheetViewport {
   destroy(): void {
     if (this.#destroyed) return;
     this.#destroyed = true;
+    this.#searchGeneration += 1;
     this.#controller?.abort();
     if (this.#frame) cancelAnimationFrame(this.#frame);
     this.#resizeObserver?.disconnect();
@@ -358,6 +380,9 @@ export class SpreadsheetViewport {
       return;
     this.#ensureViewportGeometry();
     this.#updateExtent();
+    await this.#syncSearchHighlights();
+    if (this.#destroyed || this.#sheetIndex !== this.#host.state.pageIndex)
+      return;
     const render = this.#visibleRange();
     const width = this.#root.clientWidth;
     const height = this.#root.clientHeight;
@@ -377,6 +402,7 @@ export class SpreadsheetViewport {
       dpr,
     ].join(":");
     this.#sizeLayers(width, height);
+    this.#paintSearchHighlights();
     this.#paintSelection();
     if (key === this.#renderKey) return;
     this.#renderKey = key;
@@ -566,7 +592,11 @@ export class SpreadsheetViewport {
   }
 
   #sizeLayers(width: number, height: number): void {
-    for (const layer of [this.#canvas, this.#selectionLayer]) {
+    for (const layer of [
+      this.#canvas,
+      this.#selectionLayer,
+      this.#searchLayer,
+    ]) {
       layer.style.width = `${width}px`;
       layer.style.height = `${height}px`;
     }
@@ -574,6 +604,7 @@ export class SpreadsheetViewport {
 
   #handleScroll(): void {
     this.#reportPan();
+    this.#paintSearchHighlights();
     this.#paintSelection();
     this.schedule();
   }
@@ -829,6 +860,7 @@ export class SpreadsheetViewport {
     this.#controller?.abort();
     this.#renderKey = undefined;
     this.#updateExtent();
+    this.#paintSearchHighlights();
     this.#paintSelection();
     this.schedule();
   }
@@ -900,6 +932,121 @@ export class SpreadsheetViewport {
         height: `${Math.max(1, bottomRight.y - topLeft.y)}px`,
       });
     });
+  }
+
+  async #syncSearchHighlights(): Promise<void> {
+    const sheetIndex = this.#sheetIndex;
+    const matches = this.#host.getSearchMatches(sheetIndex);
+    const currentActive = this.#host.getActiveSearchMatch();
+    const active =
+      currentActive?.pageIndex === sheetIndex ? currentActive : undefined;
+    const key = spreadsheetSearchKey(matches, active);
+    if (key === this.#searchKey) return;
+    const generation = ++this.#searchGeneration;
+    if (matches.length === 0) {
+      this.#searchKey = key;
+      this.#searchCells = [];
+      this.#paintSearchHighlights();
+      return;
+    }
+    const runs = await this.#host.getTextRuns(sheetIndex);
+    const latestActive = this.#host.getActiveSearchMatch();
+    if (
+      this.#destroyed ||
+      generation !== this.#searchGeneration ||
+      sheetIndex !== this.#sheetIndex ||
+      key !==
+        spreadsheetSearchKey(
+          this.#host.getSearchMatches(sheetIndex),
+          latestActive?.pageIndex === sheetIndex ? latestActive : undefined,
+        )
+    )
+      return;
+    this.#searchKey = key;
+    this.#searchCells = spreadsheetSearchCells(runs, matches, active);
+    const activeCell = this.#searchCells.find((cell) => cell.active);
+    if (activeCell) this.#scrollCellIntoView(activeCell);
+    this.#paintSearchHighlights();
+  }
+
+  #paintSearchHighlights(): void {
+    const width = this.#root.clientWidth;
+    const height = this.#root.clientHeight;
+    const zoom = this.#host.state.zoom;
+    const gridLeft = this.#rowHeaderWidth() * zoom;
+    const gridTop = this.#columnHeaderHeight() * zoom;
+    const visible = this.#searchCells.flatMap((cell) => {
+      const range = this.#searchRange(cell);
+      const start = this.#cellPosition(range.startRow, range.startColumn);
+      const end = this.#cellPosition(range.endRow + 1, range.endColumn + 1);
+      const left = Math.max(gridLeft, start.x);
+      const top = Math.max(gridTop, start.y);
+      const right = Math.min(width, end.x);
+      const bottom = Math.min(height, end.y);
+      return right > left && bottom > top
+        ? [{ cell, left, top, width: right - left, height: bottom - top }]
+        : [];
+    });
+    while (this.#searchBoxes.length < visible.length)
+      this.#searchBoxes.push(this.#createSearchBox());
+    this.#searchBoxes.forEach((box, index) => {
+      const highlight = visible[index];
+      if (!highlight) {
+        box.style.display = "none";
+        delete box.dataset.row;
+        delete box.dataset.column;
+        delete box.dataset.active;
+        return;
+      }
+      box.dataset.row = String(highlight.cell.row);
+      box.dataset.column = String(highlight.cell.column);
+      box.dataset.active = String(highlight.cell.active);
+      Object.assign(box.style, {
+        display: "block",
+        left: `${highlight.left}px`,
+        top: `${highlight.top}px`,
+        width: `${Math.max(1, highlight.width)}px`,
+        height: `${Math.max(1, highlight.height)}px`,
+        background: "var(--zrimo-highlight, rgb(255 215 0 / 45%))",
+        boxShadow: highlight.cell.active
+          ? "inset 0 0 0 2px var(--zrimo-primary, #175cd3)"
+          : "none",
+      });
+    });
+  }
+
+  #searchRange(cell: CellAddress): CellRange {
+    const merged = this.#sheet?.mergedRanges.find((range) =>
+      cellInRange(cell, { ...range, sheetIndex: this.#sheetIndex }),
+    );
+    return merged
+      ? { ...merged, sheetIndex: this.#sheetIndex }
+      : {
+          sheetIndex: this.#sheetIndex,
+          startRow: cell.row,
+          startColumn: cell.column,
+          endRow: cell.row,
+          endColumn: cell.column,
+        };
+  }
+
+  #createSearchBox(): HTMLDivElement {
+    const box = document.createElement("div");
+    Object.assign(box.style, {
+      position: "absolute",
+      display: "none",
+      boxSizing: "border-box",
+      pointerEvents: "none",
+    });
+    this.#searchLayer.append(box);
+    return box;
+  }
+
+  #resetSearchHighlights(): void {
+    this.#searchGeneration += 1;
+    this.#searchCells = [];
+    this.#searchKey = "";
+    for (const box of this.#searchBoxes) box.style.display = "none";
   }
 
   #selectionRanges(): CellRange[] {
@@ -992,6 +1139,71 @@ export class SpreadsheetViewport {
   #reportPan(): void {
     this.#host.onPan(this.#root.scrollLeft, this.#root.scrollTop);
   }
+}
+
+export function spreadsheetSearchCells(
+  runs: readonly TextRun[],
+  matches: readonly SearchMatch[],
+  activeMatch?: SearchMatch,
+): readonly SpreadsheetSearchCell[] {
+  const cells = new Map<string, SpreadsheetSearchCell>();
+  let logicalOffset = 0;
+  let firstPossibleMatch = 0;
+  for (const run of runs) {
+    const start = run.logicalStart ?? logicalOffset;
+    const end = run.logicalEnd ?? start + run.text.length;
+    while (
+      firstPossibleMatch < matches.length &&
+      matches[firstPossibleMatch]!.end <= start
+    )
+      firstPossibleMatch += 1;
+    if (run.row !== undefined && run.column !== undefined) {
+      for (
+        let index = firstPossibleMatch;
+        index < matches.length && matches[index]!.start < end;
+        index += 1
+      ) {
+        const match = matches[index]!;
+        if (match.end <= start) continue;
+        const key = `${run.row}:${run.column}`;
+        const active = sameSearchMatch(match, activeMatch);
+        const existing = cells.get(key);
+        if (!existing || (active && !existing.active))
+          cells.set(key, {
+            row: run.row,
+            column: run.column,
+            active,
+          });
+      }
+    }
+    logicalOffset = end;
+  }
+  return Array.from(cells.values());
+}
+
+function spreadsheetSearchKey(
+  matches: readonly SearchMatch[],
+  activeMatch?: SearchMatch,
+): string {
+  return `${matches
+    .map((match) => `${match.pageIndex}:${match.start}:${match.end}`)
+    .join(",")}|${
+    activeMatch
+      ? `${activeMatch.pageIndex}:${activeMatch.start}:${activeMatch.end}`
+      : ""
+  }`;
+}
+
+function sameSearchMatch(
+  left: SearchMatch,
+  right: SearchMatch | undefined,
+): boolean {
+  return (
+    right !== undefined &&
+    left.pageIndex === right.pageIndex &&
+    left.start === right.start &&
+    left.end === right.end
+  );
 }
 
 function lowerBound(values: readonly number[], target: number): number {

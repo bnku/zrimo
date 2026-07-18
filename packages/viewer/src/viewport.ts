@@ -36,6 +36,7 @@ export interface ViewportHost {
     signal?: AbortSignal,
   ): Promise<readonly TextRun[]>;
   getSearchMatches(pageIndex: number): readonly SearchMatch[];
+  getActiveSearchMatch(): SearchMatch | undefined;
   onVisiblePage(pageIndex: number): void;
   onPan(panX: number, panY: number): void;
   onZoom(zoom: number): void;

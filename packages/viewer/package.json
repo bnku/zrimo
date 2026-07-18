@@ -1,6 +1,6 @@
 {
   "name": "@zrimo/viewer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zrimo — embeddable browser-only document viewer with Rust/WASM adapters",
   "keywords": [
     "document-viewer",

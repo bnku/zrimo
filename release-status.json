@@ -1,15 +1,8 @@
 {
   "schemaVersion": 1,
-  "packageVersion": "0.1.0",
-  "state": "ready",
-  "reason": "qualified-0.1.0-candidate",
-  "publishedArtifact": {
-    "version": "0.1.0",
-    "filename": "zrimo-viewer-0.1.0.tgz",
-    "integrity": "sha512-4FSG4wYEpETzeCkzSJzE/rRKZS2fp55eykF+hDNoymbo+ZFGW9F8iVKFsZszjTHnlSBmoQThc5Etkz5xf+dDZw==",
-    "shasum": "90e255a886be877664ed5f7eec9e832a864763d1",
-    "sha256": "77cd31f100409d3e3f44547523f56919667e3b86af5f4d7afa240f272ebb3e21"
-  },
-  "blockedChannels": [],
-  "requiredTasks": []
+  "packageVersion": "0.1.1",
+  "state": "blocked",
+  "reason": "local-0.1.1-development",
+  "blockedChannels": ["alpha", "beta", "latest"],
+  "requiredTasks": ["qualify-0.1.1-release"]
 }

@@ -121,6 +121,7 @@ export class DocumentViewer implements ViewerApi {
           getTextRuns: (pageIndex, signal) =>
             this.#getTextRuns(pageIndex, signal),
           getSearchMatches: (pageIndex) => this.#matchesForPage(pageIndex),
+          getActiveSearchMatch: () => this.#activeSearchMatch(),
           onVisiblePage: (pageIndex) => this.#goToPage(pageIndex, false),
           onPan: (panX, panY) => this.#setPan(panX, panY),
           onZoom: (zoom) => this.setZoom(zoom),
@@ -826,6 +827,13 @@ export class DocumentViewer implements ViewerApi {
         (match) => match.pageIndex === pageIndex,
       ) ?? []
     );
+  }
+
+  #activeSearchMatch(): SearchMatch | undefined {
+    const result = this.#searchResult;
+    return result && result.activeIndex >= 0
+      ? result.matches[result.activeIndex]
+      : undefined;
   }
 
   #moveSearch(direction: 1 | -1): SearchResult | null {

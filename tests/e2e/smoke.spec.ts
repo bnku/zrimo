@@ -530,6 +530,135 @@ test("drags and keyboard-extends spreadsheet cell selections", async ({
   ).toBeGreaterThan(2);
 });
 
+test("highlights spreadsheet search matches and follows the active cell", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = (await import("/main.js")) as any;
+    const cells = [
+      {
+        text: "needle",
+        row: 1,
+        column: 1,
+        x: 54,
+        y: 24,
+        width: 72,
+        height: 20,
+      },
+      {
+        text: "needle",
+        row: 80,
+        column: 40,
+        x: 0,
+        y: 0,
+        width: 72,
+        height: 20,
+      },
+    ];
+    const adapter = {
+      id: "e2e-sheet-search",
+      formats: ["csv"],
+      open: async () => ({}),
+      getInfo: async () => ({
+        format: "csv",
+        unit: "sheet",
+        pageCount: 1,
+        sheetNames: ["Search"],
+        sheets: [
+          {
+            name: "Search",
+            frozenRows: 0,
+            frozenColumns: 0,
+            mergedRanges: [],
+            maxRow: 80,
+            maxColumn: 40,
+            defaultColumnWidth: 80,
+            defaultRowHeight: 24,
+            rowHeaderWidth: 50,
+            columnHeaderHeight: 22,
+          },
+        ],
+      }),
+      render: async (
+        _handle: unknown,
+        target: HTMLCanvasElement,
+        viewport: { width: number; height: number; devicePixelRatio: number },
+      ) => {
+        target.width = viewport.width * viewport.devicePixelRatio;
+        target.height = viewport.height * viewport.devicePixelRatio;
+      },
+      getTextMap: async () => cells,
+      close: () => {},
+    };
+    const container = document.createElement("div");
+    Object.assign(container.style, { width: "480px", height: "260px" });
+    document.body.append(container);
+    const client = ViewerClient.create({ adapters: [adapter] });
+    const viewer = client.createViewer({ container });
+    await viewer.load(new TextEncoder().encode("needle"), {
+      fileName: "search.csv",
+    });
+    const settle = () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+    const visibleHighlights = () =>
+      Array.from(
+        container.querySelectorAll<HTMLElement>(
+          '[data-zrimo-layer="spreadsheet-search"] > div',
+        ),
+      ).filter((element) => element.style.display !== "none");
+
+    const search = await viewer.search("needle");
+    await settle();
+    const first = visibleHighlights().map((element) => ({
+      row: element.dataset.row,
+      column: element.dataset.column,
+      active: element.dataset.active,
+    }));
+    viewer.searchNext();
+    await settle();
+    const root = container.querySelector<HTMLElement>(
+      '[data-zrimo="spreadsheet-viewport"]',
+    )!;
+    const second = visibleHighlights().map((element) => ({
+      row: element.dataset.row,
+      column: element.dataset.column,
+      active: element.dataset.active,
+    }));
+    const scroll = { left: root.scrollLeft, top: root.scrollTop };
+    viewer.clearSearch();
+    await settle();
+    const afterClear = visibleHighlights().length;
+    await viewer.destroy();
+    await client.destroy();
+    container.remove();
+    return {
+      matchCount: search.matches.length,
+      first,
+      second,
+      scroll,
+      afterClear,
+    };
+  });
+
+  expect(result.matchCount).toBe(2);
+  expect(result.first).toContainEqual({
+    row: "1",
+    column: "1",
+    active: "true",
+  });
+  expect(result.second).toContainEqual({
+    row: "80",
+    column: "40",
+    active: "true",
+  });
+  expect(result.scroll.left).toBeGreaterThan(0);
+  expect(result.scroll.top).toBeGreaterThan(0);
+  expect(result.afterClear).toBe(0);
+});
+
 test("virtualizes the full spreadsheet used range at every supported zoom", async ({
   page,
 }) => {
