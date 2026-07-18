@@ -117,7 +117,7 @@ complete pinned transitive inventory.
 ## License
 
 Zrimo's original source code and documentation are dual-licensed, at your
-option, under the [MIT License](LICENSE-MIT) or the
+option, under the [MIT License](LICENSE) or the
 [Apache License 2.0](LICENSE-APACHE). Copyright (c) 2026 Zrimo contributors.
 
 Unless explicitly stated otherwise, any contribution intentionally submitted

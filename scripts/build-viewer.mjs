@@ -68,11 +68,11 @@ await cp(
 await cp(resolve(packageRoot, "fonts"), resolve(dist, "fonts"), {
   recursive: true,
 });
-for (const notice of [
-  "LICENSE-MIT",
-  "LICENSE-APACHE",
-  "THIRD_PARTY_NOTICES.md",
+for (const [source, destination] of [
+  ["LICENSE", "LICENSE-MIT"],
+  ["LICENSE-APACHE", "LICENSE-APACHE"],
+  ["THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"],
 ])
-  await cp(resolve(root, notice), resolve(packageRoot, notice));
+  await cp(resolve(root, source), resolve(packageRoot, destination));
 
 console.log("Viewer TypeScript, workers, WASM, CSS, and font assets built");
