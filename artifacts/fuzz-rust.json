@@ -5,27 +5,27 @@
   "results": [
     {
       "target": "format_detection",
-      "elapsedMs": 31741.346935999998,
+      "elapsedMs": 4009.317415,
       "status": 0
     },
     {
       "target": "legacy_doc",
-      "elapsedMs": 4283.028967000002,
+      "elapsedMs": 5123.932226000001,
       "status": 0
     },
     {
       "target": "legacy_office",
-      "elapsedMs": 3696.251381000002,
+      "elapsedMs": 3430.378057,
       "status": 0
     },
     {
       "target": "pdf_parser",
-      "elapsedMs": 8636.681526,
+      "elapsedMs": 7221.015279000001,
       "status": 0
     },
     {
       "target": "tiff_parser",
-      "elapsedMs": 3624.9084369999982,
+      "elapsedMs": 3769.784105999999,
       "status": 0
     }
   ]

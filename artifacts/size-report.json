@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-17T18:14:26.930Z",
+  "generatedAt": "2026-07-18T17:50:59.547Z",
   "thresholds": {
     "targetBrotliBytes": 20971520,
     "releaseBlockBrotliBytes": 26214400,
@@ -9,9 +9,9 @@
   "status": "pass",
   "totals": {
     "base": {
-      "raw": 10259527,
-      "gzip": 4646885,
-      "brotli": 3799154
+      "raw": 10335573,
+      "gzip": 4676223,
+      "brotli": 3819973
     },
     "optionalFonts": {
       "raw": 10965514,
@@ -19,9 +19,9 @@
       "brotli": 10960714
     },
     "deliveredWithAllFonts": {
-      "raw": 21225041,
-      "gzip": 15610954,
-      "brotli": 14759868
+      "raw": 21301087,
+      "gzip": 15640292,
+      "brotli": 14780687
     }
   },
   "assets": [
@@ -224,9 +224,9 @@
     {
       "name": "code/spreadsheet-viewport.js",
       "group": "code",
-      "raw": 34406,
-      "gzip": 7024,
-      "brotli": 6164
+      "raw": 41666,
+      "gzip": 8317,
+      "brotli": 7292
     },
     {
       "name": "code/styles.css",
@@ -252,9 +252,9 @@
     {
       "name": "code/viewer.js",
       "group": "code",
-      "raw": 35221,
-      "gzip": 6838,
-      "brotli": 6038
+      "raw": 35491,
+      "gzip": 6880,
+      "brotli": 6078
     },
     {
       "name": "code/viewport.js",
@@ -1757,9 +1757,9 @@
     {
       "name": "wasm/legacy-office",
       "group": "wasm",
-      "raw": 1468424,
-      "gzip": 679091,
-      "brotli": 530586
+      "raw": 1536940,
+      "gzip": 707094,
+      "brotli": 550237
     },
     {
       "name": "wasm/tiff-image",

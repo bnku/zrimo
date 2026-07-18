@@ -2,13 +2,20 @@
 
 **Any document. One canvas.**
 
+[Website](https://bnku.github.io/zrimo/) ·
+[Live React demo](https://bnku.github.io/zrimo/demo/) ·
+[Documentation](https://bnku.github.io/zrimo/getting-started) ·
+[npm](https://www.npmjs.com/package/@zrimo/viewer)
+
 Zrimo is a framework-agnostic, browser-side document viewer with a TypeScript API and lazily loaded Rust/WASM adapters. It renders modern Office, qualified Word 97–2003 DOC and legacy XLS/PPT, PDF, images, SVG and delimited data without uploading documents to a conversion service.
 
 ## Supported formats
 
 - DOCX/DOCM, XLSX/XLSM, PPTX/PPTM/PPSX
 - Word 97–2003 DOC through the project-owned bounded Word Binary parser and in-memory DOCX serialization
-- XLS and PPT through in-memory legacy → OOXML normalization
+- BIFF8 XLS through bounded in-memory normalization with source-backed styles,
+  sheet geometry, merges and safe hyperlinks; PPT through in-memory OOXML
+  normalization
 - PDF
 - PNG, JPEG, WebP, GIF, BMP and multi-page TIFF
 - SVG, CSV and TSV

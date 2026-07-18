@@ -3,18 +3,18 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "zrimo-release-sbom",
-  "documentNamespace": "https://zrimo.dev/spdx/1784312067599",
+  "documentNamespace": "https://zrimo.dev/spdx/1784397060222",
   "creationInfo": {
-    "created": "2026-07-17T18:14:27.599Z",
+    "created": "2026-07-18T17:51:00.222Z",
     "creators": [
       "Tool: zrimo/scripts/generate-sbom.mjs"
     ]
   },
   "packages": [
     {
-      "SPDXID": "SPDXRef-npm--zrimo-viewer-0.1.0",
+      "SPDXID": "SPDXRef-npm--zrimo-viewer-0.1.1",
       "name": "@zrimo/viewer",
-      "versionInfo": "0.1.0",
+      "versionInfo": "0.1.1",
       "downloadLocation": "https://registry.npmjs.org/@zrimo/viewer",
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",

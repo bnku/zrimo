@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "packageVersion": "0.1.1",
-  "state": "blocked",
-  "reason": "local-0.1.1-development",
-  "blockedChannels": ["alpha", "beta", "latest"],
-  "requiredTasks": ["qualify-0.1.1-release"]
+  "state": "ready",
+  "reason": "qualified-0.1.1-candidate",
+  "blockedChannels": [],
+  "requiredTasks": []
 }

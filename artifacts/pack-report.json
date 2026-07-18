@@ -3,13 +3,13 @@
   "releaseCandidate": true,
   "quarantineState": "ready",
   "name": "@zrimo/viewer",
-  "version": "0.1.0",
-  "filename": "zrimo-viewer-0.1.0.tgz",
-  "size": 14221194,
-  "unpackedSize": 17888977,
-  "shasum": "90e255a886be877664ed5f7eec9e832a864763d1",
-  "integrity": "sha512-4FSG4wYEpETzeCkzSJzE/rRKZS2fp55eykF+hDNoymbo+ZFGW9F8iVKFsZszjTHnlSBmoQThc5Etkz5xf+dDZw==",
-  "sha256": "77cd31f100409d3e3f44547523f56919667e3b86af5f4d7afa240f272ebb3e21",
+  "version": "0.1.1",
+  "filename": "zrimo-viewer-0.1.1.tgz",
+  "size": 14250945,
+  "unpackedSize": 17966231,
+  "shasum": "1f6a8d36d4fcc4dcbc070b5f05b3b06754d52b29",
+  "integrity": "sha512-JHHKH/eh3Pm7ViSBBATqKdAQ0BtGXktL6FeTa7WAeerSKUhhiksFLodCGdNNcrYJZhPzat+j4pXWvITe1pC3SA==",
+  "sha256": "6e2837b67db119adc63fff11f2b8deb565d25038f83263ffd1c8b6a2c24a29a9",
   "fileCount": 308,
   "files": [
     {
@@ -24,8 +24,8 @@
     },
     {
       "path": "README.md",
-      "size": 7317,
-      "sha256": "6aa76d6d14ed4b095e9e13665c3c9ff57f2a06ea2117de545c9408708ec5675a"
+      "size": 8094,
+      "sha256": "b1d7384a81f10bab4b09c81c0ebcdc1e3517f3536eb0c24eb5d2b380df643921"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -139,8 +139,8 @@
     },
     {
       "path": "dist/assets/legacy/index_bg.wasm",
-      "size": 1468424,
-      "sha256": "41d861f444c148398a086ec2b9ffbb0c5cb74234b784b0168ead3ae648c9f4dd"
+      "size": 1536940,
+      "sha256": "51d1201713b08f12b44acaf42e7e1614299cf67c84f7df7e05eabba7d070c9d5"
     },
     {
       "path": "dist/assets/legacy/index_bg.wasm.d.ts",
@@ -1424,13 +1424,13 @@
     },
     {
       "path": "dist/spreadsheet-viewport.d.ts",
-      "size": 947,
-      "sha256": "e08bdfb03f17442447cf52733270fc7c1c49403541bd455a0f1b1f57100b4ed9"
+      "size": 1322,
+      "sha256": "6f8e2163cae8e33e19e7a5f0682a36df8b9d93f65fabe3d938f175d5ecbf84bf"
     },
     {
       "path": "dist/spreadsheet-viewport.js",
-      "size": 34406,
-      "sha256": "27c4d7f02bf9dcc7ac1b000833111e8a17856a6e31a0733489a85226f425c427"
+      "size": 41666,
+      "sha256": "e4d989914c9e8fed95a4523a5b45056c990d0bc23f2d59472a0516823a3f2572"
     },
     {
       "path": "dist/styles.css",
@@ -1464,13 +1464,13 @@
     },
     {
       "path": "dist/viewer.js",
-      "size": 35221,
-      "sha256": "795260ab52008f0108b4aed6fb853ec3900fa9bcafa2e12d774dba0303a7e2c6"
+      "size": 35491,
+      "sha256": "bd20934b3816583ff02eab968eb517139b5dfa71089299e479f94deab4c562cb"
     },
     {
       "path": "dist/viewport.d.ts",
-      "size": 2180,
-      "sha256": "49c5c224860c084b9d609c49e40b12aab512c9670be6d6f58109d5dc768ea36b"
+      "size": 2233,
+      "sha256": "bfa36d688a40a6162900cd984b04ab19e3cef83cb3ab01dca35698afa1ba9c66"
     },
     {
       "path": "dist/viewport.js",
@@ -1549,15 +1549,15 @@
     },
     {
       "path": "package.json",
-      "size": 1690,
-      "sha256": "901514ce23ba40128353b1b05bd285e4d19fb12ce63548a314dced05a7d46cc1"
+      "size": 1693,
+      "sha256": "6433d58a4a72b3bc19caae46d07901a80206db8c3ab2f735099049828a4ecfc6"
     }
   ],
   "requiredExportsPresent": true,
   "forbiddenFiles": [],
   "recursiveContentScan": {
     "entryCount": 308,
-    "expandedBytes": 36025553
+    "expandedBytes": 36179607
   },
   "privateSentinelExcluded": true,
   "consumers": [

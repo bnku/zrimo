@@ -3,8 +3,8 @@
   "seed": "0x5eed1234",
   "iterations": 2000,
   "failures": 0,
-  "elapsedMs": 136.19,
-  "slowestCaseMs": 3.64,
+  "elapsedMs": 111.81,
+  "slowestCaseMs": 1.83,
   "targets": [
     "detection/ZIP/CFB",
     "SVG sanitizer",
