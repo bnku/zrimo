@@ -70,9 +70,9 @@ export default defineConfig({
         ],
       },
     ],
-    socialLinks: [{ icon: "github", link: "https://github.com/bnku/zimo" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/bnku/zrimo" }],
     editLink: {
-      pattern: "https://github.com/bnku/zimo/edit/main/docs/:path",
+      pattern: "https://github.com/bnku/zrimo/edit/main/docs/:path",
       text: "Edit this page on GitHub",
     },
     search: { provider: "local" },

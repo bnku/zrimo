@@ -18,7 +18,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/bnku/zimo
+      link: https://github.com/bnku/zrimo
 
 features:
   - icon:

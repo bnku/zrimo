@@ -5,7 +5,7 @@ const variants = explicitBase
   ? [{ base: explicitBase, port: 4184 }]
   : [
       { base: "/", port: 4184 },
-      { base: "/zimo/", port: 4185 },
+      { base: "/zrimo/", port: 4185 },
     ];
 
 for (const variant of variants) {

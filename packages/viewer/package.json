@@ -17,12 +17,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/bnku/zimo.git",
+    "url": "https://github.com/bnku/zrimo.git",
     "directory": "packages/viewer"
   },
-  "homepage": "https://bnku.github.io/zimo/",
+  "homepage": "https://bnku.github.io/zrimo/",
   "bugs": {
-    "url": "https://github.com/bnku/zimo/issues"
+    "url": "https://github.com/bnku/zrimo/issues"
   },
   "publishConfig": {
     "access": "public"

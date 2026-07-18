@@ -26,7 +26,7 @@ pack report both mark it as ready.
 | Package | 308 files, 14,221,187-byte tarball, recursive content scan clean, private inputs excluded |
 | Consumer matrix | Plain ESM/SSR, strict TypeScript, esbuild, Vite, webpack, and Next.js/webpack pass |
 | Runtime assets | Installed package CLI copies WASM, PDF worker, and font manifest successfully |
-| GitHub Pages | Landing, documentation, and React demo build and pass the `/zimo/` subpath smoke test |
+| GitHub Pages | Landing, documentation, and React demo build and pass the `/zrimo/` subpath smoke test |
 | Registry simulation | `npm publish --dry-run --access public` accepts `@zrimo/viewer@0.1.0` |
 
 Machine-readable evidence is stored in `artifacts/`: browser capabilities,

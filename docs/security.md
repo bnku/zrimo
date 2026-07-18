@@ -48,5 +48,5 @@ security certification; hosts must still apply their own threat model, CSP,
 URL authorization and resource limits.
 
 Please report suspected vulnerabilities through the repository's
-[security policy](https://github.com/bnku/zimo/security/policy) instead of a
+[security policy](https://github.com/bnku/zrimo/security/policy) instead of a
 public issue.
