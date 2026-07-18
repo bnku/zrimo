@@ -51,10 +51,51 @@ fn converts_word97_xls_and_ppt_to_valid_ooxml_bytes() {
             assert_docx_numbering(&output, 82, 10);
         } else if file_name == "word97-ranged-comment.doc" {
             assert_docx_ranged_comment(&output, "This is a comment.");
+        } else if file_name == "simple.xls" {
+            assert_xlsx_source_formatting(&output);
         }
         Document::from_reader(Cursor::new(output), target_format)
             .expect("output must parse as OOXML");
     }
+}
+
+fn assert_xlsx_source_formatting(xlsx: &[u8]) {
+    let mut archive = ZipArchive::new(Cursor::new(xlsx)).expect("XLSX ZIP must open");
+    let styles = read_zip_text(&mut archive, "xl/styles.xml");
+    let sheet = read_zip_text(&mut archive, "xl/worksheets/sheet1.xml");
+    assert!(styles.contains("<fonts count=\"4\""));
+    assert!(styles.contains("<cellXfs count=\"21\""));
+    assert!(sheet.contains("<sheetFormatPr"));
+    assert!(sheet.contains("<c r=\"A1\" t=\"inlineStr\" s=\"15\""));
+    assert!(!sheet.contains("<c r=\"A1\" t=\"inlineStr\" s=\"1\""));
+}
+
+#[test]
+#[ignore = "requires a local, untracked XLS oracle via ZRIMO_XLS_ORACLE"]
+fn local_xls_formatting_oracle_preserves_source_structure() {
+    let path =
+        PathBuf::from(std::env::var("ZRIMO_XLS_ORACLE").expect("ZRIMO_XLS_ORACLE is required"));
+    let input = fs::read(path).expect("local XLS oracle must be readable");
+    let output = convert_legacy_bytes(&input, "xls").expect("local XLS conversion must succeed");
+    let mut archive = ZipArchive::new(Cursor::new(&output)).expect("XLSX ZIP must open");
+    let styles = read_zip_text(&mut archive, "xl/styles.xml");
+    let sheet = read_zip_text(&mut archive, "xl/worksheets/sheet1.xml");
+
+    assert!(styles.contains("<fonts count=\""));
+    assert!(styles.contains("<fills count=\""));
+    assert!(styles.contains("<borders count=\""));
+    assert!(styles.contains("wrapText=\"1\""));
+    assert!(sheet.contains("<cols>"));
+    assert!(sheet.matches("<col ").count() >= 7);
+    assert!(sheet.contains("customHeight=\"1\""));
+    assert!(sheet.contains(" s=\""));
+    assert!(sheet.contains("<hyperlinks>"));
+    let relationships = read_zip_text(&mut archive, "xl/worksheets/_rels/sheet1.xml.rels");
+    assert!(relationships.contains("relationships/hyperlink"));
+    assert!(relationships.contains("TargetMode=\"External\""));
+
+    Document::from_reader(Cursor::new(output), DocumentFormat::Xlsx)
+        .expect("formatted output must remain a valid XLSX package");
 }
 
 fn assert_docx_fixed_tables(docx: &[u8], expected: usize) {

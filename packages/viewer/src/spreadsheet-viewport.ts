@@ -281,10 +281,7 @@ export class SpreadsheetViewport {
     }
     const zoom = this.#host.state.zoom;
     if (zoom !== this.#appliedZoom) {
-      const anchor = this.#zoomAnchor ?? {
-        x: this.#root.clientWidth / 2,
-        y: this.#root.clientHeight / 2,
-      };
+      const anchor = this.#zoomAnchor ?? { x: 0, y: 0 };
       const logicalX = (this.#root.scrollLeft + anchor.x) / this.#appliedZoom;
       const logicalY = (this.#root.scrollTop + anchor.y) / this.#appliedZoom;
       this.#appliedZoom = zoom;
@@ -314,7 +311,9 @@ export class SpreadsheetViewport {
     const usedColumns = this.#usedColumns();
     const naturalWidth =
       this.#rowHeaderWidth() + Math.max(1, usedColumns.totalSize);
-    return clampZoom((this.#root.clientWidth - 2) / naturalWidth);
+    const zoom = clampZoom((this.#root.clientWidth - 2) / naturalWidth);
+    if (zoom !== this.#appliedZoom) this.#zoomAnchor = { x: 0, y: 0 };
+    return zoom;
   }
 
   fitPage(): number {
@@ -324,12 +323,14 @@ export class SpreadsheetViewport {
       this.#rowHeaderWidth() + Math.max(1, usedColumns.totalSize);
     const naturalHeight =
       this.#columnHeaderHeight() + Math.max(1, usedRows.totalSize);
-    return clampZoom(
+    const zoom = clampZoom(
       Math.min(
         (this.#root.clientWidth - 2) / naturalWidth,
         (this.#root.clientHeight - 2) / naturalHeight,
       ),
     );
+    if (zoom !== this.#appliedZoom) this.#zoomAnchor = { x: 0, y: 0 };
+    return zoom;
   }
 
   schedule(): void {

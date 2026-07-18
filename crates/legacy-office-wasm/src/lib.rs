@@ -3,6 +3,8 @@
 mod doc_comments;
 mod doc_numbering;
 mod doc_tables;
+mod xls_biff;
+mod xls_ooxml;
 
 use std::io::Cursor;
 
@@ -13,6 +15,8 @@ use wasm_bindgen::prelude::*;
 use crate::doc_comments::add_comments_to_docx;
 use crate::doc_numbering::add_numbering_to_docx;
 use crate::doc_tables::add_table_layout_to_docx;
+use crate::xls_biff::{WorkbookFormatting, XlsLimits};
+use crate::xls_ooxml::add_xls_fidelity_to_xlsx;
 
 fn formats(format: &str) -> Result<(DocumentFormat, DocumentFormat), String> {
     match format.to_ascii_lowercase().as_str() {
@@ -56,12 +60,21 @@ pub fn convert_legacy_bytes(data: &[u8], format: &str) -> Result<Vec<u8>, String
         let output = add_numbering_to_docx(output, &lists, &fonts)?;
         return add_table_layout_to_docx(output, &document, &tables);
     }
+    let xls_formatting = if source_format == DocumentFormat::Xls {
+        Some(WorkbookFormatting::from_xls(data, XlsLimits::default())?)
+    } else {
+        None
+    };
     let document = Document::from_reader(Cursor::new(data.to_vec()), source_format)
         .map_err(|error| error.to_string())?;
     let ir = document.to_ir();
     let mut output = Cursor::new(Vec::new());
     create_from_ir_to_writer(&ir, target_format, &mut output).map_err(|error| error.to_string())?;
-    Ok(output.into_inner())
+    let output = output.into_inner();
+    if let Some(formatting) = xls_formatting {
+        return add_xls_fidelity_to_xlsx(output, &formatting);
+    }
+    Ok(output)
 }
 
 /// Convert DOC/XLS/PPT bytes to the corresponding OOXML package in memory.

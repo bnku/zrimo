@@ -59,7 +59,8 @@ all zoom levels.
 
 `fitWidth` fits the entire used width; `fitPage` fits both used dimensions.
 Pointer zoom retains the logical point under the cursor, programmatic zoom
-retains the viewport center, and `panBy` remains ordinary CSS-pixel scrolling.
+retains the logical point at the viewport's top-left corner, and `panBy` remains
+ordinary CSS-pixel scrolling.
 Pointer hit testing and Shift+arrow use the same axis indexes as rendering.
 Merged-range expansion happens in `DocumentViewer`, and copy materializes TSV
 from the complete logical cell map, including sparse cells beyond the initial

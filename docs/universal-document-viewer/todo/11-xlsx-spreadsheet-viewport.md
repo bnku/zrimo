@@ -14,10 +14,11 @@ OOXML renderer.
 
 Рендер выполняется в detached canvas и коммитится только по актуальному
 generation token, поэтому late completion не может затереть новый
-scroll/zoom/resize frame даже при игнорировании abort backend-ом. Zoom сохраняет
-pointer/center anchor, fit считается по used range, состояние scroll хранится
-по листам, cell hit testing использует тот же geometry index. Полная cell map
-строится из sparse worksheet model и больше не ограничена первыми `200×50`.
+scroll/zoom/resize frame даже при игнорировании abort backend-ом. Pointer zoom
+сохраняет anchor под курсором, программный zoom — левый верхний anchor viewport;
+fit считается по used range, состояние scroll хранится по листам, cell hit
+testing использует тот же geometry index. Полная cell map строится из sparse
+worksheet model и больше не ограничена первыми `200×50`.
 
 Проверки: unit tests покрывают million-band sparse geometry, hidden/custom
 sizes, полную text map и propagation partial offsets. Chromium E2E использует

@@ -93,7 +93,7 @@ function useViewerSession({
       ...(container ? { container } : {}),
       ui,
       locale: "en",
-      fit: container ? "width" : "none",
+      fit: "none",
       layout,
       overscan: 1,
     });
@@ -276,7 +276,7 @@ function BuiltInExample({ file }: { readonly file: File | undefined }) {
   return (
     <div className="example-column">
       <ExampleIntro
-        code={'client.createViewer({ container, ui: true, fit: "width" })'}
+        code={"client.createViewer({ container, ui: true })"}
         title="Ready-made viewer UI"
         description="The package mounts its localized toolbar, search, thumbnails, fullscreen and sheet tabs. React only owns the lifecycle and the file source."
         session={session}

@@ -1,0 +1,175 @@
+# Задача 15. Legacy XLS formatting fidelity
+
+**Статус:** 🟢 Завершена локально для 0.1.1; изменения не закоммичены
+
+## Цель
+
+Перестать представлять value-only реконструкцию как достаточный рендер legacy
+XLS и сохранить в полностью browser-side pipeline визуально значимые свойства
+BIFF8 workbook без серверной или desktop-конвертации.
+
+## Доказанная причина
+
+Текущий путь `XLS → office_oxide IR → XLSX → @silurus/ooxml` сохраняет значения,
+но stock `office_oxide@0.1.6` сводит каждый лист к таблице из plain cell values.
+На границе IR теряются cell XF indices, fonts, fills, borders, alignment,
+wrapping, number formats, column widths, row heights, hidden bands, merged ranges
+и hyperlinks. XLSX renderer Zrimo уже умеет отображать эти свойства, поэтому
+viewport и canvas не являются местом исправления.
+
+Пробный `xlrd@0.1.1` подтверждает, что permissive pure-Rust разбор основной
+BIFF8 formatting-модели возможен, но опубликованный crate не принимается как
+готовый runtime backend: он использует path-only API, тянет тяжёлый универсальный
+XLSX writer, не собирается для `wasm32-unknown-unknown` без дополнительных
+настроек и на проверенном файле некорректно переносит custom column widths.
+
+## Источники требований
+
+- [`../01-fidelity-corrective-roadmap.md`](../01-fidelity-corrective-roadmap.md)
+- [`./03-office-pipeline.md`](./03-office-pipeline.md)
+- [`./11-xlsx-spreadsheet-viewport.md`](./11-xlsx-spreadsheet-viewport.md)
+
+## Зависимости
+
+- Задача 09 завершена: private inputs изолированы от release artifacts.
+- Задача 11 завершена: spreadsheet viewport уже поддерживает variable geometry,
+  hidden bands, merges и полный used range.
+- Реализация не зависит от завершения DOC 13d и может идти параллельно ему.
+
+## Целевая архитектура
+
+- Сохранить текущий lazy legacy Office WASM worker и bytes-in/bytes-out contract.
+- Использовать bounded `office_oxide::cfb` только для чтения Workbook/Book stream.
+- Добавить project-owned BIFF8 formatting extractor с отдельной типизированной
+  моделью workbook globals, sheet geometry и cell style references.
+- Оставить текущий converter источником cell values и cached formula results.
+- После генерации XLSX дополнять package source-backed `styles.xml`, worksheet
+  geometry, cell style indices, merges и safe hyperlink relationships.
+- Не добавлять filesystem API, network fallback или обязательный desktop binary.
+- Не подключать тяжёлый XLSX writer/parser целиком, если тот же результат можно
+  получить ограниченным extractor/postprocessor внутри уже существующего lazy
+  module.
+
+## Что входит в задачу
+
+### Workbook globals
+
+- `FONT`, `XF`, `FORMAT`, `PALETTE` и необходимые style inheritance flags.
+- Built-in и custom number formats, включая date/time/percentage display без
+  вычисления формул.
+- Font family, size, weight, italic, underline, strikeout и indexed/RGB color.
+- Cell fill pattern/colors, four-side borders, horizontal/vertical alignment,
+  wrap, rotation, indent и reading order там, где это поддерживает renderer.
+
+### Worksheet layout
+
+- `DEFCOLWIDTH`/`STANDARDWIDTH`, `DEFAULTROWHEIGHT`, `COLINFO` и `ROW`.
+- Custom/default widths and heights, hidden rows/columns и применённый band XF.
+- Cell XF references для `LABELSST`, `LABEL/RSTRING`, `NUMBER`, `RK`, `MULRK`,
+  `BOOLERR`, `FORMULA`, `BLANK` и `MULBLANK`.
+- `MERGEDCELLS`, source used range и защита от искусственного расширения листа
+  style-only диапазонами до последней BIFF8 column/row.
+- `HLINK` для external/internal targets с существующей scheme sanitization и
+  host interception contract.
+
+### Надёжность
+
+- Checked arithmetic, record/stream/style/cell limits и bounded allocations.
+- Typed degradation warnings для неизвестных или неподдержанных records.
+- Cancellation/time budget на worker boundary; malformed BIFF не приводит к
+  panic, бесконечному циклу или частично придуманному оформлению.
+
+## Что НЕ делаем в этой задаче
+
+- Не вычисляем formulas и не исполняем VBA/macros.
+- Не обещаем fidelity charts, pivot tables, slicers, conditional formatting,
+  data validation, comments, OLE objects и embedded controls.
+- Не используем LibreOffice, Excel, Wine или server conversion в runtime.
+- Не копируем private XLS в repository даже в минимизированном виде.
+- Не создаём стили эвристически по тексту; неподтверждённое свойство остаётся
+  default и сопровождается warning при значимой потере.
+
+## Этапы реализации
+
+1. **15a — BIFF8 formatting foundation.** Bounded record iterator, globals,
+   sheet boundaries, geometry records, cell XF map и synthetic byte fixtures.
+2. **15b — OOXML projection.** Stylesheet serialization, worksheet patching,
+   merges, hyperlinks, number formats и round-trip structural tests.
+3. **15c — browser qualification.** WASM size/performance gates, Chromium,
+   Firefox и WebKit rendering, local private differential lane и public corpus.
+
+## Tests
+
+- Unit tests на каждый поддерживаемый record с generated byte-level fixtures,
+  truncation, invalid counts/indices и configured limit cases.
+- Synthetic BIFF8 workbook с разными XF, palette colors, borders, wrap/alignment,
+  widths/heights, hidden bands, merges, dates, cached formulas и hyperlinks.
+- Structural oracle проверяет generated XLSX parts: cell values/coordinates,
+  `s` indices, fonts/fills/borders/cellXfs, cols/rows, merges и relationships.
+- Browser matrix проверяет rendering и navigation на zoom `0.25–4.0`, selection,
+  copy, search highlight, links и достижимость последней used cell.
+- Visual differential использует public fixtures с provenance либо local-only
+  private inputs; plain-text equality не считается достаточным gate.
+- Fuzz/resource tests покрывают malformed CFB/BIFF records и ZIP postprocessing.
+- Clean-pack test подтверждает отсутствие `.tmp`, private inputs и generated
+  differential outputs в Git и npm tarball.
+
+## Local regression oracle
+
+`.tmp/Загрузка VHD.xls` используется только локально. Для него ожидается:
+
+- used data range не расширяется произвольно дальше заполненной таблицы;
+- столбцы A:G сохраняют разные source widths;
+- строки таблицы сохраняют source heights;
+- заголовок имеет source fill, border, bold font, center alignment и wrap;
+- body cells сохраняют borders, alignment/wrap и font properties;
+- URL cells визуально и функционально остаются безопасными hyperlinks.
+
+Эти ожидания должны быть продублированы committed synthetic/public fixtures,
+чтобы CI не зависел от private файла.
+
+## Docs
+
+- Обновить Office compatibility matrix: отдельно описать XLS values, cached
+  formulas, formatting и явно unsupported features.
+- Обновить architecture legacy conversion path и degradation warnings.
+- Добавить third-party notice только для реально включённого runtime-кода; сам
+  spike по `xlrd` не создаёт runtime dependency.
+- Зафиксировать measured raw/Brotli delta legacy WASM module и conversion time.
+
+## Результаты квалификации
+
+Проверки выполнены на production WASM build в Linux; результаты относятся к
+локальному кандидату 0.1.1 и не являются универсальным performance SLA.
+
+- Legacy WASM вырос с 1 467 294 до 1 536 940 байт raw: +69 646 байт
+  (+4,75%). Brotli `-q 11` вырос с 528 171 до 550 237 байт: +22 066 байт
+  (+4,18%). Общий repository size gate проходит.
+- На local-only oracle размером 16 KiB в headless Chromium импорт JS-модуля
+  занял 5,5 мс, инициализация WASM — 10,9 мс, первый прямой conversion —
+  28,9 мс. Медиана следующих девяти conversion — 3,0 мс. Полный
+  `viewer.load()` вместе с worker/backend parsing имел медиану 134 мс в пяти
+  локальных запусках.
+- Публичный `simple.xls` и приватный oracle проходят structural round-trip;
+  приватный файл и производный XLSX создавались только вне repository.
+- Browser qualification проходит в Chromium, Chromium DPR2, Firefox и WebKit:
+  conversion/rendering на zoom 0.25 и 4, source row/column geometry, search и
+  TSV clipboard для выбранной ячейки.
+- `cargo test --workspace`, `cargo clippy --workspace --all-targets -D
+warnings`, TypeScript typecheck и 2 000 запусков `legacy_office` fuzz target
+  проходят.
+- License policy проходит для 5 npm runtime packages, 61 Cargo packages и 14
+  font assets. Clean pack содержит 308 файлов, проходит шесть consumer gates и
+  не содержит `.tmp`, private inputs или local differential outputs.
+
+## Критерии готовности
+
+- Qualified BIFF8 corpus сохраняет values, source-backed styles, geometry,
+  merges и safe hyperlinks после полностью in-memory conversion.
+- Показанный local regression по структуре и визуальному результату близок к
+  независимому LibreOffice reference и не воспроизводит value-only layout.
+- Обычный modern XLSX path не меняет rendering и performance.
+- `wasm32-unknown-unknown`, browser matrix, fuzz, license, size и clean-pack gates
+  проходят без filesystem/network fallback.
+- Ни private XLS, ни производные от него fixtures/snapshots/artifacts не входят
+  в tracked files или npm package.

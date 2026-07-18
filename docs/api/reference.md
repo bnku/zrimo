@@ -101,7 +101,7 @@ headers/frozen panes, one bounded canvas, and enough trailing blank bands to
 fill the viewport. Column borders in the header can be dragged to apply
 view-only per-sheet width overrides without modifying the source file. Sheet
 `fitWidth` fits the used columns, `fitPage` fits both axes, and zoom preserves
-the pointer or center anchor. Spreadsheet cells support pointer drag,
+the pointer or top-left viewport anchor. Spreadsheet cells support pointer drag,
 Shift+click/Shift+arrow range extension, Ctrl/Cmd+click or drag for
 non-contiguous ranges, and Ctrl/Cmd+C copying of the current selection.
 

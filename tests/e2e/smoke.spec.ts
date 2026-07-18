@@ -1410,11 +1410,28 @@ test("converts legacy Office in the package worker and opens the result", async 
               source: Uint8Array,
               options: { fileName: string },
             ): Promise<void>;
+            getDocumentInfo(): Promise<{
+              sheets?: Array<{
+                defaultColumnWidth?: number;
+                defaultRowHeight?: number;
+              }>;
+            }>;
+            renderPage(
+              pageIndex: number,
+              canvas: HTMLCanvasElement,
+              options: {
+                zoom: number;
+                devicePixelRatio: number;
+                width: number;
+                height: number;
+              },
+            ): Promise<void>;
             readonly state: {
               status: string;
               format?: string;
               pageCount: number;
             };
+            destroy(): Promise<void>;
           };
           destroy(): Promise<void>;
         };
@@ -1430,18 +1447,33 @@ test("converts legacy Office in the package worker and opens the result", async 
       await viewer.load(new Uint8Array(await response.arrayBuffer()), {
         fileName,
       });
-      output.push({ ...viewer.state });
+      const canvas = document.createElement("canvas");
+      await viewer.renderPage(0, canvas, {
+        zoom: 1,
+        devicePixelRatio: 1,
+        width: 800,
+        height: 600,
+      });
+      const info = await viewer.getDocumentInfo();
+      output.push({
+        state: { ...viewer.state },
+        sheets: info.sheets,
+        rendered: canvas.width > 0 && canvas.height > 0,
+      });
       await viewer.destroy();
     }
     await client.destroy();
     return output;
   });
 
-  expect(result.map((state) => state.format)).toEqual(["xls", "ppt"]);
-  for (const state of result) {
+  expect(result.map(({ state }) => state.format)).toEqual(["xls", "ppt"]);
+  for (const { state, rendered } of result) {
     expect(state.status).toBe("ready");
     expect(state.pageCount).toBeGreaterThan(0);
+    expect(rendered).toBe(true);
   }
+  expect(result[0]!.sheets?.[0]?.defaultRowHeight).toBe(17);
+  expect(result[0]!.sheets?.[0]?.defaultColumnWidth).toBe(64);
 });
 
 test("converts and renders Word 97 DOC through the package adapter", async ({

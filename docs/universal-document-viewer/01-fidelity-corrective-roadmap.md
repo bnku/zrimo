@@ -1,6 +1,7 @@
 # Corrective roadmap: fidelity и viewport release blockers
 
-**Статус:** 🟠 Requalification завершена; DOC 13a–13b готовы, core 13c готова, начат 13d
+**Статус:** 🟠 Requalification завершена; DOC 13a–13b готовы, core 13c готова,
+начат 13d; legacy XLS fidelity завершена локально для 0.1.1
 
 ## Назначение документа
 
@@ -195,6 +196,22 @@ candidate, пока DOC structural gate остаётся `unsupported`.
 
 Подробности: [`./todo/14-fidelity-requalification.md`](./todo/14-fidelity-requalification.md)
 
+### Задача 15. Legacy XLS formatting fidelity
+
+**Статус:** 🟢 Завершена локально для 0.1.1; изменения не закоммичены
+
+Заменить value-only нормализацию BIFF8 на лёгкий browser-side bridge, который
+сохраняет доказанное исходными записями оформление: cell XF, fonts, fills,
+borders, alignment/wrap, number formats, row/column geometry, hidden bands,
+merged ranges и hyperlinks. Текущий `office_oxide` остаётся источником значений,
+а project-owned bounded extractor и OOXML postprocessor дополняют созданный XLSX
+без filesystem API и тяжёлого универсального writer dependency.
+
+Приватный `.tmp/Загрузка VHD.xls` используется только как local differential
+oracle и не входит в Git, corpus, fixtures, snapshots или npm artifact.
+
+Подробности: [`./todo/15-legacy-xls-fidelity.md`](./todo/15-legacy-xls-fidelity.md)
+
 ## Последовательность и оценка
 
 1. Задача 09 — 1–2 рабочих дня и обязательна перед любым новым artifact.
@@ -206,6 +223,9 @@ candidate, пока DOC structural gate остаётся `unsupported`.
 7. Задача 13d — 5–8 рабочих дней на browser integration и qualification.
 8. Задача 14 — 4–7 рабочих дней после завершения всех выбранных release
    форматов.
+9. Задача 15 — 5–8 рабочих дней на bounded BIFF8 formatting projection и
+   browser qualification; может выполняться независимо от оставшихся DOC 13d
+   работ после задачи 11.
 
 Оценки — engineering ranges, а не обещание календарной даты. Legacy DOC задаёт
 critical path.
@@ -222,6 +242,9 @@ critical path.
   исходного style evidence.
 - XLSX на zoom `0.25–4.0` позволяет достигнуть последней used row/column без
   clipping; resize/zoom/scroll не возвращают stale tile и не привязаны к A4.
+- Legacy XLS сохраняет source-backed XF styles, row/column geometry, merges и
+  safe hyperlinks после in-memory conversion; value-only reconstruction и
+  fabricated formatting считаются failure для qualified BIFF8 corpus.
 - Browser matrix, security limits, lifecycle cleanup, license allowlist и size
   budget проходят на tarball, собранном из clean checkout.
 - `npm pack --dry-run` и распаковка tarball подтверждают отсутствие всех private

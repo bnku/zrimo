@@ -157,3 +157,92 @@ test("uses compatibility paths without optional browser APIs", async ({
   });
   expect(result).toEqual({ text: "fallback", width: 64 });
 });
+
+test("renders BIFF8 XLS with source geometry and interactions", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const result = await page.evaluate(async () => {
+    const { ViewerClient } = await import("/main.js");
+    const client = ViewerClient.create({
+      assetBaseUrl: new URL("/", location.href),
+    });
+    const host = document.createElement("div");
+    Object.assign(host.style, { width: "640px", height: "480px" });
+    document.body.append(host);
+    const viewer = client.createViewer({ container: host, fit: "width" });
+    const warningCodes: string[] = [];
+    viewer.on("warning", (warning) => warningCodes.push(warning.code));
+    const response = await fetch("/corpus/simple.xls");
+    try {
+      await viewer.load(new Uint8Array(await response.arrayBuffer()), {
+        fileName: "simple.xls",
+      });
+      const info = viewer.getDocumentInfo();
+      const canvas = document.createElement("canvas");
+      for (const zoom of [0.25, 4]) {
+        await viewer.renderSheetViewport(
+          0,
+          canvas,
+          { row: 1, column: 1, rowCount: 1, columnCount: 1 },
+          { zoom, devicePixelRatio: 1, width: 320, height: 180 },
+        );
+      }
+      const search = await viewer.search("replaceMe");
+      viewer.selectCells({
+        sheetIndex: 0,
+        startRow: 1,
+        startColumn: 1,
+        endRow: 1,
+        endColumn: 1,
+      });
+      const copied = await viewer.copySelection();
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      const viewport = host.querySelector<HTMLElement>(
+        '[data-zrimo="spreadsheet-viewport"]',
+      );
+      const initialScroll = {
+        left: viewport?.scrollLeft ?? -1,
+        top: viewport?.scrollTop ?? -1,
+      };
+      viewer.setZoom(1);
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      viewer.zoomIn();
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+      return {
+        state: { ...viewer.state },
+        sheet: info.sheets?.[0],
+        searchMatches: search.matches.length,
+        copied,
+        rendered: canvas.width > 0 && canvas.height > 0,
+        initialScroll,
+        zoomedScroll: {
+          left: viewport?.scrollLeft ?? -1,
+          top: viewport?.scrollTop ?? -1,
+        },
+        warningCodes,
+      };
+    } finally {
+      await viewer.destroy();
+      await client.destroy();
+      host.remove();
+    }
+  });
+
+  expect(result.state.status).toBe("ready");
+  expect(result.state.format).toBe("xls");
+  expect(result.rendered).toBe(true);
+  expect(result.initialScroll).toEqual({ left: 0, top: 0 });
+  expect(result.zoomedScroll).toEqual({ left: 0, top: 0 });
+  expect(result.sheet?.defaultRowHeight).toBe(17);
+  expect(result.sheet?.defaultColumnWidth).toBe(64);
+  expect(result.searchMatches).toBe(1);
+  expect(result.copied).toBe("replaceMe");
+  expect(result.warningCodes).toContain("fidelity-degraded");
+});

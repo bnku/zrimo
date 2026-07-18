@@ -40,7 +40,7 @@ rasterization, annotations, and text geometry. Rust functions return owned
 buffers or serializable maps; they do not retain DOM objects or perform network
 access.
 
-`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy XLS/PPT use `office_oxide::Document::to_ir`; Word 97–2003 DOC uses the project-owned bounded `legacy-doc` parser and source-backed IR projection. All three use the public `create_from_ir_to_writer` API to return OOXML bytes from memory, then enter the same modern Office path. The stock heuristic DOC projection is never called.
+`@silurus/ooxml` is treated as a qualified upstream engine rather than copied source. Its DOCX/XLSX/PPTX entry points remain lazy imports. Legacy PPT uses `office_oxide::Document::to_ir`; Word 97–2003 DOC uses the project-owned bounded `legacy-doc` parser and source-backed IR projection. BIFF8 XLS combines the upstream value/cached-result conversion with a project-owned bounded Workbook-stream extractor and ZIP postprocessor so source styles, geometry, merges and hyperlinks survive the IR boundary. All three return OOXML bytes from memory and enter the same modern Office path. The stock heuristic DOC projection is never called.
 
 ## Internal adapter draft
 
