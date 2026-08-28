@@ -362,6 +362,34 @@ export interface SpreadsheetViewportRange {
   readonly columnCount: number;
 }
 
+export interface SpreadsheetCellRange {
+  /** 1-based, inclusive on both ends. */
+  readonly startRow: number;
+  readonly startColumn: number;
+  readonly endRow: number;
+  readonly endColumn: number;
+}
+
+export type SpreadsheetCellValue = string | number | boolean | null;
+
+export interface SpreadsheetCellData {
+  /** 1-based sheet coordinates. */
+  readonly row: number;
+  readonly column: number;
+  /** The typed cached value; `null` for error cells. Formulas are never calculated. */
+  readonly value: SpreadsheetCellValue;
+  /** The display text after number formatting, as the sheet renders it. */
+  readonly text: string;
+}
+
+export interface SpreadsheetCellSlice {
+  readonly sheetIndex: number;
+  /** The requested range clamped to the sheet's populated extent. */
+  readonly range: SpreadsheetCellRange;
+  /** Non-empty cells inside `range`, in row-major order. */
+  readonly cells: readonly SpreadsheetCellData[];
+}
+
 export interface SpreadsheetMergedRange {
   readonly startRow: number;
   readonly startColumn: number;
@@ -410,6 +438,8 @@ export interface DocumentCapabilities {
   readonly cellSelection: boolean;
   readonly search: boolean;
   readonly thumbnails: boolean;
+  /** Whether {@link ViewerApi.getSheetCells} can read typed cell data. */
+  readonly cellData: boolean;
 }
 
 export type DocumentMetadata = DocumentInfo;
@@ -441,6 +471,12 @@ export interface DocumentAdapter<THandle = unknown> {
     pageIndex: number,
     signal?: AbortSignal,
   ): Promise<readonly TextRun[]>;
+  /** Reads typed cell values from one sheet; sheet documents only. */
+  getSheetCells?(
+    handle: THandle,
+    sheetIndex: number,
+    range?: SpreadsheetCellRange,
+  ): Promise<SpreadsheetCellSlice>;
   close(handle: THandle): void | Promise<void>;
   destroy?(): void | Promise<void>;
 }
@@ -482,6 +518,10 @@ export interface ViewerApi {
     options?: HeadlessRenderOptions,
   ): Promise<void>;
   getPageText(pageIndex: number, signal?: AbortSignal): Promise<string>;
+  getSheetCells(
+    sheetIndex: number,
+    range?: SpreadsheetCellRange,
+  ): Promise<SpreadsheetCellSlice>;
   getDocumentInfo(): DocumentInfo;
   search(query: string, options?: SearchOptions): Promise<SearchResult>;
   searchNext(): SearchResult | null;

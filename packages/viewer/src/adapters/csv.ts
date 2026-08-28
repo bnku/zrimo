@@ -6,6 +6,9 @@ import type {
   SpreadsheetSheetInfo,
   TextRun,
   ViewerWarning,
+  SpreadsheetCellRange,
+  SpreadsheetCellData,
+  SpreadsheetCellSlice,
 } from "../contracts.js";
 import { abortError, ViewerError } from "../errors.js";
 import type { ParsedDelimitedText } from "./csv-parser.js";
@@ -160,6 +163,56 @@ export class CsvDocumentAdapter implements DocumentAdapter<CsvHandle> {
       viewport.columnWidths,
     );
     if (signal?.aborted) throw abortError();
+  }
+
+  async getSheetCells(
+    handle: CsvHandle,
+    sheetIndex: number,
+    range?: SpreadsheetCellRange,
+  ): Promise<SpreadsheetCellSlice> {
+    if (sheetIndex !== 0)
+      throw new ViewerError(
+        "lifecycle-error",
+        `Sheet index ${sheetIndex} is out of range`,
+      );
+
+    const maxRow = handle.info.maxRow;
+    const maxColumn = handle.info.maxColumn;
+    const startRow = Math.max(1, Math.trunc(range?.startRow ?? 1));
+    const startColumn = Math.max(1, Math.trunc(range?.startColumn ?? 1));
+    const clamped = {
+      startRow,
+      startColumn,
+      endRow: Math.max(
+        startRow,
+        Math.min(Math.trunc(range?.endRow ?? maxRow), maxRow),
+      ),
+      endColumn: Math.max(
+        startColumn,
+        Math.min(Math.trunc(range?.endColumn ?? maxColumn), maxColumn),
+      ),
+    };
+
+    const cells: SpreadsheetCellData[] = [];
+    for (
+      let rowNumber = clamped.startRow;
+      rowNumber <= clamped.endRow;
+      rowNumber += 1
+    ) {
+      const row = handle.parsed.rows[rowNumber - 1];
+      if (!row) continue;
+      for (
+        let columnNumber = clamped.startColumn;
+        columnNumber <= clamped.endColumn;
+        columnNumber += 1
+      ) {
+        const text = row[columnNumber - 1];
+        if (!text) continue;
+        // Delimited data is strings only; no numeric coercion happens here.
+        cells.push({ row: rowNumber, column: columnNumber, value: text, text });
+      }
+    }
+    return { sheetIndex, range: clamped, cells };
   }
 
   async getTextMap(

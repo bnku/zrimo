@@ -23,6 +23,8 @@ import type {
   ViewerLogger,
   ViewerOptions,
   ViewerState,
+  SpreadsheetCellRange,
+  SpreadsheetCellSlice,
 } from "./contracts.js";
 import { linkedAbortController } from "./abort.js";
 import { detectFormat } from "./detect.js";
@@ -233,6 +235,8 @@ export class DocumentViewer implements ViewerApi {
           cellSelection: backendInfo.unit === "sheet",
           search: Boolean(adapter.getTextMap),
           thumbnails: backendInfo.unit !== "sheet",
+          cellData:
+            backendInfo.unit === "sheet" && Boolean(adapter.getSheetCells),
         },
       });
       this.#adapter = adapter;
@@ -342,6 +346,24 @@ export class DocumentViewer implements ViewerApi {
 
   previous(): void {
     this.goToPage(this.#state.pageIndex - 1);
+  }
+
+  async getSheetCells(
+    sheetIndex: number,
+    range?: SpreadsheetCellRange,
+  ): Promise<SpreadsheetCellSlice> {
+    const { adapter, handle, info } = this.#assertReady();
+    if (info.unit !== "sheet")
+      throw new ViewerError(
+        "lifecycle-error",
+        "The current document has no sheets",
+      );
+    if (!adapter.getSheetCells)
+      throw new ViewerError(
+        "fidelity-unsupported",
+        "The current document does not expose cell data",
+      );
+    return adapter.getSheetCells(handle, sheetIndex, range);
   }
 
   setSheet(sheetIndex: number): void {

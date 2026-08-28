@@ -129,6 +129,35 @@ selectable spans use the renderer's exact font, pitch, rotation, and vertical
 metadata. Search highlights live in a separate `pointer-events:none` overlay and
 cannot change native selection geometry.
 
+## Spreadsheet cell data
+
+`getSheetCells(sheetIndex, range?)` reads typed cell data from one sheet of a
+spreadsheet document (XLSX/XLSM/XLS after conversion, CSV, TSV). It powers
+host-side features such as selection statistics, custom filtering UIs, and
+structured export without a second parser.
+
+```ts
+const slice = await viewer.getSheetCells(0, {
+  startRow: 1,
+  startColumn: 1,
+  endRow: 100,
+  endColumn: 20,
+});
+for (const cell of slice.cells) {
+  // cell.row / cell.column are 1-based; cell.value is string | number |
+  // boolean | null; cell.text is the number-formatted display text.
+}
+```
+
+The requested range is clamped to the sheet's populated extent and returned as
+`slice.range`; omitting it reads the whole sheet. Only non-empty cells are
+returned, in row-major order. Cached formula results are returned as plain
+values — formulas are never calculated — and error cells carry `value: null`.
+Delimited data stays strings-only. Reads are bounded: a clamped area larger
+than 1,000,000 cells rejects with `resource-limit`, so window larger sheets.
+`getDocumentInfo().capabilities.cellData` reports availability; non-sheet
+documents reject with `lifecycle-error`.
+
 ## Headless rendering
 
 | Method                                                | Result                                                                                       |

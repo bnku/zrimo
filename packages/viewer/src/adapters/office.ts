@@ -8,6 +8,10 @@ import type {
   SpreadsheetSheetInfo,
   TextRun,
   ViewerWarning,
+  SpreadsheetCellRange,
+  SpreadsheetCellData,
+  SpreadsheetCellSlice,
+  SpreadsheetCellValue,
 } from "../contracts.js";
 import { abortError, ViewerError } from "../errors.js";
 import { enforceContainerLimits } from "../limits.js";
@@ -480,6 +484,53 @@ export class OfficeDocumentAdapter implements DocumentAdapter<OfficeHandle> {
     }
   }
 
+  async getSheetCells(
+    handle: OfficeHandle,
+    sheetIndex: number,
+    range?: SpreadsheetCellRange,
+  ): Promise<SpreadsheetCellSlice> {
+    if (handle.kind !== "spreadsheet")
+      throw new ViewerError(
+        "lifecycle-error",
+        "The current document has no sheets",
+      );
+    const worksheet = handle.worksheets[sheetIndex];
+    const sheet = handle.sheets[sheetIndex];
+    if (!worksheet || !sheet)
+      throw new ViewerError(
+        "lifecycle-error",
+        `Sheet index ${sheetIndex} is out of range`,
+      );
+
+    const clamped = clampCellRange(range, sheet.maxRow, sheet.maxColumn);
+    const area =
+      (clamped.endRow - clamped.startRow + 1) *
+      (clamped.endColumn - clamped.startColumn + 1);
+    if (area > MAX_SHEET_CELL_AREA)
+      throw new ViewerError(
+        "resource-limit",
+        "Requested cell range exceeds the readable area",
+        { details: { area, limit: MAX_SHEET_CELL_AREA } },
+      );
+
+    const cells: SpreadsheetCellData[] = [];
+    for (const row of worksheet.rows) {
+      if (row.index < clamped.startRow || row.index > clamped.endRow) continue;
+      for (const cell of row.cells) {
+        if (cell.col < clamped.startColumn || cell.col > clamped.endColumn)
+          continue;
+        if (cell.value.type === "empty") continue;
+        cells.push({
+          row: cell.row,
+          column: cell.col,
+          value: typedCellValue(cell.value),
+          text: handle.backend.cellText?.(worksheet, cell) ?? cellText(cell),
+        });
+      }
+    }
+    return { sheetIndex, range: clamped, cells };
+  }
+
   async getTextMap(
     handle: OfficeHandle,
     pageIndex: number,
@@ -879,6 +930,43 @@ function axisOffset(
       offset += size - defaultSize;
   }
   return offset;
+}
+
+/** A full 1000x1000 block; larger reads must be windowed by the caller. */
+const MAX_SHEET_CELL_AREA = 1_000_000;
+
+function clampCellRange(
+  range: SpreadsheetCellRange | undefined,
+  maxRow: number,
+  maxColumn: number,
+): SpreadsheetCellRange {
+  const startRow = Math.max(1, Math.trunc(range?.startRow ?? 1));
+  const startColumn = Math.max(1, Math.trunc(range?.startColumn ?? 1));
+  return {
+    startRow,
+    startColumn,
+    endRow: Math.max(
+      startRow,
+      Math.min(Math.trunc(range?.endRow ?? maxRow), maxRow),
+    ),
+    endColumn: Math.max(
+      startColumn,
+      Math.min(Math.trunc(range?.endColumn ?? maxColumn), maxColumn),
+    ),
+  };
+}
+
+function typedCellValue(value: CellValue): SpreadsheetCellValue {
+  switch (value.type) {
+    case "text":
+      return value.text;
+    case "number":
+      return value.number;
+    case "bool":
+      return value.bool;
+    default:
+      return null;
+  }
 }
 
 function cellText(cell: SpreadsheetCell): string {

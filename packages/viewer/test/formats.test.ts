@@ -94,6 +94,27 @@ describe("CSV and TSV", () => {
     assert.equal(runs.length, 4);
     assert.equal(runs[2]?.direction, "rtl");
     assert.equal(runs[3]?.text, "नमस्ते");
+
+    const slice = await adapter.getSheetCells(handle, 0, {
+      startRow: 2,
+      startColumn: 1,
+      endRow: 2,
+      endColumn: 9,
+    });
+    assert.deepEqual(slice.range, {
+      startRow: 2,
+      startColumn: 1,
+      endRow: 2,
+      endColumn: 2,
+    });
+    // Delimited data stays strings-only: no numeric coercion.
+    assert.deepEqual(
+      slice.cells.map((cell) => [cell.row, cell.column, cell.value, cell.text]),
+      [
+        [2, 1, "مرحبا", "مرحبا"],
+        [2, 2, "नमस्ते", "नमस्ते"],
+      ],
+    );
   });
 });
 

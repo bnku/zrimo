@@ -451,3 +451,149 @@ function centralDirectory(sizes: readonly number[]): Uint8Array {
   });
   return bytes;
 }
+
+describe("Office spreadsheet cell data", () => {
+  function cellDataAdapter() {
+    return new OfficeDocumentAdapter({
+      engines: {
+        xlsx: async () => ({
+          sheetNames: ["Данные"],
+          sheetCount: 1,
+          getWorksheet: async () => ({
+            name: "Данные",
+            rows: [
+              {
+                index: 1,
+                cells: [
+                  {
+                    row: 1,
+                    col: 1,
+                    value: { type: "number" as const, number: 1234.5 },
+                  },
+                  { row: 1, col: 2, value: { type: "empty" as const } },
+                  {
+                    row: 1,
+                    col: 3,
+                    value: { type: "bool" as const, bool: true },
+                  },
+                ],
+              },
+              {
+                index: 3,
+                cells: [
+                  {
+                    row: 3,
+                    col: 2,
+                    value: { type: "text" as const, text: "мрії" },
+                  },
+                  {
+                    row: 3,
+                    col: 4,
+                    value: { type: "error" as const, error: "#DIV/0!" },
+                  },
+                ],
+              },
+            ],
+            mergeCells: [],
+            freezeRows: 0,
+            freezeCols: 0,
+          }),
+          cellText: (_worksheet: unknown, cell: { value: { type: string } }) =>
+            cell.value.type === "number" ? "1 234,50" : "",
+          renderViewport: async () => {},
+          destroy: () => {},
+        }),
+      },
+    });
+  }
+
+  it("returns typed values with formatted text, skipping empty cells", async () => {
+    const adapter = cellDataAdapter();
+    const handle = await adapter.open(Uint8Array.of(1), context("xlsx"));
+
+    const slice = await adapter.getSheetCells(handle, 0);
+    assert.deepEqual(slice.range, {
+      startRow: 1,
+      startColumn: 1,
+      endRow: 3,
+      endColumn: 4,
+    });
+    assert.deepEqual(
+      slice.cells.map((cell) => [cell.row, cell.column, cell.value]),
+      [
+        [1, 1, 1234.5],
+        [1, 3, true],
+        [3, 2, "мрії"],
+        [3, 4, null],
+      ],
+    );
+    assert.equal(slice.cells[0]?.text, "1 234,50");
+  });
+
+  it("clamps a requested window to the populated extent", async () => {
+    const adapter = cellDataAdapter();
+    const handle = await adapter.open(Uint8Array.of(1), context("xlsx"));
+
+    const slice = await adapter.getSheetCells(handle, 0, {
+      startRow: 2,
+      startColumn: 1,
+      endRow: 999,
+      endColumn: 2,
+    });
+    assert.deepEqual(slice.range, {
+      startRow: 2,
+      startColumn: 1,
+      endRow: 3,
+      endColumn: 2,
+    });
+    assert.deepEqual(
+      slice.cells.map((cell) => cell.value),
+      ["мрії"],
+    );
+  });
+
+  it("fails closed on non-spreadsheet handles and oversized areas", async () => {
+    const adapter = cellDataAdapter();
+    const handle = await adapter.open(Uint8Array.of(1), context("xlsx"));
+    await assert.rejects(
+      adapter.getSheetCells(handle, 5),
+      (error: unknown) =>
+        error instanceof ViewerError && error.code === "lifecycle-error",
+    );
+
+    const wide = new OfficeDocumentAdapter({
+      engines: {
+        xlsx: async () => ({
+          sheetNames: ["wide"],
+          sheetCount: 1,
+          getWorksheet: async () => ({
+            name: "wide",
+            rows: [
+              {
+                index: 2000,
+                cells: [
+                  {
+                    row: 2000,
+                    col: 600,
+                    value: { type: "number" as const, number: 1 },
+                  },
+                ],
+              },
+            ],
+            mergeCells: [],
+            freezeRows: 0,
+            freezeCols: 0,
+          }),
+          renderViewport: async () => {},
+          destroy: () => {},
+        }),
+      },
+    });
+    const wideHandle = await wide.open(Uint8Array.of(1), context("xlsx"));
+    await assert.rejects(
+      wide.getSheetCells(wideHandle, 0),
+      (error: unknown) =>
+        error instanceof ViewerError && error.code === "resource-limit",
+    );
+  });
+});
